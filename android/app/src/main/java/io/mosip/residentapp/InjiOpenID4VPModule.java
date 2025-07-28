@@ -81,6 +81,7 @@ public class InjiOpenID4VPModule extends ReactContextBaseJavaModule {
         gson = new GsonBuilder()
                 .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
                 .disableHtmlEscaping()
+                .serializeNulls() 
                 .create();
     }
 
@@ -110,7 +111,9 @@ public class InjiOpenID4VPModule extends ReactContextBaseJavaModule {
         try {
             Map<String, Map<FormatType, List<Object>>> selectedVCsMap = parseSelectedVCs(selectedVCs);
             Map<FormatType, UnsignedVPToken> vpTokens = openID4VP.constructUnsignedVPToken(selectedVCsMap, holderId, signatureSuite);
-            promise.resolve(toJsonString(vpTokens));
+             // Used gson to convert VPToken to JSON string
+            String jsonResult = gson.toJson(vpTokens);
+            promise.resolve(jsonResult);
         } catch (Exception e) {
             rejectWithOpenID4VPExceptions(e, promise);
         }
@@ -319,7 +322,9 @@ public class InjiOpenID4VPModule extends ReactContextBaseJavaModule {
                 List<Object> ldpVcList = new ArrayList<>();
                 for (int i = 0; i < credentialList.size(); i++) {
                     ReadableMap credentialMap = credentialList.getMap(i);
-                    ldpVcList.add(credentialMap.toHashMap());
+                    String credentialJson = gson.toJson(credentialMap.toHashMap()); // Convert ReadableMap to JSON string
+                    Object credentialObject = gson.fromJson(credentialJson, Object.class);// Deserialize JSON string to Object
+                    ldpVcList.add(credentialObject);
                 }
                 return ldpVcList;
             }
