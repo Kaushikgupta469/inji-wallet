@@ -1,6 +1,5 @@
 package io.mosip.residentapp;
 
-import static io.mosip.openID4VP.authorizationResponse.AuthorizationResponseUtilsKt.toJsonString;
 import static io.mosip.openID4VP.constants.FormatType.LDP_VC;
 import static io.mosip.openID4VP.constants.FormatType.MSO_MDOC;
 
