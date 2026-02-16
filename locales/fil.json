@@ -162,6 +162,10 @@
     "Description": "Para secure na i-unlock ang app, maaari mong i-set up ang alinman sa biometric authentication, gaya ng fingerprint o facial recognition o mag-opt para sa 6-digit na Passcode para sa mabilis na pag-access.",
     "PasswordTypeDescription": "Piliin ang ‘Gumamit ng Biometrics’ para i-enable ang biometric authentication o ‘I’ll Do Later’ para mag-set up ng 6-digit na passcode.",
     "useBiometrics": "Gamitin ang biometrics",
+    "useFaceId": "Gamitin ang Face ID",
+    "useFaceUnlock": "Gamitin ang Face Unlock",
+    "useFingerprint": "Gamitin ang Fingerprint",
+    "useTouchId": "Gamitin ang Touch ID",
     "usePasscode": "Gagawin Ko Mamaya",
     "errors": {
       "unavailable": "Hindi sinusuportahan ng device ang Biometrics",
@@ -171,7 +175,12 @@
     }
   },
   "BiometricScreen": {
-    "unlock": "I-unlock gamit ang biometrics"
+    "unlock": "I-unlock gamit ang biometrics",
+    "unlockBiometrics": "I-unlock gamit ang Biometrics",
+    "unlockFaceId": "I-unlock gamit ang Face ID",
+    "unlockFaceUnlock": "I-unlock gamit ang Face Unlock",
+    "unlockFingerprint": "I-unlock gamit ang Fingerprint",
+    "unlockTouchId": "I-unlock gamit ang Touch ID"
   },
   "HistoryScreen": {
     "noHistory": "Wala pang kasaysayan",
@@ -187,6 +196,11 @@
     "receiveCard": "Tumanggap ng Card",
     "basicSettings": "Mga Pangunahing Setting",
     "bioUnlock": "I-unlock gamit ang Biometrics",
+    "bioUnlockBiometrics": "I-unlock gamit ang Biometrics",
+    "bioUnlockFaceId": "I-unlock gamit ang Face ID",
+    "bioUnlockFaceUnlock": "I-unlock gamit ang Face Unlock",
+    "bioUnlockFingerprint": "I-unlock gamit ang Fingerprint",
+    "bioUnlockTouchId": "I-unlock gamit ang Touch ID",
     "language": "Wika",
     "aboutInji": "About Inji",
     "credentialRegistry": "Credential Registry",

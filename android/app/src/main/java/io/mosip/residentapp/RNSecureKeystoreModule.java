@@ -190,6 +190,11 @@ public class RNSecureKeystoreModule extends ReactContextBaseJavaModule {
     return deviceCapability.hasBiometricsEnabled(getCurrentActivity());
   }
 
+  @ReactMethod(isBlockingSynchronousMethod = true)
+  public String getSupportedBiometricType() {
+    return deviceCapability.getSupportedBiometricType(getCurrentActivity());
+  }
+
   @ReactMethod
   public void retrieveKey(String alias, Promise promise) {
     try {

@@ -48,6 +48,8 @@ import Search from '../../assets/Search.svg';
 import CloudUploadDoneIcon from '../../assets/Cloud_Upload_Done_Icon.svg';
 import SettingsLanguage from '../../assets/Language_Icon.svg';
 import SettingsBiometric from '../../assets/biometric_unlock.svg';
+import FaceIdIcon from '../../assets/Face_ID_Icon.svg';
+import FaceUnlockIcon from '../../assets/Face_Unlock_Icon.svg';
 import SettingsAboutInji from '../../assets/about_inji.svg';
 import SettingsBackup from '../../assets/cloud_upload.svg';
 import SettingsLogOut from '../../assets/logout_icon.svg';
@@ -591,6 +593,54 @@ export class SvgImage {
         color2={Theme.Colors.linearIconGradientEnd}
       />
     );
+  }
+
+  static faceIdIcon(size?: number | undefined) {
+    return (
+      <FaceIdIcon
+        height={size}
+        width={size}
+        color1={Theme.Colors.linearIconGradientStart}
+        color2={Theme.Colors.linearIconGradientEnd}
+      />
+    );
+  }
+
+  static faceUnlockIcon(size?: number | undefined) {
+    return (
+      <FaceUnlockIcon
+        height={size}
+        width={size}
+        color1={Theme.Colors.linearIconGradientStart}
+        color2={Theme.Colors.linearIconGradientEnd}
+      />
+    );
+  }
+
+  /**
+   * Returns the appropriate biometric icon based on the detected biometric type
+   * and the device's OS platform.
+   *
+   * @param biometricType - 'FACE' | 'FINGERPRINT' | 'BOTH' | 'NONE'
+   * @param size - icon size in pixels
+   */
+  static adaptiveBiometricIcon(
+    biometricType: string,
+    size?: number | undefined,
+  ) {
+    switch (biometricType) {
+      case 'FACE':
+      case 'BOTH':
+        // On iOS show Face ID icon, on Android show Face Unlock icon
+        return require('react-native').Platform.OS === 'ios'
+          ? SvgImage.faceIdIcon(size)
+          : SvgImage.faceUnlockIcon(size);
+      case 'FINGERPRINT':
+        return SvgImage.fingerprintIcon(size);
+      case 'NONE':
+      default:
+        return SvgImage.fingerprintIcon(size);
+    }
   }
 
   static abotInjiIcon() {

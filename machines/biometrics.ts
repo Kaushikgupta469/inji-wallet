@@ -1,7 +1,6 @@
 import {createModel} from 'xstate/lib/model';
 import * as LocalAuthentication from 'expo-local-authentication';
 import {EventFrom, MetaObject, StateFrom} from 'xstate';
-import {Platform} from 'react-native';
 import {isAndroid} from '../shared/constants';
 
 // ----- CREATE MODEL ---------------------------------------------------------
@@ -62,7 +61,7 @@ export const biometricsMachine = model.createMachine(
 
       initEnrolled: {
         invoke: {
-          src: LocalAuthentication.isEnrolledAsync,
+          src: () => LocalAuthentication.isEnrolledAsync(),
           onError: 'failure',
           onDone: {
             target: 'checking',

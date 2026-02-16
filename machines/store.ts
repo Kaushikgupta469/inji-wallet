@@ -633,12 +633,12 @@ export async function fetchAllWellknownConfig(encryptionKey: string) {
 
 export async function getVCsData(key: string, encryptionKey: string) {
   try {
-    let vcsData: Record<string, VC> = {};
+    const vcsData: Record<string, VC> = {};
     let tamperedVcsList: VCMetadata[] = [];
 
     const vcsMetadata: VCMetadata[] = await getItem(key, null, encryptionKey);
 
-    for (let ind in vcsMetadata) {
+    for (const ind in vcsMetadata) {
       const vcKey = VCMetadata.fromVC(vcsMetadata[ind]).getVcKey();
       try {
         const vc = await getItem(vcKey, null, encryptionKey);
@@ -671,7 +671,7 @@ export async function getItem(
     if (data != null) {
       let decryptedData;
       if (key === SETTINGS_STORE_KEY) {
-        let parsedData = JSON.parse(data);
+        const parsedData = JSON.parse(data);
         if (parsedData.encryptedData) {
           decryptedData = await decryptJson(
             encryptionKey,
