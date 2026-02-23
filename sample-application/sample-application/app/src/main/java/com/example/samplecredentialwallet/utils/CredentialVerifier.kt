@@ -12,10 +12,23 @@ object CredentialVerifier {
     private val verifier = CredentialsVerifier()
     private const val LOG_TAG = "CredentialVerifier"
 
-    suspend fun verifyCredential(credentialJson: String, demoMode: Boolean = false): Boolean {
+    suspend fun verifyCredential(credentialJson: String, demoMode: Boolean = false, format: String = "ldp_vc"): Boolean {
         return withContext(Dispatchers.IO) {
             try {
-                Log.d(LOG_TAG, "Starting credential verification (demoMode: $demoMode)")
+                Log.d(LOG_TAG, "Starting credential verification (demoMode: $demoMode, format: $format)")
+
+                // mso_mdoc format uses CBOR/COSE, not JSON-based LDP verification
+                if (format == "mso_mdoc") {
+                    Log.d(LOG_TAG, "mso_mdoc format detected - skipping LDP_VC verification")
+                    if (demoMode) {
+                        Log.i(LOG_TAG, "Demo mode: accepting mso_mdoc credential")
+                        return@withContext true
+                    } else {
+                        Log.w(LOG_TAG, "Production mso_mdoc verification not yet implemented")
+                        return@withContext false
+                    }
+                }
+
                 val credentialHash = credentialJson.hashCode().toString(16)
                 Log.d(LOG_TAG, "Credential hash: $credentialHash, length: ${credentialJson.length}")
                 

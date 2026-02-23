@@ -19,6 +19,39 @@ object CredentialParser {
             
             val json = JSONObject(cleanCredential)
             
+            // Check if this is an mso_mdoc credential (stored with metadata wrapper)
+            if (json.optString("credentialFormat") == "mso_mdoc") {
+                result["credentialName"] = json.optString("credentialName", "Mobile Driving License")
+                result["type"] = "Mobile Driving License"
+                result["format"] = "mso_mdoc"
+                
+                // Try to extract fields from decodedCredential
+                val decoded = json.optJSONObject("decodedCredential")
+                if (decoded != null) {
+                    val issuerSigned = decoded.optJSONObject("issuerSigned")
+                    val nameSpaces = issuerSigned?.optJSONObject("nameSpaces")
+                    
+                    if (nameSpaces != null) {
+                        nameSpaces.keys().forEach { namespace ->
+                            val claimsArray = nameSpaces.optJSONArray(namespace)
+                            if (claimsArray != null) {
+                                for (i in 0 until claimsArray.length()) {
+                                    val claimObj = claimsArray.optJSONObject(i)
+                                    val key = claimObj?.optString("elementIdentifier")
+                                    val value = claimObj?.opt("elementValue")
+                                    
+                                    if (key != null && value != null) {
+                                        result[key] = value.toString()
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                return result
+            }
+            
             val types = json.optJSONArray("type")
             if (types != null && types.length() > 0) {
                 result["type"] = types.getString(types.length() - 1)

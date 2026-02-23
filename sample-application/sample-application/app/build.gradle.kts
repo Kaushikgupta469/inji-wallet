@@ -68,10 +68,16 @@ dependencies {
     implementation(libs.androidx.material3)
 
 
-    implementation("io.mosip:inji-vci-client-aar:0.5.0") {
-        // Exclude transitive dependencies to use explicitly declared versions
+    implementation("io.inji:inji-vci-client-aar:0.7.0-RC1") {
+        isChanging = true
         exclude(group = "com.apicatalog", module = "titanium-json-ld-jre8")
         exclude(group = "org.bouncycastle")
+        exclude(group = "org.bouncycastle", module = "bcpkix-jdk15on")
+        exclude(group = "org.bouncycastle", module = "bcpkix-jdk18on")
+        exclude(group = "io.mosip", module = "vcverifier-jar")
+        exclude(group = "com.google.crypto.tink", module = "tink")
+        exclude(group = "com.augustcellars.cose", module = "cose-java")
+        exclude(group = "io.inji", module = "inji-openid4vp-aar")
     }
     
     implementation("com.nimbusds:nimbus-jose-jwt:10.6") //JWT Signing Library

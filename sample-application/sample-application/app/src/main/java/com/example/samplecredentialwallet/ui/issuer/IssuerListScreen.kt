@@ -60,6 +60,12 @@ fun IssuerListScreen(onIssuerClick: (String) -> Unit) {
             name = "AgroVeritas Property & Land Registry",
             description = "Download Land Registry credential from Collab environment",
             logoRes = R.drawable.agro_vertias_logo
+        ),
+        Issuer(
+            id = "MockMdl",
+            name = "Mock mDL Issuer",
+            description = "Download Driving License credential from Collab environment",
+            logoRes = R.drawable.mdl_logo
         )
         
     )

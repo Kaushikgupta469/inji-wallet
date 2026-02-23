@@ -5,7 +5,8 @@ data class IssuerConfiguration(
     val credentialTypeId: String,
     val clientId: String,
     val redirectUri: String,
-    val credentialDisplayName: String
+    val credentialDisplayName: String,
+    val credentialFormat: String = "ldp_vc"
 )
 
 object IssuerRepository {
@@ -37,6 +38,14 @@ object IssuerRepository {
             clientId = "mpartner-default-mimoto-land-oidc",
             redirectUri = "io.mosip.residentapp.inji://oauthredirect",
             credentialDisplayName = "Land Records Statement"
+        ),
+        "MockMdl" to IssuerConfiguration(
+            credentialIssuerHost = "https://injicertify-mdl.dev-int-inji.mosip.net",
+            credentialTypeId = "DrivingLicenseCredential",
+            clientId = "mpartner-default-mimoto-mdl-released-oidc",
+            redirectUri = "io.mosip.residentapp.inji://oauthredirect",
+            credentialDisplayName = "Mobile Driving License",
+            credentialFormat = "mso_mdoc"
         )
     )
 
@@ -52,6 +61,7 @@ object IssuerRepository {
         Constants.clientId = config.clientId
         Constants.redirectUri = config.redirectUri
         Constants.credentialDisplayName = config.credentialDisplayName
+        Constants.credentialFormat = config.credentialFormat
         
         return true
     }

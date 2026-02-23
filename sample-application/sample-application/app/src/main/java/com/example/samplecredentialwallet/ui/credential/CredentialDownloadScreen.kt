@@ -35,7 +35,9 @@ import com.nimbusds.jose.jwk.Curve
 import com.nimbusds.jwt.JWTClaimsSet
 import com.nimbusds.jwt.SignedJWT
 import io.mosip.vciclient.VCIClient
+import io.mosip.vciclient.authorizationCodeFlow.AuthorizationMethod
 import io.mosip.vciclient.authorizationCodeFlow.clientMetadata.ClientMetadata
+import io.mosip.vciclient.constants.OpenWebPageCallback
 import io.mosip.vciclient.token.TokenRequest
 import io.mosip.vciclient.token.TokenResponse
 import kotlinx.coroutines.GlobalScope
@@ -55,6 +57,7 @@ import java.security.PrivateKey
 import java.security.interfaces.RSAPublicKey
 import java.security.interfaces.ECPrivateKey
 import java.security.interfaces.ECPublicKey
+import com.example.samplecredentialwallet.utils.PixelPassModule
 
 
 @Composable
@@ -124,22 +127,48 @@ fun CredentialDownloadScreen(
                             }
 
                         withTimeout(600000L) { 
-                            
-                            val credential = client.requestCredentialFromTrustedIssuer(
+                            // DEBUG LOGGING
+                            Log.d("VC_DOWNLOAD_DEBUG", "Calling fetchCredentialFromTrustedIssuer")
+                            Log.d("VC_DOWNLOAD_DEBUG", "Issuer: ${Constants.credentialIssuerHost}")
+                            Log.d("VC_DOWNLOAD_DEBUG", "ConfigID: ${Constants.credentialTypeId}")
+                            Log.d("VC_DOWNLOAD_DEBUG", "ClientMetadata: ${clientMetadata.toString()}")
+
+                            val credential = client.fetchCredentialFromTrustedIssuer(
                                 credentialIssuer = Constants.credentialIssuerHost.toString(),
                                 credentialConfigurationId = Constants.credentialTypeId.toString(),
                                 clientMetadata = clientMetadata,
                                 
-                                authorizeUser = { url ->
-                                    Log.d("AUTH_FLOW", "Authorization flow started")
-                                    Log.d("AUTH_FLOW", "Authorization URL: $url")
-                                    withContext(Dispatchers.Main) {
-                                        loadingMessage.value = "Authenticating..."
-                                    }
-                                    val code = handleAuthorizationFlow(navController, url)
-                                    Log.d("AUTH_FLOW", "Authorization code received")
-                                    code
-                                },
+                                authorizations = listOf(
+                                    AuthorizationMethod.RedirectToWeb(
+                                        openWebPage = openWebPage@{ endpoint ->
+                                            Log.d("AUTH_FLOW", "Authorization flow started")
+                                            Log.d("AUTH_FLOW", "Authorization URL: $endpoint")
+                                            withContext(Dispatchers.Main) {
+                                                loadingMessage.value = "Authenticating..."
+                                            }
+                                            
+                                            val code = try {
+                                                handleAuthorizationFlow(navController, endpoint)
+                                            } catch (ex: Exception) {
+                                                Log.e("AUTH_FLOW", "Authorization failed: ${ex.message}")
+                                                return@openWebPage mapOf(
+                                                    "error" to "authorization_failed",
+                                                    "errorDescription" to (ex.message ?: "Failed to receive authorization code")
+                                                )
+                                            }
+                                            
+                                            if (code.isBlank()) {
+                                                return@openWebPage mapOf(
+                                                    "error" to "access_denied",
+                                                    "errorDescription" to "Authorization code not received"
+                                                )
+                                            }
+                                            
+                                            Log.d("AUTH_FLOW", "Authorization code received")
+                                            mapOf("code" to code)
+                                        }
+                                    )
+                                ),
                                 
                                 getTokenResponse = { tokenRequest ->
                                     Log.d("TOKEN_EXCHANGE", "Token exchange started")
@@ -172,10 +201,15 @@ fun CredentialDownloadScreen(
                                     Log.d("PROOF_JWT", "Proof JWT generation started")
                                     Log.d("PROOF_JWT", "Issuer: $issuer")
                                     Log.d("PROOF_JWT", "c_nonce: $cNonce")
+                                    
+                                    // DEBUG LOGGING
+                                    Log.d("PROOF_JWT_DEBUG", "Signing Params -> ClientID: ${Constants.clientId}, Audience: ${Constants.credentialIssuerHost ?: issuer}")
+
                                     withContext(Dispatchers.Main) {
                                         loadingMessage.value = "Generating proof..."
                                     }
                                     val proofJwt = signProofJWT(cNonce, issuer, isTrusted = true, context = context)
+                                    Log.d("PROOF_JWT_DEBUG", "Proof JWT Generated (First 30 chars): ${proofJwt.take(30)}...")
                                     proofJwt
                                 }
                             )
@@ -195,71 +229,95 @@ fun CredentialDownloadScreen(
                                 }
                                 
                                 credential.let { credObj ->
-                                    // Extract credential string from response object
+                                    // Extract credential string (handling CredentialResponse wrapper if present)
                                     val credentialStr = try {
-                                        Log.d("VC_EXTRACT", "Extracting credential from response object")
-                                        var credField: String? = null
-                                        try {
-                                            val method = credObj.javaClass.getMethod("getCredential")
-                                            credField = method.invoke(credObj) as? String
-                                            Log.d("VC_EXTRACT", "Method  successful: getCredential()")
-                                        } catch (e: Exception) {
-                                            Log.d("VC_EXTRACT", "Method  failed: ${e.message}")
-        
+                                        val raw = credObj.credential.toString()
+                                        if (raw.startsWith("CredentialResponse(")) {
+                                            val match = Regex("credential=\"([^\"]+)\"").find(raw)
+                                                ?: Regex("credential=([^,)]+)").find(raw)
+                                            match?.groupValues?.get(1) ?: raw
+                                        } else {
+                                            raw
                                         }
-
-                                        if (credField == null) {
-                                            try {
-                                                val field = credObj.javaClass.getDeclaredField("credential")
-                                                field.isAccessible = true
-                                                credField = field.get(credObj) as? String
-                                                Log.d("VC_EXTRACT", "Method  successful: field access")
-                                            } catch (e: Exception) {
-                                                Log.d("VC_EXTRACT", "Method  failed: ${e.message}")
-                                            }
-                                        }
-                                        
-                                        if (credField == null) {
-                                            Log.d("VC_EXTRACT", "Trying Method : regex parsing")
-                                            val str = credObj.toString()
-                                            val credentialMatch = Regex("""credential=(\{.*\})(?:,|\))""").find(str)
-                                            if (credentialMatch != null) {
-                                                credField = credentialMatch.groupValues[1]
-                                                Log.d("VC_EXTRACT", "Method  successful: regex parsing")
-                                            }
-                                        }
-                                        
-                                        credField ?: credObj.toString()
                                     } catch (e: Exception) {
                                         Log.e("VC_EXTRACT", "Failed to extract credential: ${e.message}")
-                                        e.printStackTrace()
-                                        credObj.toString()
+                                        credObj.credential.toString()
                                     }
-                                    
+
                                     Log.d("VC_EXTRACT", "Credential extracted successfully")
                                     Log.d("VC_EXTRACT", "Credential length: ${credentialStr.length} characters")
                                     tokenResponseJson = credentialStr
 
+                                    val isMsoMdoc = Constants.credentialFormat == "mso_mdoc"
+                                    Log.d("VC_FORMAT", "Credential format: ${Constants.credentialFormat}, isMsoMdoc: $isMsoMdoc")
+
                                     Log.d("VC_VERIFY", "Starting credential verification")
-                                    val verified = CredentialVerifier.verifyCredential(credentialStr, demoMode = true)
+                                    val verified = CredentialVerifier.verifyCredential(
+                                        credentialStr,
+                                        demoMode = true,
+                                        format = Constants.credentialFormat ?: "ldp_vc"
+                                    )
                                     Log.d("VC_VERIFY", "Verification result: $verified")
                                     
-                                    // Add display name to credential before storing
-                                    val credentialWithDisplayName = try {
-                                        val credJson = org.json.JSONObject(credentialStr)
-                                        Constants.credentialDisplayName?.let { displayName ->
-                                            credJson.put("credentialName", displayName)
-                                            Log.d("VC_STORE", "Added display name: $displayName")
+                                    // Build the credential for storage
+                                    val credentialWithMetadata = if (isMsoMdoc) {
+                                        // mso_mdoc: decode CBOR using PixelPass and store as JSON with metadata
+                                        try {
+                                            Log.d("VC_STORE", "Decoding mso_mdoc CBOR data via PixelPass")
+                                            val pixelPass = PixelPassModule()
+                                            
+                                            // DEBUG LOGGING
+                                            Log.d("VC_STORE_DEBUG", "Raw Credential (First 200 chars): ${credentialStr.take(200)}")
+                                            
+                                            val decodedJson = pixelPass.decodeBase64UrlEncodedCBORData(credentialStr)
+                                            Log.d("VC_STORE", "CBOR decoded successfully, length: ${decodedJson.length}")
+                                            
+                                            // DEBUG LOGGING
+                                            Log.d("VC_STORE_DEBUG", "Decoded JSON: $decodedJson")
+                                            
+                                            // Wrap the decoded data with metadata
+                                            val wrapper = org.json.JSONObject()
+                                            wrapper.put("credentialName", Constants.credentialDisplayName ?: "Mobile Driving License")
+                                            wrapper.put("credentialFormat", "mso_mdoc")
+                                            wrapper.put("rawCredential", credentialStr)
+                                            
+                                            // Try to parse decoded JSON and merge fields
+                                            try {
+                                                val decoded = org.json.JSONObject(decodedJson)
+                                                wrapper.put("decodedCredential", decoded)
+                                                Log.d("VC_STORE", "Decoded mso_mdoc JSON merged into wrapper")
+                                            } catch (e: Exception) {
+                                                Log.w("VC_STORE", "Could not parse decoded CBOR as JSON object, storing as string")
+                                                wrapper.put("decodedCredential", decodedJson)
+                                            }
+                                            
+                                            wrapper.toString()
+                                        } catch (e: Exception) {
+                                            Log.e("VC_STORE", "CBOR decode failed, storing raw with metadata: ${e.message}")
+                                            val wrapper = org.json.JSONObject()
+                                            wrapper.put("credentialName", Constants.credentialDisplayName ?: "Mobile Driving License")
+                                            wrapper.put("credentialFormat", "mso_mdoc")
+                                            wrapper.put("rawCredential", credentialStr)
+                                            wrapper.toString()
                                         }
-                                        credJson.toString()
-                                    } catch (e: Exception) {
-                                        Log.e("VC_STORE", "Failed to add display name: ${e.message}")
-                                        credentialStr 
+                                    } else {
+                                        // ldp_vc: existing JSON handling
+                                        try {
+                                            val credJson = org.json.JSONObject(credentialStr)
+                                            Constants.credentialDisplayName?.let { displayName ->
+                                                credJson.put("credentialName", displayName)
+                                                Log.d("VC_STORE", "Added display name: $displayName")
+                                            }
+                                            credJson.toString()
+                                        } catch (e: Exception) {
+                                            Log.e("VC_STORE", "Failed to add display name: ${e.message}")
+                                            credentialStr 
+                                        }
                                     }
                                     
                                     // Store credential 
                                     Log.d("VC_STORE", "Storing credential in credential store")
-                                    CredentialStore.addCredential(credentialWithDisplayName)
+                                    CredentialStore.addCredential(credentialWithMetadata)
                                     Log.d("VC_STORE", "Credential stored successfully")
                                     isLoading.value = false
                                     
@@ -480,11 +538,11 @@ private fun signProofJWT(
         throw IllegalStateException("No keystore key available. Initialize keystore before signing.")
     }
 
-    
-    val (alg, publicJwk) = if (useRsa) {
-        JWSAlgorithm.RS256 to buildPublicRsaJwkFromAndroid(SecureKeystoreManager.KeyType.RS256.value)
-    } else {
+    // Prioritize EC (ES256) for mDL as per ISO 18013-5 recommendations and server requirement (eccr1)
+    val (alg, publicJwk) = if (useEc) {
         JWSAlgorithm.ES256 to buildPublicEcJwkFromAndroid(SecureKeystoreManager.KeyType.ES256.value)
+    } else {
+        JWSAlgorithm.RS256 to buildPublicRsaJwkFromAndroid(SecureKeystoreManager.KeyType.RS256.value)
     }
 
     Log.d("PROOF_JWT", "Algorithm: $alg")
@@ -508,6 +566,9 @@ private fun signProofJWT(
         .expirationTime(Date(now + 3 * 60 * 1000))
         .build()
 
+    // DEBUG LOGGING
+    Log.d("PROOF_JWT_DEBUG", "JWT Claims: ${claimsSet.toJSONObject()}")
+
     // Note: JWT claims contain sensitive data (nonce, etc.) - avoid logging in production
 
     Log.d("PROOF_JWT", "Signing JWT with algorithm: $alg")
@@ -517,8 +578,9 @@ private fun signProofJWT(
             sign(RSASSASigner(privateKey))
             Log.d("PROOF_JWT", "Signed with RS256 private key")
         } else {
-            val privateKey = loadPrivateKey(SecureKeystoreManager.KeyType.ES256.value) as ECPrivateKey
-            sign(ECDSASigner(privateKey))
+            val privateKey = loadPrivateKey(SecureKeystoreManager.KeyType.ES256.value)
+            // Use custom signer for Android Keystore EC keys
+            sign(AndroidEcdsaSigner(privateKey))
             Log.d("PROOF_JWT", "Signed with ES256 private key")
         }
     }
@@ -551,6 +613,32 @@ private fun buildPublicEcJwkFromAndroid(alias: String): ECKey {
     return ECKey.Builder(Curve.P_256, publicKey)
         .keyID(alias)
         .build()
+}
+
+/**
+ * Custom JWSSigner for Android Keystore EC keys which may not implement ECPrivateKey interface
+ */
+class AndroidEcdsaSigner(private val privateKey: java.security.PrivateKey) : com.nimbusds.jose.JWSSigner {
+    override fun supportedJWSAlgorithms(): Set<com.nimbusds.jose.JWSAlgorithm> {
+        return setOf(com.nimbusds.jose.JWSAlgorithm.ES256)
+    }
+
+    override fun getJCAContext(): com.nimbusds.jose.jca.JCAContext {
+        return com.nimbusds.jose.jca.JCAContext()
+    }
+
+    override fun sign(header: com.nimbusds.jose.JWSHeader, signingInput: ByteArray): com.nimbusds.jose.util.Base64URL {
+        val signature = java.security.Signature.getInstance("SHA256withECDSA")
+        signature.initSign(privateKey)
+        signature.update(signingInput)
+        val derSignature = signature.sign()
+        
+        // Convert DER signature to JOSE format (R|S check)
+        // Nimbus provides ECDSA.transcodeSignatureToConcat but it takes byte[]
+        return com.nimbusds.jose.util.Base64URL.encode(
+            com.nimbusds.jose.crypto.impl.ECDSA.transcodeSignatureToConcat(derSignature, 32)
+        )
+    }
 }
 
 private fun loadPrivateKey(alias: String): PrivateKey {

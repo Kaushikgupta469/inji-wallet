@@ -7,11 +7,13 @@ object EndpointConfig {
         "tan" to "https://api.collab.mosip.net/v1/mimoto/get-token/MosipTAN",
         "esignet-mosipid" to "https://api.collab.mosip.net/residentmobileapp/get-token/Mosip",
         "esignet-insurance" to "https://api.collab.mosip.net/residentmobileapp/get-token/StayProtected",
-        "esignet-mock" to "https://api.collab.mosip.net/v1/mimoto/get-token/Land"
+        "esignet-mock" to "https://api.dev-int-inji.mosip.net/v1/mimoto/get-token/Land",
+        "mdl" to "https://api.dev-int-inji.mosip.net/v1/mimoto/get-token/MockMdl"
     )
     
     fun resolveTokenEndpoint(tokenEndpoint: String, credentialIssuerHost: String?): String {
         return when {
+            credentialIssuerHost?.contains("mdl") == true -> tokenEndpointMappings["mdl"]
             credentialIssuerHost?.contains("tan") == true -> tokenEndpointMappings["tan"]
             tokenEndpoint.contains("esignet-mosipid") -> tokenEndpointMappings["esignet-mosipid"]
             tokenEndpoint.contains("esignet-insurance") -> tokenEndpointMappings["esignet-insurance"]
