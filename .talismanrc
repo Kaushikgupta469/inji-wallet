@@ -438,3 +438,11 @@ fileignoreconfig:
     checksum: e3f13e7181efc6e6ad5896102bac1309bd8147ba711ff71f64a600a0dffc1364
     version: "1.0"
 
+fileignoreconfig:
+- filename: sample-application/sample-application/app/src/main/java/com/example/samplecredentialwallet/utils/CredentialParser.kt
+  checksum: 8cc6c4f632e8094d81c79e61acd765216e34043df5ba8d99e5a2cc26cfe79ecd
+- filename: sample-application/sample-application/app/src/main/java/com/example/samplecredentialwallet/utils/PixelPassModule.kt
+  checksum: 2ad10e7506fdb3d4b82484b59a9be1b453049f67750e209eb4d3e56aa7619162
+- filename: sample-application/sample-application/app/src/main/java/com/example/samplecredentialwallet/ui/credential/CredentialDownloadScreen.kt
+  checksum: 76a51ae50be7876d42dce49ed7b03271b046269803ab9c4f9d873be173538c97
+version: "1.0"
