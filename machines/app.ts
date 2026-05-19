@@ -169,11 +169,6 @@ export const appMachine = model.createMachine(
                   target: 'checkKeyPairs',
                 },
               ],
-              onError: [
-                {
-                  target: 'checkKeyPairs',
-                },
-              ],
             },
           },
           services: {
@@ -563,7 +558,9 @@ const updateCacheTTLFromConfig = () => {
         );
       }
     })
-    .catch(() => {});
+    .catch(error => {
+      console.error('Failed to fetch and update cacheTTL from config', error);
+    });
 };
 
 export function selectAppInfo(state: State) {

@@ -268,7 +268,12 @@ async function generateCacheAPIFunctionWithCachePreference(
 
     if (onErrorHardCodedValue != undefined) {
       setItem(cacheKey, createCacheObject(onErrorHardCodedValue), '').catch(
-        () => {},
+        cacheError => {
+          console.warn(
+            `Failed to cache fallback value for ${cacheKey}`,
+            cacheError,
+          );
+        },
       );
       return onErrorHardCodedValue;
     } else {
@@ -326,7 +331,12 @@ async function generateCacheAPIFunctionWithAPIPreference(
     console.error(`The error in fetching api ${cacheKey}`, error);
     if (onErrorHardCodedValue != undefined) {
       setItem(cacheKey, createCacheObject(onErrorHardCodedValue), '').catch(
-        () => {},
+        cacheError => {
+          console.warn(
+            `Failed to cache fallback value for ${cacheKey}`,
+            cacheError,
+          );
+        },
       );
       return onErrorHardCodedValue;
     } else {
