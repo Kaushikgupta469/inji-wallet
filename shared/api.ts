@@ -267,6 +267,9 @@ async function generateCacheAPIFunctionWithCachePreference(
     console.log(error);
 
     if (onErrorHardCodedValue != undefined) {
+      setItem(cacheKey, createCacheObject(onErrorHardCodedValue), '').catch(
+        () => {},
+      );
       return onErrorHardCodedValue;
     } else {
       throw error;
@@ -279,7 +282,30 @@ async function generateCacheAPIFunctionWithAPIPreference(
   fetchCall: (...props: any[]) => any,
   onErrorHardCodedValue?: any,
 ) {
-  let cacheObject;
+  const existingCache = await getItem(cacheKey, null, '');
+  if (existingCache && isCacheValid(existingCache)) {
+    const refreshInBackground = async () => {
+      try {
+        const freshResponse = await fetchCall();
+        if (!freshResponse) return;
+        if (freshResponse?.cacheTTLInMilliSeconds) {
+          updateCacheTTL(Number(freshResponse.cacheTTLInMilliSeconds));
+        }
+        setItem(cacheKey, createCacheObject(freshResponse), '').then(() =>
+          console.info('Cached response for ' + cacheKey),
+        );
+      } catch (refreshError) {
+        console.debug(
+          'Background cache refresh failed for',
+          cacheKey,
+          refreshError,
+        );
+      }
+    };
+    refreshInBackground();
+    return existingCache.response;
+  }
+
   try {
     const response = await fetchCall();
     if (!response) {
@@ -288,8 +314,7 @@ async function generateCacheAPIFunctionWithAPIPreference(
     if (response?.cacheTTLInMilliSeconds) {
       updateCacheTTL(Number(response.cacheTTLInMilliSeconds));
     }
-    cacheObject = createCacheObject(response);
-    setItem(cacheKey, cacheObject, '').then(() =>
+    setItem(cacheKey, createCacheObject(response), '').then(() =>
       console.info('Cached response for ' + cacheKey),
     );
     return response;
@@ -299,10 +324,10 @@ async function generateCacheAPIFunctionWithAPIPreference(
       onErrorHardCodedValue != undefined
     }`);
     console.error(`The error in fetching api ${cacheKey}`, error);
-    const cachedData = await getItem(cacheKey, null, '');
-    if (cachedData && isCacheValid(cachedData)) {
-      return cachedData.response;
-    } else if (onErrorHardCodedValue != undefined) {
+    if (onErrorHardCodedValue != undefined) {
+      setItem(cacheKey, createCacheObject(onErrorHardCodedValue), '').catch(
+        () => {},
+      );
       return onErrorHardCodedValue;
     } else {
       throw error;
