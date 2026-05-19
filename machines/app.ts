@@ -554,13 +554,16 @@ interface AppInfo {
 
 type State = StateFrom<typeof appMachine>;
 
-const updateCacheTTLFromConfig = async () => {
-  const response = await getAllConfigurations(undefined, false);
-  if (response && response.cacheTTLInMilliSeconds) {
-    console.info(
-      'All Properties API is called and updated the cacheTTL based on config/OnErrorHardCodedValue',
-    );
-  }
+const updateCacheTTLFromConfig = () => {
+  getAllConfigurations(undefined, false)
+    .then(response => {
+      if (response && response.cacheTTLInMilliSeconds) {
+        console.info(
+          'All Properties API is called and updated the cacheTTL based on config/OnErrorHardCodedValue',
+        );
+      }
+    })
+    .catch(() => {});
 };
 
 export function selectAppInfo(state: State) {

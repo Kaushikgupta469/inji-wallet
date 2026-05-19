@@ -17,7 +17,6 @@ import {
   sendImpressionEvent,
 } from './telemetry/TelemetryUtils';
 import {TelemetryConstants} from './telemetry/TelemetryConstants';
-import NetInfo from '@react-native-community/netinfo';
 import {createCacheObject} from './Utils';
 
 const isCacheValid = (cachedData: any) => {
@@ -300,10 +299,7 @@ async function generateCacheAPIFunctionWithAPIPreference(
       onErrorHardCodedValue != undefined
     }`);
     console.error(`The error in fetching api ${cacheKey}`, error);
-    let cachedData = null;
-    if (!(await NetInfo.fetch()).isConnected) {
-      cachedData = await getItem(cacheKey, null, '');
-    }
+    const cachedData = await getItem(cacheKey, null, '');
     if (cachedData && isCacheValid(cachedData)) {
       return cachedData.response;
     } else if (onErrorHardCodedValue != undefined) {
