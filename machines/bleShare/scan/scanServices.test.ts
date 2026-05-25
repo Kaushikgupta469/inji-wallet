@@ -226,7 +226,7 @@ describe('ScanServices', () => {
   it('checkNearByDevicesPermission calls NEARBY_ENABLED when granted', async () => {
     const {checkMultiple} = require('react-native-permissions');
     checkMultiple.mockResolvedValueOnce({
-      bt_adv: 'granted',
+      bt_scan: 'granted',
       bt_connect: 'granted',
     });
     const callback = jest.fn();
@@ -238,7 +238,7 @@ describe('ScanServices', () => {
   it('checkNearByDevicesPermission calls NEARBY_DISABLED when not granted', async () => {
     const {checkMultiple} = require('react-native-permissions');
     checkMultiple.mockResolvedValueOnce({
-      bt_adv: 'denied',
+      bt_scan: 'denied',
       bt_connect: 'denied',
     });
     const callback = jest.fn();
