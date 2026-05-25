@@ -13,6 +13,7 @@ export let MIMOTO_BASE_URL = MIMOTO_HOST;
 export let ESIGNET_BASE_URL = ESIGNET_HOST;
 export const DEBUG_MODE_ENABLED = DEBUG_MODE === 'true';
 export let CACHE_TTL = 60 * 60 * 1000;
+export const CONFIG_FETCH_TIMEOUT_MS = 10_000;
 
 export const LIVENESS_CHECK = LIVENESS_DETECTION === 'true';
 export const LIVENESS_THRESHOLD = 0.4;

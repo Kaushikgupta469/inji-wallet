@@ -559,7 +559,7 @@ const updateCacheTTLFromConfig = () => {
       }
     })
     .catch(error => {
-      console.error('Failed to fetch and update cacheTTL from config', error);
+      console.warn('Failed to fetch and update cacheTTL from config', error);
     });
 };
 

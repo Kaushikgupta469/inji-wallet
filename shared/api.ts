@@ -5,6 +5,7 @@ import {
   COMMON_PROPS_KEY,
   CACHE_TTL,
   updateCacheTTL,
+  CONFIG_FETCH_TIMEOUT_MS,
 } from './constants';
 import {INITIAL_CONFIG} from './InitialConfig';
 import {getItem, setItem} from '../machines/store';
@@ -147,6 +148,10 @@ export const API = {
     const response = await request(
       API_URLS.allProperties.method,
       API_URLS.allProperties.buildURL(),
+      undefined,
+      undefined,
+      undefined,
+      CONFIG_FETCH_TIMEOUT_MS,
     );
     return response.response;
   },
@@ -264,17 +269,9 @@ async function generateCacheAPIFunctionWithCachePreference(
      cache key:${cacheKey} and has onErrorHardCodedValue:${
       onErrorHardCodedValue != undefined
     }`);
-    console.log(error);
+    console.warn(error);
 
     if (onErrorHardCodedValue != undefined) {
-      setItem(cacheKey, createCacheObject(onErrorHardCodedValue), '').catch(
-        cacheError => {
-          console.warn(
-            `Failed to cache fallback value for ${cacheKey}`,
-            cacheError,
-          );
-        },
-      );
       return onErrorHardCodedValue;
     } else {
       throw error;
@@ -287,30 +284,6 @@ async function generateCacheAPIFunctionWithAPIPreference(
   fetchCall: (...props: any[]) => any,
   onErrorHardCodedValue?: any,
 ) {
-  const existingCache = await getItem(cacheKey, null, '');
-  if (existingCache && isCacheValid(existingCache)) {
-    const refreshInBackground = async () => {
-      try {
-        const freshResponse = await fetchCall();
-        if (!freshResponse) return;
-        if (freshResponse?.cacheTTLInMilliSeconds) {
-          updateCacheTTL(Number(freshResponse.cacheTTLInMilliSeconds));
-        }
-        setItem(cacheKey, createCacheObject(freshResponse), '').then(() =>
-          console.info('Cached response for ' + cacheKey),
-        );
-      } catch (refreshError) {
-        console.debug(
-          'Background cache refresh failed for',
-          cacheKey,
-          refreshError,
-        );
-      }
-    };
-    refreshInBackground();
-    return existingCache.response;
-  }
-
   try {
     const response = await fetchCall();
     if (!response) {
@@ -328,16 +301,14 @@ async function generateCacheAPIFunctionWithAPIPreference(
      cache key:${cacheKey} and has onErrorHardCodedValue:${
       onErrorHardCodedValue != undefined
     }`);
-    console.error(`The error in fetching api ${cacheKey}`, error);
+
+    const cachedData = await getItem(cacheKey, null, '');
+    if (cachedData?.response) {
+      console.info(`Returning stale cache for ${cacheKey}`);
+      return cachedData.response;
+    }
+
     if (onErrorHardCodedValue != undefined) {
-      setItem(cacheKey, createCacheObject(onErrorHardCodedValue), '').catch(
-        cacheError => {
-          console.warn(
-            `Failed to cache fallback value for ${cacheKey}`,
-            cacheError,
-          );
-        },
-      );
       return onErrorHardCodedValue;
     } else {
       throw error;
