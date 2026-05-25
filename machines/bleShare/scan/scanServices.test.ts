@@ -11,6 +11,7 @@ jest.mock('react-native-bluetooth-state-manager', () => ({
 }));
 jest.mock('react-native-permissions', () => ({
   check: jest.fn().mockResolvedValue('granted'),
+  request: jest.fn().mockResolvedValue('granted'),
   checkMultiple: jest.fn().mockResolvedValue({}),
   requestMultiple: jest.fn().mockResolvedValue({}),
   PERMISSIONS: {
@@ -129,8 +130,8 @@ describe('ScanServices', () => {
   it('checkBluetoothPermission calls BLUETOOTH_PERMISSION_DENIED on iOS when denied', async () => {
     const {isIOS} = require('../../../shared/constants');
     isIOS.mockReturnValue(true);
-    const {check} = require('react-native-permissions');
-    check.mockResolvedValueOnce('denied');
+    const {request} = require('react-native-permissions');
+    request.mockResolvedValueOnce('denied');
     const callback = jest.fn();
     const fn = services.checkBluetoothPermission();
     await fn(callback);
