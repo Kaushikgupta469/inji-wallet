@@ -2,10 +2,10 @@ import {isLocationEnabled} from 'react-native-device-info';
 import {isMinimumStorageLimitReached} from '../../../shared/storage';
 import BluetoothStateManager from 'react-native-bluetooth-state-manager';
 import {
-  check,
   checkMultiple,
   PERMISSIONS,
   PermissionStatus,
+  request,
   requestMultiple,
   RESULTS,
 } from 'react-native-permissions';
@@ -29,7 +29,7 @@ export const ScanServices = (model: any) => {
         let response: PermissionStatus = RESULTS.GRANTED;
 
         if (isIOS()) {
-          response = await check(PERMISSIONS.IOS.BLUETOOTH_PERIPHERAL);
+          response = await request(PERMISSIONS.IOS.BLUETOOTH_PERIPHERAL);
         }
 
         if (response === RESULTS.GRANTED) {
