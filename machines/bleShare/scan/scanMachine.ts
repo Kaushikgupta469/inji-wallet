@@ -376,6 +376,7 @@ export const scanMachine =
             'registerLoggers',
             'clearUri',
             'resetFaceCaptureBannerStatus',
+            'resetReadyForBluetoothStateCheck',
           ],
           on: {
             SCAN: [
