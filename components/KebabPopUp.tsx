@@ -9,6 +9,7 @@ import {useTranslation} from 'react-i18next';
 import {FlatList} from 'react-native-gesture-handler';
 import {VCMetadata} from '../shared/VCMetadata';
 import testIDProps from '../shared/commonUtil';
+import {isIOS} from '../shared/constants';
 import {getKebabMenuOptions} from './kebabMenuUtils';
 import {VCItemMachine} from '../machines/VerifiableCredential/VCItemMachine/VCItemMachine';
 import {LinearGradient} from 'react-native-linear-gradient';
@@ -65,8 +66,8 @@ export const KebabPopUp: React.FC<KebabPopUpProps> = props => {
             <ListItem
               topDivider
               onPress={item.onPress}
-              {...testIDProps(item.testID)}
-              accessible={true}>
+              {...(isIOS() ? testIDProps(item.testID) : {})}
+              accessible={isIOS() ? true : undefined}>
               <Row crossAlign="center" style={{flex: 1}}>
                 <View style={{width: 25, alignItems: 'center'}}>
                   {item.icon}
@@ -78,7 +79,7 @@ export const KebabPopUp: React.FC<KebabPopUpProps> = props => {
                       ? Theme.Colors.warningText
                       : undefined
                   }
-                  testID={item.testID}
+                  testID={isIOS() ? undefined : item.testID}
                   margin="0 0 0 10">
                   {item.label}
                 </Text>
