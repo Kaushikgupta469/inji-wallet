@@ -40,6 +40,7 @@ import {APP_EVENTS} from '../../machines/app';
 import {useScanScreen} from './ScanScreenController';
 import {useOvpErrorModal} from '../../shared/hooks/useOvpErrorModal';
 import {TrustModalVerifier} from '../../components/TrustModalVerifier';
+import {DeeplinkBanner} from '../../components/DeeplinkBanner';
 
 export const SendVPScreen: React.FC<ScanLayoutProps> = props => {
   const {t} = useTranslation('SendVPScreen');
@@ -233,7 +234,12 @@ export const SendVPScreen: React.FC<ScanLayoutProps> = props => {
 
   if (controller.showLoadingScreen) {
     if (controller.isAuthorizationFlow) {
-      return <LoaderSkeleton testID={'presentation-authorization'} />;
+      return (
+        <Fragment>
+          <DeeplinkBanner absolute />
+          <LoaderSkeleton testID={'presentation-authorization'} />
+        </Fragment>
+      );
     }
 
     return (
@@ -358,6 +364,7 @@ export const SendVPScreen: React.FC<ScanLayoutProps> = props => {
   };
   return (
     <React.Fragment>
+      <DeeplinkBanner absolute />
       {
         <TrustModalVerifier
           isVisible={controller.showTrustConsentModal}
