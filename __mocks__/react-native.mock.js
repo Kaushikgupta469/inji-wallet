@@ -25,6 +25,13 @@ jest.mock('react-native', () => {
         hasBiometricsEnabled: jest.fn().mockReturnValue(true),
         getAvailableBiometricType: jest.fn().mockResolvedValue('FINGERPRINT'),
       },
+      InjiVciClient: {
+        addListener: jest.fn(),
+        removeListeners: jest.fn(),
+      },
+      WalletModule: {
+        handleDataEvents: jest.fn(),
+      },
     },
   });
 

@@ -147,10 +147,13 @@ jest.mock('../../shared/openId4VCI/Utils', () => ({
     TECHNICAL_DIFFICULTIES: 'TECHNICAL_DIFFICULTIES',
     NO_INTERNET: 'NO_INTERNET',
   },
-  getDisplayObjectForCurrentLanguage: jest.fn(display => display?.[0] ?? {
-    name: 'Test',
-    logo: {url: ''},
-  }),
+  getDisplayObjectForCurrentLanguage: jest.fn(
+    display =>
+      display?.[0] ?? {
+        name: 'Test',
+        logo: {url: ''},
+      },
+  ),
   Protocols: {OpenId4VCI: 'OpenId4VCI', OTP: 'OTP'},
   goBackErrors: new Set(),
   goHomeErrors: new Set(),
@@ -186,6 +189,10 @@ jest.mock('../../components/ui/svg', () => ({
     NoInternetConnection: () => 'NoInternetConnection',
     PermissionDenied: () => 'PermissionDenied',
   },
+}));
+
+jest.mock('../../components/DeeplinkBanner', () => ({
+  DeeplinkBanner: () => null,
 }));
 
 jest.mock('../../components/BannerNotificationContainer', () => ({
