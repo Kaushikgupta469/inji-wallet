@@ -141,6 +141,12 @@ describe('AuthEvents', () => {
       passcode: '9999',
     });
   });
+  it('should create UPGRADE_PASSCODE_HASH event with new versioned hash', () => {
+    expect(AuthEvents.UPGRADE_PASSCODE_HASH('v2$newhash')).toEqual({
+      type: 'UPGRADE_PASSCODE_HASH',
+      passcode: 'v2$newhash',
+    });
+  });
   it('should create SETUP_BIOMETRICS event', () => {
     expect(AuthEvents.SETUP_BIOMETRICS('bio')).toEqual({
       type: 'SETUP_BIOMETRICS',

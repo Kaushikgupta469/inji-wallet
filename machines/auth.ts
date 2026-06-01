@@ -23,6 +23,7 @@ const model = createModel(
   {
     events: {
       SETUP_PASSCODE: (passcode: string) => ({passcode}),
+      UPGRADE_PASSCODE_HASH: (passcode: string) => ({passcode}),
       SETUP_BIOMETRICS: (biometrics: string) => ({biometrics}),
       CHANGE_METHOD: (isToggleFromSettings: boolean) => ({
         isToggleFromSettings,
@@ -64,6 +65,9 @@ export const authMachine = model.createMachine(
       },
       SET_TOUR_GUIDE: {
         actions: 'setTourGuide',
+      },
+      UPGRADE_PASSCODE_HASH: {
+        actions: ['setPasscode', 'storeContext'],
       },
       BIOMETRIC_CANCELLED: {
         target: 'init',

@@ -31,6 +31,23 @@ export const generateRandomString = async () => {
   );
   return randomString;
 };
+
+export const encodePinHash = (version: string, rawHash: string): string => {
+  return `${version}$${rawHash}`;
+};
+
+export const parsePinHash = (
+  stored: string,
+): {version: string; hash: string} => {
+  if (!stored) {
+    return {version: 'v1', hash: stored};
+  }
+  const sep = stored.indexOf('$');
+  if (sep === -1 || !/^v\d+$/.test(stored.slice(0, sep))) {
+    return {version: 'v1', hash: stored};
+  }
+  return {version: stored.slice(0, sep), hash: stored.slice(sep + 1)};
+};
 export const getRandomInt = (min, max) => {
   min = Math.ceil(min);
   max = Math.floor(max);
