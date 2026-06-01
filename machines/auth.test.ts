@@ -147,6 +147,58 @@ describe('AuthEvents', () => {
       passcode: 'v2$newhash',
     });
   });
+  it('UPGRADE_PASSCODE_HASH updates the stored hash and persists in unauthorized', () => {
+    // setPasscode is left as the real assign so we can assert the context
+    // update; storeContext is stubbed (it is a send to the store service).
+    const machine = authMachine.withConfig({
+      actions: {
+        requestStoredContext: () => {},
+        storeContext: () => {},
+        setContext: () => {},
+        setBiometrics: () => {},
+        setLanguage: () => {},
+        setAppSetupComplete: () => {},
+        setPasscodeSalt: () => {},
+        setOnboardingDone: () => {},
+        setInitialDownloadDone: () => {},
+        setTourGuide: () => {},
+        setIsToggleFromSettings: () => {},
+      } as any,
+    });
+    const next = machine.transition(
+      'unauthorized',
+      AuthEvents.UPGRADE_PASSCODE_HASH('v2$newhash'),
+    );
+    expect(next.context.passcode).toBe('v2$newhash');
+    expect(next.actions.map((a: any) => a.type)).toContain('storeContext');
+    expect(next.value).toBe('unauthorized');
+  });
+  it('UPGRADE_PASSCODE_HASH is ignored once authorized (cannot overwrite hash)', () => {
+    const machine = authMachine.withConfig({
+      services: {
+        initializeFaceSdkModel: () => () => {},
+      } as any,
+      actions: {
+        requestStoredContext: () => {},
+        storeContext: () => {},
+        setContext: () => {},
+        setBiometrics: () => {},
+        setLanguage: () => {},
+        setAppSetupComplete: () => {},
+        setPasscodeSalt: () => {},
+        setOnboardingDone: () => {},
+        setInitialDownloadDone: () => {},
+        setTourGuide: () => {},
+        setIsToggleFromSettings: () => {},
+      } as any,
+    });
+    const next = machine.transition(
+      'authorized',
+      AuthEvents.UPGRADE_PASSCODE_HASH('v2$attacker'),
+    );
+    expect(next.context.passcode).not.toBe('v2$attacker');
+    expect(next.changed).toBe(false);
+  });
   it('should create SETUP_BIOMETRICS event', () => {
     expect(AuthEvents.SETUP_BIOMETRICS('bio')).toEqual({
       type: 'SETUP_BIOMETRICS',

@@ -237,7 +237,7 @@ fileignoreconfig:
 - filename: __mocks__/react-native-keychain.mock.js
   checksum: cc2798f843b776e70d957a4f7cdf47e199a29d9f6547fb9f59753108e8f252fa
 - filename: machines/auth.ts
-  checksum: a392268a0fad93743aa96d7bff5e137849c694753879c21c6f488731616e8d21
+  checksum: 093028d0ddcc992b2be86d7e3e9c463779ccb038b03bc38944524c6824b6982a
 - filename: machines/auth.typegen.ts
   checksum: fdfe81e775d9c2e50aec39e0018a16ac90f56c583bd8d6c31dc6f6664d919ac1
 - filename: shared/commonUtil.generated.test.ts
@@ -650,7 +650,7 @@ fileignoreconfig:
 - filename: components/VC/common/VCUtils.test.tsx
   checksum: 8497b309c4baf43ec1dd97cea0ab293ba5be9fcaf04e462dc561ab3fd23b86e0
 - filename: machines/auth.test.ts
-  checksum: 3a7d8df7e4b890c408280ae2a4c56d3ae7b55ff7650c14b6768ab03b552168d6
+  checksum: 16bd9e0b244267e4d416061331c87317561779888d233c37c63d4909873f0007
 - filename: machines/biometrics.test.ts
   checksum: 323804af0ef321041e88c6d9d63db2bab3b4b5afc130ca5375158b4f7c1c1a6e
 - filename: screens/Home/MyVcs/__snapshots__/IdInputModal.test.tsx.snap
