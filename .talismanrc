@@ -650,7 +650,7 @@ fileignoreconfig:
 - filename: components/VC/common/VCUtils.test.tsx
   checksum: 8497b309c4baf43ec1dd97cea0ab293ba5be9fcaf04e462dc561ab3fd23b86e0
 - filename: machines/auth.test.ts
-  checksum: 16bd9e0b244267e4d416061331c87317561779888d233c37c63d4909873f0007
+  checksum: bbae76371694db0eebd5bba9f03ab1d10ba11a501b9a0f0e5aaf23b1018fdfda
 - filename: machines/biometrics.test.ts
   checksum: 323804af0ef321041e88c6d9d63db2bab3b4b5afc130ca5375158b4f7c1c1a6e
 - filename: screens/Home/MyVcs/__snapshots__/IdInputModal.test.tsx.snap
@@ -667,7 +667,6 @@ fileignoreconfig:
   checksum: def7f8defeedf75a71425be27f4dcb77511435a39fc367f313c0213f273fadb5
 - filename: screens/PasscodeScreenController.ts
   checksum: 0b258cfcfd61f0491b0c0b723c0c5e230dcc333732d1ff891adeca2b0b8c3aba
-version: "1.0"
 - filename: components/DeeplinkBanner.tsx
   checksum: 5f94125bf4ffae22ff0bf5b819008b6c727ed87565479eab8739949714398d57
-  version: "1.0"
+version: "1.0"
