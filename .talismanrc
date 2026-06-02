@@ -153,7 +153,7 @@ fileignoreconfig:
 - filename: screens/Home/MyVcs/GetIdInputModal.tsx
   checksum: 067664e19817d3aba98b0cfa68ef57a04958a982ee23b96b612e4bf466a73890
 - filename: screens/PasscodeScreen.tsx
-  checksum: 265108bd4e8d0ce88cac9385a3699dd560f90d398da11e79f448c6b675edb29c
+  checksum: 85e96225e7923b81ecb94bffbeff15406bc634313991f413d1e5d0719be6682b
 - filename: screens/Home/MyVcs/IdInputModal.tsx
   checksum: b735aedc84164d03c199fe89ccbf9df58f8997bfb4f60e7058a22bfe952fda3e
 - filename: .github/workflows/ui-automation.yml

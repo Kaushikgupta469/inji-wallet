@@ -9,6 +9,7 @@ import {
   APPLE,
   FACE_SDK_MODEL_PATH,
   FACE_SDK_MODEL_CHECKSUM,
+  PIN_HASH_VERSION_SEPARATOR,
 } from './constants';
 import {generateSecureRandom} from 'react-native-securerandom';
 import forge from 'node-forge';
@@ -33,7 +34,7 @@ export const generateRandomString = async () => {
 };
 
 export const encodePinHash = (version: string, rawHash: string): string => {
-  return `${version}$${rawHash}`;
+  return `${version}${PIN_HASH_VERSION_SEPARATOR}${rawHash}`;
 };
 
 export const parsePinHash = (
@@ -42,7 +43,7 @@ export const parsePinHash = (
   if (!stored) {
     return {version: 'v1', hash: stored};
   }
-  const sep = stored.indexOf('$');
+  const sep = stored.indexOf(PIN_HASH_VERSION_SEPARATOR);
   if (sep === -1 || !/^v\d+$/.test(stored.slice(0, sep))) {
     return {version: 'v1', hash: stored};
   }

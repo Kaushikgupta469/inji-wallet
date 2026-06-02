@@ -67,12 +67,21 @@ export const PasscodeScreen: React.FC<PasscodeRouteProps> = props => {
   }, []);
 
   const setPasscode = async (passcode: string) => {
-    const rawHash = await hashData(
-      passcode,
-      controller.storedSalt,
-      PIN_KDF_PROFILES[CURRENT_PIN_KDF_VERSION],
-    );
-    controller.setPasscode(encodePinHash(CURRENT_PIN_KDF_VERSION, rawHash));
+    try {
+      const rawHash = await hashData(
+        passcode,
+        controller.storedSalt,
+        PIN_KDF_PROFILES[CURRENT_PIN_KDF_VERSION],
+      );
+      controller.setPasscode(encodePinHash(CURRENT_PIN_KDF_VERSION, rawHash));
+    } catch (error) {
+      controller.setError(
+        t('passcodeSetupError', {
+          defaultValue: 'Could not save passcode. Please try again.',
+        }),
+      );
+      console.error('Failed to hash passcode during setup', error);
+    }
   };
 
   const handlePasscodeMismatch = (error: string) => {

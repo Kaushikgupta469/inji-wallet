@@ -69,6 +69,13 @@ export const PasscodeVerify: React.FC<PasscodeVerifyProps> = props => {
           error,
         ),
       );
+      if (props.onError) {
+        props.onError(
+          t('passcodeVerifyError', {
+            defaultValue: 'Something went wrong. Please try again.',
+          }),
+        );
+      }
       console.error('error while verifying passCode ', error);
     }
   }
