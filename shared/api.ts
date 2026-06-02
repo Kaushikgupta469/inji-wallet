@@ -247,29 +247,33 @@ async function generateCacheAPIFunctionWithCachePreference(
   fetchCall: (...props: any[]) => any,
   onErrorHardCodedValue?: any,
 ) {
+  let existingCache: any = null;
   try {
-    const cachedData = await getItem(cacheKey, null, '');
-    if (cachedData && isCacheValid(cachedData)) {
+    existingCache = await getItem(cacheKey, null, '');
+    if (existingCache && isCacheValid(existingCache)) {
       console.info('Returned cached response for' + cacheKey);
-      return cachedData.response;
-    } else {
-      const response = await fetchCall();
-      if (!response) {
-        throw new Error('Received Empty response in fetch call');
-      }
-      const cacheObject = createCacheObject(response);
-      setItem(cacheKey, cacheObject, '').then(() =>
-        console.info('Cached response for ' + cacheKey),
-      );
-
-      return response;
+      return existingCache.response;
     }
+    const response = await fetchCall();
+    if (!response) {
+      throw new Error('Received Empty response in fetch call');
+    }
+    setItem(cacheKey, createCacheObject(response), '').then(() =>
+      console.info('Cached response for ' + cacheKey),
+    );
+
+    return response;
   } catch (error) {
     console.warn(`Failed to load due to network issue in cache preferred api call.
      cache key:${cacheKey} and has onErrorHardCodedValue:${
       onErrorHardCodedValue != undefined
     }`);
     console.warn(error);
+
+    if (existingCache?.response) {
+      console.info(`Returning stale cache for ${cacheKey}`);
+      return existingCache.response;
+    }
 
     if (onErrorHardCodedValue != undefined) {
       return onErrorHardCodedValue;

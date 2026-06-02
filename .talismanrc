@@ -95,7 +95,7 @@ fileignoreconfig:
 - filename: screens/Settings/BackupViaPassword.tsx
   checksum: d2a355356bcaf8f7ef3b53ba93710cec15fefd0fdf31efd779eebd2bfab61c19
 - filename: shared/api.ts
-  checksum: b9b8e7e361940d9d519bbb0ca753ea248ff79d0d4fe256f63be8ede338cbed27
+  checksum: 19c1a6476e9add6f6edcbb193904eee16b0979e0ec16bd643fc980fcabdf1f8e
 - filename: machines/backupWithEncryption.ts
   checksum: 038c12d30b2312fcbd9230a1c6ddb494d2e561fe0d09741335fa80ab67e2c550
 - filename: machines/backupWithEncryption.typegen.ts
