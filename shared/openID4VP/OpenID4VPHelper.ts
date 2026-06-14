@@ -1,174 +1,52 @@
 import {
-  createSignature,
+  createSignatureECK1,
+  createSignatureECR1,
   createSignatureED,
-  encodeB64,
+  createSignatureRSA,
   fetchKeyPair,
 } from '../cryptoutil/cryptoUtil';
-import {base64ToByteArray, canonicalize} from '../Utils';
-import getAllConfigurations from '../api';
-import {OpenID4VP_Proof_Sign_Algo} from './OpenID4VP';
-import {VCFormat} from '../VCFormat';
-import {isIOS, JWT_ALG_TO_KEY_TYPE} from '../constants';
-import {getMdocAuthenticationAlorithm} from '../../components/VC/common/VCUtils';
-import {KeyTypes} from '../cryptoutil/KeyTypes';
-import {signatureSuite} from '../../machines/openID4VP/openID4VPServices';
-import {
-  UnsignedVPTokensV2,
-  UnsignedVPTokenV2,
-  VPTokenSigningResultsV2,
-  VPTokenSigningResultV2,
-} from './openid4vp.types';
+import {base64ToByteArray, canonicalize, parseJSON} from '../Utils';
+import getAllConfigurations, {CACHED_API} from '../api';
+import {JWT_ALG_TO_KEY_TYPE} from '../constants';
+import {SignatureAlgorithms} from '../cryptoutil/KeyTypes';
+import {UnsignedVPToken, VPTokenSigningResult} from './openid4vp.types';
+import {defaultWalletConfig} from "./walletConfig/WalletConfig";
 
-export async function constructDetachedJWT(
-  privateKey: any,
-  vpToken: string,
-  keyType: string,
-): Promise<string> {
-  const jwtHeader = {
-    alg: OpenID4VP_Proof_Sign_Algo,
-    crit: ['b64'],
-    b64: false,
-  };
-  const header64 = encodeB64(JSON.stringify(jwtHeader));
-  const headerBytes = new TextEncoder().encode(header64);
-  const vpTokenBytes = base64ToByteArray(vpToken);
-  const payloadBytes = new Uint8Array([...headerBytes, 46, ...vpTokenBytes]);
-
-  const signature = await createSignatureED(privateKey, payloadBytes);
-
-  return header64 + '..' + signature;
-}
-
-export async function isClientValidationRequired() {
+export async function getWalletConfig() {
   const config = await getAllConfigurations();
-  return config.openid4vpClientValidation === 'true';
+  let walletConfig = config.openid4vpWalletConfig;
+  if (!walletConfig) {
+    console.warn("There is no wallet configuration available in the config. Using default wallet configuration.");
+    walletConfig = {...defaultWalletConfig};
+  } else {
+    walletConfig = parseJSON(walletConfig)
+  }
+
+  walletConfig["validate_pre_registered_verifier"] = config.openid4vpClientValidation === 'true'
+
+  try {
+    const trustedVerifiersResponse =
+      await CACHED_API.fetchTrustedVerifiersList();
+    walletConfig['trusted_verifiers'] =
+      trustedVerifiersResponse.data.response.verifiers;
+  } catch (e) {
+    console.warn(
+      'Error fetching trusted verifiers, falling back to default: ',
+      e,
+    );
+    walletConfig['trusted_verifiers'] = [];
+  }
+
+  return walletConfig;
 }
 
-export async function getWalletMetadata() {
-  const config = await getAllConfigurations();
-  if (!config.walletMetadata) {
-    return null;
+export const jsonLdCanonicalize = async (data: string) => {
+  const parsedData = JSON.parse(data);
+  const canonicalized = await canonicalize(parsedData);
+  if (!canonicalized) {
+    throw new Error('Canonicalized data to sign is undefined');
   }
-  const walletMetadata = JSON.parse(config.walletMetadata);
-  return walletMetadata;
-}
-
-export const signDataForVpPreparation = async (
-  unSignedVpTokens,
-  context: any,
-) => {
-  // private key, key type and selected VCs are available in context
-  const vpTokenSigningResultMap: Record<any, any> = {};
-  for (const formatType in unSignedVpTokens) {
-    const credentials = unSignedVpTokens[formatType];
-    let dataToSign = credentials.dataToSign;
-    if (formatType === VCFormat.ldp_vc.valueOf()) {
-      if (isIOS()) {
-        const canonicalized = await canonicalize(JSON.parse(dataToSign));
-        if (!canonicalized) {
-          throw new Error('Canonicalized data to sign is undefined');
-        }
-        dataToSign = canonicalized;
-      }
-      const proof = await constructDetachedJWT(
-        context.privateKey,
-        dataToSign,
-        context.keyType,
-      );
-      vpTokenSigningResultMap[formatType] = {
-        jws: proof,
-        proofValue: null,
-        signatureAlgorithm: signatureSuite,
-      };
-    } else if (formatType === VCFormat.mso_mdoc.valueOf()) {
-      const signedData: Record<string, any> = {};
-
-      const mdocCredentialsByDocType = Object.values(context.selectedVCs)
-        .flat()
-        .reduce((acc, credential) => {
-          if (credential.format === 'mso_mdoc') {
-            const docType =
-              credential?.verifiableCredential?.processedCredential?.docType;
-            if (docType) {
-              acc[docType] = credential;
-            }
-          }
-          return acc;
-        }, {});
-
-      await Promise.all(
-        Object.entries(credentials.docTypeToDeviceAuthenticationBytes).map(
-          async ([docType, payload]) => {
-            const cred = mdocCredentialsByDocType[docType];
-
-            if (!cred) return;
-
-            const mdocAuthenticationAlgorithm = getMdocAuthenticationAlorithm(
-              cred.verifiableCredential.processedCredential.issuerSigned
-                ?.issuerAuth?.[2] ??
-                cred.verifiableCredential.processedCredential?.issuerAuth?.[2],
-            );
-
-            if (mdocAuthenticationAlgorithm === KeyTypes.ES256.valueOf()) {
-              const key = await fetchKeyPair(mdocAuthenticationAlgorithm);
-              const signature = await createSignature(
-                key.privateKey,
-                payload,
-                mdocAuthenticationAlgorithm,
-              );
-
-              if (signature) {
-                signedData[docType] = {
-                  signature,
-                  mdocAuthenticationAlgorithm,
-                };
-              }
-            } else {
-              throw new Error(
-                `Unsupported algorithm: ${mdocAuthenticationAlgorithm}`,
-              );
-            }
-          },
-        ),
-      );
-
-      vpTokenSigningResultMap[formatType] = signedData;
-    } else if (
-      formatType === VCFormat.vc_sd_jwt.valueOf() ||
-      formatType === VCFormat.dc_sd_jwt.valueOf()
-    ) {
-      const uuidToUnsignedKBJWT = credentials.uuidToUnsignedKBT;
-      const uuidToSignature: Record<string, string> = {};
-
-      for (const [uuid, unsignedKBJWT] of Object.entries(uuidToUnsignedKBJWT)) {
-        const header = JSON.parse(atob(unsignedKBJWT.split('.')[0]));
-        const alg = header.alg;
-        const keyType = JWT_ALG_TO_KEY_TYPE[alg];
-
-        let privateKey: string;
-
-        if (keyType === KeyTypes.ED25519) {
-          privateKey = context.privateKey;
-        } else {
-          const keypair = await fetchKeyPair(keyType);
-          privateKey = keypair.privateKey;
-        }
-        const signature = await createSignature(
-          privateKey,
-          unsignedKBJWT,
-          keyType,
-        );
-        if (signature) {
-          uuidToSignature[uuid] = signature;
-        } else {
-          throw new Error(`Failed to create signature for UUID: ${uuid}`);
-        }
-      }
-
-      vpTokenSigningResultMap[formatType] = uuidToSignature;
-    }
-  }
-  return vpTokenSigningResultMap;
+  return canonicalized;
 };
 
 /**
@@ -180,92 +58,108 @@ export const signDataForVpPreparation = async (
  *   dataToSign: string
  * }]
  * @param unSignedVpTokens
- * @param context
  */
-export const signDataForVpPreparationV2 = async (
-  unSignedVpTokens: Array<UnsignedVPTokenV2>,
-  context: any,
-): Promise<VPTokenSigningResultsV2> => {
-  const result: Promise<VPTokenSigningResultV2[]> = unSignedVpTokens.map(
+export const signDataForVpPreparation = async (
+  unSignedVpTokens: Array<UnsignedVPToken>,
+): Promise<Array<VPTokenSigningResult>> => {
+  const keyTypeToKeysPromise: Record<string, Promise<any>> = {};
+
+  const getKeyInfo = async (keyType: string) => {
+    if (!keyTypeToKeysPromise[keyType]) {
+      keyTypeToKeysPromise[keyType] = fetchKeyPair(keyType);
+    }
+
+    return keyTypeToKeysPromise[keyType];
+  };
+
+  const result: Promise<VPTokenSigningResult>[] = unSignedVpTokens.map(
     async unsignedVPToken => {
-      let privateKey: string;
-      let keyType: KeyTypes;
       let signature: string | undefined = '';
-      const formatType = unsignedVPToken.format;
-      let payload: string = unsignedVPToken.dataToSign;
+      const payload: string = unsignedVPToken.dataToSign;
       const signatureAlgorithm: string = unsignedVPToken.signatureAlgorithm;
 
-      switch (formatType) {
-        case VCFormat.ldp_vc.valueOf():
-          if (isIOS()) {
-            const canonicalized = await canonicalize(JSON.parse(payload));
-            if (!canonicalized) {
-              throw new Error('Canonicalized data to sign is undefined');
-            }
-            payload = canonicalized;
-          }
-          signature = await constructDetachedJWT(
-            context.privateKey,
-            payload,
-            signatureAlgorithm,
-          );
-          return {signedData: signature} as VPTokenSigningResultV2;
-          break;
-
-        case VCFormat.mso_mdoc.valueOf():
-          if (signatureAlgorithm === KeyTypes.ES256.valueOf()) {
-            const key = await fetchKeyPair(KeyTypes.ES256);
-            const signature = await createSignature(
-              key.privateKey,
-              payload,
-              KeyTypes.ES256,
-            );
-            if (signature) {
-              return {signedData: signature} as VPTokenSigningResultV2;
-            } else {
-              throw new Error(
-                `Failed to create signature for VP Token of format: ${formatType}`,
-              );
-            }
-          } else {
-            throw new Error(`Unsupported algorithm: ${signatureAlgorithm}`);
-          }
-
-        case VCFormat.vc_sd_jwt.valueOf():
-        case VCFormat.dc_sd_jwt.valueOf():
-          keyType =
-            JWT_ALG_TO_KEY_TYPE[
-              signatureAlgorithm as keyof typeof JWT_ALG_TO_KEY_TYPE
-            ];
-
-          if (!keyType) {
-            throw new Error(
-              `Unsupported signature algorithm: ${signatureAlgorithm}`,
-            );
-          }
-
-          if (keyType === KeyTypes.ED25519) {
-            privateKey = context.privateKey;
-          } else {
-            const keypair = await fetchKeyPair(keyType);
-            privateKey = keypair.privateKey;
-          }
-
-          signature = await createSignature(privateKey, payload, keyType);
-          if (signature) {
-            return {signedData: signature} as VPTokenSigningResultV2;
-          } else {
-            throw new Error(
-              `Failed to create signature for VP Token of format: ${formatType}`,
-            );
-          }
-
-        default:
-          throw new Error(`Unsupported VP Token format: ${formatType}`);
-      }
+      const keyType =
+        JWT_ALG_TO_KEY_TYPE[
+          signatureAlgorithm as keyof typeof JWT_ALG_TO_KEY_TYPE
+        ];
+      const key = await getKeyInfo(keyType);
+      signature = await signData(
+        key.privateKey,
+        payload, // Payload is in base64 url encoded form - decode it before signing
+        signatureAlgorithm,
+      );
+      return {signedData: signature} as VPTokenSigningResult;
     },
   );
 
   const vpTokenSigningResults = await Promise.all(result);
-  return vpTokenSigningResults as VPTokenSigningResultsV2;
+  return vpTokenSigningResults as Array<VPTokenSigningResult>;
 };
+
+async function signData(
+  privateKey: string,
+  base64EncodedPayload: string,
+  keyType: string,
+) {
+  const payloadBytes = base64ToByteArray(base64EncodedPayload);
+
+  switch (keyType) {
+    case SignatureAlgorithms.RS256:
+      return createSignatureRSA(privateKey, base64EncodedPayload);
+    case SignatureAlgorithms.ES256:
+      return createSignatureECR1(privateKey, payloadBytes);
+    case SignatureAlgorithms.ES256K:
+      return createSignatureECK1(privateKey, payloadBytes);
+    case SignatureAlgorithms.EdDSA: {
+      return createSignatureED(privateKey, payloadBytes);
+    }
+    default:
+      break;
+  }
+}
+
+/**
+ * @param path
+ * @param fullPayload
+ *
+ * Converts a Claim Path Pointer (array of strings/numbers/null) to one or more JSONPath strings
+ *
+ * Input -> output examples:
+ *
+ * ['credentialSubject', null, 'givenName'] -> 'credentialSubject[*].givenName'
+ *
+ * ['credentialSubject', 0, 'givenName'] -> 'credentialSubject[0].givenName'
+ *
+ * ['credentialSubject', 'degree', 'ug'] -> 'credentialSubject.degree.ug'
+ */
+export function claimPathPointersToJsonPath(
+  path: Array<string | number | null>,
+): string {
+  let currentPath = '';
+
+  for (const token of path) {
+    // Object property
+    if (typeof token === 'string') {
+      currentPath = currentPath ? `${currentPath}.${token}` : token;
+
+      continue;
+    }
+
+    // Exact array index
+    if (typeof token === 'number') {
+      currentPath = `${currentPath}[${token}]`;
+
+      continue;
+    }
+
+    // Wildcard array
+    if (token === null) {
+      currentPath = `${currentPath}[*]`;
+    }
+  }
+
+  return currentPath;
+}
+
+export const isDcqlFlow = (vpRequest: object) =>
+  vpRequest?.['dcql_query'] !== undefined;

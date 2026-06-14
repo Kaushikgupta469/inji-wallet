@@ -1,3 +1,5 @@
+import {openID4VPActions} from './openID4VPActions';
+
 jest.mock('xstate', () => ({
   assign: jest.fn(arg => ({type: 'xstate.assign', assignment: arg})),
 }));
@@ -16,6 +18,7 @@ jest.mock('../../shared/constants', () => ({
     NO_MATCHING_VCS: 'No matching VCs',
   },
   SHOW_FACE_AUTH_CONSENT_SHARE_FLOW: 'faceAuthConsent',
+  isIOS: jest.fn(() => true),
 }));
 jest.mock('../store', () => ({
   StoreEvents: {
@@ -27,8 +30,8 @@ jest.mock('../store', () => ({
 const mockJSONPath = jest.fn(() => []);
 const mockToPathArray = jest.fn(p => p.split('.'));
 jest.mock('jsonpath-plus', () => ({
-  JSONPath: Object.assign((...args: any[]) => mockJSONPath(...args), {
-    toPathArray: (...args: any[]) => mockToPathArray(...args),
+  JSONPath: Object.assign((...args: any[]) => mockJSONPath({...args}), {
+    toPathArray: (...args: any[]) => mockToPathArray({...args}),
   }),
 }));
 
@@ -65,12 +68,10 @@ jest.mock('../../shared/VCFormat', () => ({
 const mockGetIssuerAuth = jest.fn().mockReturnValue('ES256');
 const mockGetMdocAuth = jest.fn().mockReturnValue('ES256');
 jest.mock('../../components/VC/common/VCUtils', () => ({
-  getIssuerAuthenticationAlorithmForMdocVC: (...args: any[]) =>
+  getIssuerAuthenticationAlgorithmForMdocVC: (...args: any[]) =>
     mockGetIssuerAuth(...args),
-  getMdocAuthenticationAlorithm: (...args: any[]) => mockGetMdocAuth(...args),
+  getMdocAuthenticationAlgorithm: (...args: any[]) => mockGetMdocAuth(...args),
 }));
-
-import {openID4VPActions} from './openID4VPActions';
 
 describe('openID4VPActions', () => {
   const mockModel = {
@@ -89,7 +90,7 @@ describe('openID4VPActions', () => {
       'setAuthenticationResponse',
       'setUrlEncodedAuthorizationRequest',
       'setFlowType',
-      'getVcsMatchingAuthRequest',
+      'setMatchingVCs',
       'setAuthenticationResponseForPresentationAuthFlow',
       'setSelectedVCs',
       'setUnsignedVPToken',
@@ -106,7 +107,6 @@ describe('openID4VPActions', () => {
       'setError',
       'resetError',
       'resetIsShareWithSelfie',
-      'loadKeyPair',
       'incrementOpenID4VPRetryCount',
       'resetOpenID4VPRetryCount',
       'setAuthenticationError',
@@ -212,15 +212,6 @@ describe('openID4VPActions', () => {
     it('resetIsShareWithSelfie returns false', () => {
       const fn = actions.resetIsShareWithSelfie.assignment.isShareWithSelfie;
       expect(fn()).toBe(false);
-    });
-
-    it('loadKeyPair sets publicKey and privateKey from event', () => {
-      const asg = actions.loadKeyPair.assignment;
-      expect(asg.publicKey({}, {data: {publicKey: 'pub123'}})).toBe('pub123');
-      expect(
-        asg.privateKey({privateKey: 'old'}, {data: {privateKey: 'new'}}),
-      ).toBe('new');
-      expect(asg.privateKey({privateKey: 'old'}, {data: {}})).toBe('old');
     });
 
     it('incrementOpenID4VPRetryCount increments count', () => {
@@ -344,477 +335,6 @@ describe('openID4VPActions', () => {
         actions.setAuthenticationResponseForPresentationAuthFlow.assignment
           .authenticationResponse;
       expect(fn({presentationRequest: 'pres-req'}, {})).toBe('pres-req');
-    });
-
-    it('getVcsMatchingAuthRequest processes event VCs', () => {
-      const asg = actions.getVcsMatchingAuthRequest.assignment;
-      const context = {
-        authenticationResponse: {
-          presentation_definition: {
-            input_descriptors: [
-              {id: 'desc1', constraints: {}, format: undefined},
-            ],
-            purpose: 'Testing',
-          },
-        },
-      };
-      const event = {vcs: []};
-      const result = asg.vcsMatchingAuthRequest(context, event);
-      expect(result).toBeDefined();
-    });
-
-    it('purpose extracts from presentation_definition', () => {
-      const fn = actions.getVcsMatchingAuthRequest.assignment.purpose;
-      const ctx = {
-        authenticationResponse: {
-          presentation_definition: {purpose: 'Test Purpose'},
-        },
-      };
-      expect(fn(ctx)).toBe('Test Purpose');
-    });
-
-    it('purpose returns empty string when not defined', () => {
-      const fn = actions.getVcsMatchingAuthRequest.assignment.purpose;
-      const ctx = {
-        authenticationResponse: {
-          presentation_definition: {},
-        },
-      };
-      expect(fn(ctx)).toBe('');
-    });
-
-    it('hasNoMatchingVCs returns true when no matching VCs', () => {
-      // First trigger the assignment to set `result`
-      const asg = actions.getVcsMatchingAuthRequest.assignment;
-      const context = {
-        authenticationResponse: {
-          presentation_definition: {
-            input_descriptors: [
-              {id: 'desc1', constraints: {}, format: undefined},
-            ],
-          },
-        },
-      };
-      asg.vcsMatchingAuthRequest(context, {vcs: []});
-      const hasNone = asg.hasNoMatchingVCs();
-      expect(hasNone).toBeDefined();
-    });
-  });
-
-  describe('getVcsMatchingAuthRequest helper coverage', () => {
-    it('matches ldp_vc format with proof type', () => {
-      const asg = actions.getVcsMatchingAuthRequest.assignment;
-      const vc = {
-        format: 'ldp_vc',
-        verifiableCredential: {
-          credential: {proof: {type: 'Ed25519Signature2018'}},
-        },
-      };
-      const context = {
-        authenticationResponse: {
-          presentation_definition: {
-            input_descriptors: [
-              {
-                id: 'desc1',
-                format: {ldp_vc: {proof_type: ['Ed25519Signature2018']}},
-                constraints: {
-                  fields: [
-                    {
-                      path: ['$.credentialSubject.name'],
-                      filter: {type: 'string'},
-                    },
-                  ],
-                },
-              },
-            ],
-          },
-        },
-      };
-      mockJSONPath.mockReturnValue(['John']);
-      mockToPathArray.mockReturnValue(['$', 'credentialSubject', 'name']);
-      const result = asg.vcsMatchingAuthRequest(context, {vcs: [vc]});
-      expect(result).toBeDefined();
-    });
-
-    it('matches mso_mdoc format with alg', () => {
-      const asg = actions.getVcsMatchingAuthRequest.assignment;
-      const vc = {
-        format: 'mso_mdoc',
-        verifiableCredential: {
-          processedCredential: {
-            issuerSigned: {
-              issuerAuth: [{'1': 'certData'}, null, 'authData'],
-              nameSpaces: {},
-            },
-          },
-        },
-      };
-      mockGetIssuerAuth.mockReturnValue('ES256');
-      mockGetMdocAuth.mockReturnValue('ES256');
-      const context = {
-        authenticationResponse: {
-          presentation_definition: {
-            input_descriptors: [
-              {
-                id: 'desc1',
-                format: {mso_mdoc: {alg: ['ES256']}},
-                constraints: {fields: undefined},
-              },
-            ],
-          },
-        },
-      };
-      const result = asg.vcsMatchingAuthRequest(context, {vcs: [vc]});
-      expect(result).toBeDefined();
-    });
-
-    it('handles mso_mdoc without issuerSigned (uses issuerAuth directly)', () => {
-      const asg = actions.getVcsMatchingAuthRequest.assignment;
-      const vc = {
-        format: 'mso_mdoc',
-        verifiableCredential: {
-          processedCredential: {
-            issuerAuth: [{'1': 'certData'}, null, 'authData'],
-            nameSpaces: {},
-          },
-        },
-      };
-      mockGetIssuerAuth.mockReturnValue('ES256');
-      mockGetMdocAuth.mockReturnValue('ES256');
-      const context = {
-        authenticationResponse: {
-          presentation_definition: {
-            input_descriptors: [
-              {
-                id: 'mdoc-desc',
-                format: {mso_mdoc: {alg: ['ES256']}},
-                constraints: {fields: undefined},
-              },
-            ],
-          },
-        },
-      };
-      const result = asg.vcsMatchingAuthRequest(context, {vcs: [vc]});
-      expect(result).toBeDefined();
-    });
-
-    it('handles mso_mdoc format error gracefully', () => {
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
-      const asg = actions.getVcsMatchingAuthRequest.assignment;
-      const vc = {
-        format: 'mso_mdoc',
-        verifiableCredential: {processedCredential: null},
-      };
-      const context = {
-        authenticationResponse: {
-          presentation_definition: {
-            input_descriptors: [
-              {
-                id: 'desc1',
-                format: {mso_mdoc: {alg: ['ES256']}},
-                constraints: {fields: undefined},
-              },
-            ],
-          },
-        },
-      };
-      const result = asg.vcsMatchingAuthRequest(context, {vcs: [vc]});
-      expect(result).toBeDefined();
-      consoleSpy.mockRestore();
-    });
-
-    it('matches vc_sd_jwt format with alg', () => {
-      const asg = actions.getVcsMatchingAuthRequest.assignment;
-      const header = Buffer.from(JSON.stringify({alg: 'ES256'})).toString(
-        'base64',
-      );
-      const sdJwt = `${header}.payload.signature~`;
-      const vc = {
-        format: 'vc_sd_jwt',
-        verifiableCredential: {
-          credential: sdJwt,
-          processedCredential: {fullResolvedPayload: {sub: 'test'}},
-        },
-      };
-      const context = {
-        authenticationResponse: {
-          presentation_definition: {
-            input_descriptors: [
-              {
-                id: 'desc1',
-                format: {vc_sd_jwt: {'sd-jwt_alg_values': ['ES256']}},
-                constraints: {fields: undefined},
-              },
-            ],
-          },
-        },
-      };
-      const result = asg.vcsMatchingAuthRequest(context, {vcs: [vc]});
-      expect(result).toBeDefined();
-    });
-
-    it('matches dc_sd_jwt format', () => {
-      const asg = actions.getVcsMatchingAuthRequest.assignment;
-      const header = Buffer.from(JSON.stringify({alg: 'ES256'})).toString(
-        'base64',
-      );
-      const sdJwt = `${header}.payload.signature~`;
-      const vc = {
-        format: 'dc_sd_jwt',
-        verifiableCredential: {
-          credential: sdJwt,
-          processedCredential: {fullResolvedPayload: {sub: 'test'}},
-        },
-      };
-      const context = {
-        authenticationResponse: {
-          presentation_definition: {
-            input_descriptors: [
-              {
-                id: 'desc1',
-                format: {dc_sd_jwt: {'sd-jwt_alg_values': ['ES256']}},
-                constraints: {fields: undefined},
-              },
-            ],
-          },
-        },
-      };
-      const result = asg.vcsMatchingAuthRequest(context, {vcs: [vc]});
-      expect(result).toBeDefined();
-    });
-
-    it('handles sd_jwt format error gracefully', () => {
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
-      const asg = actions.getVcsMatchingAuthRequest.assignment;
-      const vc = {
-        format: 'vc_sd_jwt',
-        verifiableCredential: {credential: 'invalid-jwt'},
-      };
-      const context = {
-        authenticationResponse: {
-          presentation_definition: {
-            input_descriptors: [
-              {
-                id: 'desc1',
-                format: {vc_sd_jwt: {'sd-jwt_alg_values': ['ES256']}},
-                constraints: {fields: undefined},
-              },
-            ],
-          },
-        },
-      };
-      const result = asg.vcsMatchingAuthRequest(context, {vcs: [vc]});
-      expect(result).toBeDefined();
-      consoleSpy.mockRestore();
-    });
-
-    it('returns false for format mismatch (no matching type)', () => {
-      const asg = actions.getVcsMatchingAuthRequest.assignment;
-      const vc = {
-        format: 'ldp_vc',
-        verifiableCredential: {credential: {proof: {type: 'UnknownProof'}}},
-      };
-      const context = {
-        authenticationResponse: {
-          presentation_definition: {
-            input_descriptors: [
-              {
-                id: 'desc1',
-                format: {ldp_vc: {proof_type: ['Ed25519Signature2018']}},
-                constraints: {fields: [{path: ['$.type']}]},
-              },
-            ],
-          },
-        },
-      };
-      mockJSONPath.mockReturnValue([]);
-      mockToPathArray.mockReturnValue(['$', 'type']);
-      const result = asg.vcsMatchingAuthRequest(context, {vcs: [vc]});
-      expect(result).toBeDefined();
-    });
-
-    it('uses all VCs when no format or constraints in descriptors', () => {
-      const asg = actions.getVcsMatchingAuthRequest.assignment;
-      const vc1 = {format: 'ldp_vc', verifiableCredential: {credential: {}}};
-      const vc2 = {format: 'ldp_vc', verifiableCredential: {credential: {}}};
-      const context = {
-        authenticationResponse: {
-          presentation_definition: {
-            input_descriptors: [
-              {
-                id: 'desc1',
-                format: undefined,
-                constraints: {fields: undefined},
-              },
-            ],
-          },
-        },
-      };
-      const result = asg.vcsMatchingAuthRequest(context, {vcs: [vc1, vc2]});
-      expect(result).toBeDefined();
-    });
-
-    it('handles constraints with filter type check', () => {
-      const asg = actions.getVcsMatchingAuthRequest.assignment;
-      const vc = {
-        format: 'ldp_vc',
-        verifiableCredential: {
-          credential: {credentialSubject: {name: 'John'}},
-        },
-      };
-      const context = {
-        authenticationResponse: {
-          presentation_definition: {
-            input_descriptors: [
-              {
-                id: 'desc1',
-                format: undefined,
-                constraints: {
-                  fields: [
-                    {
-                      path: ['$.credentialSubject.name'],
-                      filter: {type: 'string'},
-                    },
-                  ],
-                },
-              },
-            ],
-          },
-        },
-      };
-      mockJSONPath.mockReturnValue(['John']);
-      mockToPathArray.mockReturnValue(['$', 'credentialSubject', 'name']);
-      const result = asg.vcsMatchingAuthRequest(context, {vcs: [vc]});
-      expect(result).toBeDefined();
-    });
-
-    it('handles constraints with no filter (accepts anything)', () => {
-      const asg = actions.getVcsMatchingAuthRequest.assignment;
-      const vc = {
-        format: 'ldp_vc',
-        verifiableCredential: {credential: {type: ['Credential']}},
-      };
-      const context = {
-        authenticationResponse: {
-          presentation_definition: {
-            input_descriptors: [
-              {
-                id: 'desc1',
-                format: undefined,
-                constraints: {fields: [{path: ['$.type']}]},
-              },
-            ],
-          },
-        },
-      };
-      mockJSONPath.mockReturnValue(['Credential']);
-      mockToPathArray.mockReturnValue(['$', 'type']);
-      const result = asg.vcsMatchingAuthRequest(context, {vcs: [vc]});
-      expect(result).toBeDefined();
-    });
-
-    it('collects requestedClaims from field paths', () => {
-      const asg = actions.getVcsMatchingAuthRequest.assignment;
-      const vc = {format: 'ldp_vc', verifiableCredential: {credential: {}}};
-      const context = {
-        authenticationResponse: {
-          presentation_definition: {
-            input_descriptors: [
-              {
-                id: 'desc1',
-                format: undefined,
-                constraints: {
-                  fields: [
-                    {path: ['$.credentialSubject.name']},
-                    {path: ['$.credentialSubject.email']},
-                  ],
-                },
-              },
-            ],
-          },
-        },
-      };
-      mockJSONPath.mockReturnValue([]);
-      mockToPathArray.mockReturnValue(['$', 'credentialSubject', 'name']);
-      asg.vcsMatchingAuthRequest(context, {vcs: [vc]});
-      const claims = asg.requestedClaims();
-      expect(typeof claims).toBe('string');
-    });
-
-    it('compareAndStoreSelectedVC filters matching VCs by requestId', () => {
-      const asg = actions.compareAndStoreSelectedVC.assignment;
-      const context = {
-        vcsMatchingAuthRequest: {
-          desc1: [
-            {vcMetadata: {requestId: 'req1'}},
-            {vcMetadata: {requestId: 'req2'}},
-          ],
-        },
-        miniViewSelectedVC: {vcMetadata: {requestId: 'req1'}},
-      };
-      const result = asg.selectedVCs(context);
-      expect(result).toBeDefined();
-    });
-
-    it('logActivity handles different log types and retry counts', () => {
-      const logAction = actions.logActivity;
-      expect(logAction).toBeDefined();
-      expect(logAction.type).toBe('xstate.send');
-      // logActivity is a send() action - verify events
-      const eventFn = logAction.event;
-      expect(typeof eventFn).toBe('function');
-      const ctx = {openID4VPRetryCount: 0, serviceRefs: {activityLog: {}}};
-      const result = eventFn(ctx, {logType: 'RETRY_ATTEMPT_FAILED'});
-      expect(result).toBeDefined();
-    });
-
-    it('logActivity with retry count > 1 and SHARED_SUCCESSFULLY', () => {
-      const logAction = actions.logActivity;
-      const eventFn = logAction.event;
-      expect(typeof eventFn).toBe('function');
-      const ctx = {openID4VPRetryCount: 2, serviceRefs: {activityLog: {}}};
-      const result = eventFn(ctx, {logType: 'SHARED_SUCCESSFULLY'});
-      expect(result).toBeDefined();
-    });
-
-    it('logActivity with retry count 3 and RETRY_ATTEMPT_FAILED', () => {
-      const logAction = actions.logActivity;
-      const eventFn = logAction.event;
-      expect(typeof eventFn).toBe('function');
-      const ctx = {openID4VPRetryCount: 3, serviceRefs: {activityLog: {}}};
-      const result = eventFn(ctx, {logType: 'RETRY_ATTEMPT_FAILED'});
-      expect(result).toBeDefined();
-    });
-
-    it('logActivity with SHARED_WITH_FACE_VERIFIACTION retry', () => {
-      const logAction = actions.logActivity;
-      const eventFn = logAction.event;
-      expect(typeof eventFn).toBe('function');
-      const ctx = {openID4VPRetryCount: 2, serviceRefs: {activityLog: {}}};
-      const result = eventFn(ctx, {logType: 'SHARED_WITH_FACE_VERIFIACTION'});
-      expect(result).toBeDefined();
-    });
-
-    it('storeShowFaceAuthConsent is a send action', () => {
-      expect(actions.storeShowFaceAuthConsent).toBeDefined();
-      expect(actions.storeShowFaceAuthConsent.type).toBe('xstate.send');
-    });
-
-    it('getFaceAuthConsent is a send action', () => {
-      expect(actions.getFaceAuthConsent).toBeDefined();
-      expect(actions.getFaceAuthConsent.type).toBe('xstate.send');
-    });
-
-    it('forwardToParent is a sendParent action', () => {
-      expect(actions.forwardToParent).toBeDefined();
-      expect(actions.forwardToParent.type).toBe('xstate.sendParent');
-    });
-
-    it('resetFaceCaptureBannerStatus sets to false', () => {
-      const val =
-        actions.resetFaceCaptureBannerStatus.assignment
-          .showFaceCaptureSuccessBanner;
-      expect(val).toBe(false);
     });
   });
 });

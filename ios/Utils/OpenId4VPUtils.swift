@@ -3,7 +3,7 @@ import OpenID4VP
 import React
 
 class OpenId4VPUtils: NSObject {
-  static func toJsonString(jsonObject: AuthorizationRequest) throws -> String {
+  static func toJsonString(jsonObject: AuthorizationRequest?) throws -> String {
     let encoder = JSONEncoder()
     encoder.keyEncodingStrategy = .convertToSnakeCase
     let jsonData = try encoder.encode(jsonObject)
@@ -13,21 +13,10 @@ class OpenId4VPUtils: NSObject {
     return jsonString
   }
   
-  static func toJson(_ data:  [FormatType : any UnsignedVPToken]?) throws -> [String: Any] {
-    let encodableDict = data?.mapKeys { $0.rawValue }.mapValues { EncodableWrapper($0) }
-    let jsonData = try JSONEncoder().encode(encodableDict)
-
-    if let jsonObject = try JSONSerialization.jsonObject(with: jsonData, options: []) as? [String: Any] {
-      return jsonObject
-    } else {
-      throw ParseError(message: "Failed to serialize JSON")
-    }
-  }
-  
-  static func toJson(_ data: [UnsignedVPTokenV2]?) throws -> [[String: Any]] {
+  static func toJson(_ data: [UnsignedVPToken]?) throws -> [[String: Any]] {
     let encodableUnsignedVPToken : [[String: String]] = data?.map {
       [
-        "dataToSign": $0.dataToSign,
+        "dataToSign": $0.dataToSign.toBase64UrlEncoded(),
         "format": $0.format.rawValue,
         "holderKeyReference": $0.holderKeyReference,
         "signatureAlgorithm": $0.signatureAlgorithm
@@ -35,6 +24,14 @@ class OpenId4VPUtils: NSObject {
     } ?? []
     
     return encodableUnsignedVPToken
+  }
+  
+  static func toJson(_ matchingCredentialsResult: MatchingCredentialsResult) throws -> [String: Any] {
+    let data = try JSONEncoder().encode(matchingCredentialsResult)
+    guard let jsonObject = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+      throw NSError(domain: "OPENID4VP", code: -1, userInfo: [NSLocalizedDescriptionKey: "Unable to serialize JSON"])
+    }
+    return jsonObject
   }
   
   static func parseSelectedVCs(_ credentialsMap: [String: [String: [Any]]]) -> [String: [FormatType: [AnyCodable]]] {
@@ -57,68 +54,82 @@ class OpenId4VPUtils: NSObject {
     }
   }
   
-  static func parseVPTokenSigningResult(_ vpTokenSigningResults: [String: Any]) throws -> [FormatType: VPTokenSigningResult] {
-    var formattedVPTokenSigningResults: [FormatType: VPTokenSigningResult] = [:]
-
-    for (credentialFormat, vpTokenSigningResult) in vpTokenSigningResults {
-      switch credentialFormat {
-      case FormatType.ldp_vc.rawValue:
-        guard let vpResponse = vpTokenSigningResult as? [String: Any],
-                 let signatureAlgorithm = vpResponse["signatureAlgorithm"] as? String else {
-               throw ParseError(message: "Invalid VP token signing result for LDP_VC")
-           }
-
-           let jws = vpResponse["jws"] as? String
-           let proofValue = vpResponse["proofValue"] as? String
-        formattedVPTokenSigningResults[.ldp_vc] = LdpVPTokenSigningResult(jws: jws, proofValue: proofValue, signatureAlgorithm: signatureAlgorithm)
-
-      case FormatType.mso_mdoc.rawValue:
-        var docTypeToDeviceAuthentication : [String: DeviceAuthentication] = [:]
-        guard let vpResponse = vpTokenSigningResult as? [String:[String: String]] else {
-         throw ParseError(message: "Invalid VP token signing result format")
+  static func parseSelectedVCs(_ credentialsMap: [String: [Any]]) throws -> [String: [Credential]] {
+    var parsedCredentialsMap: [String: [Credential]] = [:]
+    
+    for (credentialQueryId, credentials) in credentialsMap {
+      parsedCredentialsMap[credentialQueryId] = try credentials.map { credential in
+        if let credentialDict = credential as? [String: Any],
+           let formatString = credentialDict["format"] as? String,
+           let format = FormatType(rawValue: formatString),
+           let credentialData = credentialDict["credential"],
+           let credentialId = credentialDict["credentialId"] as? String {
+          return Credential(format: format, data: AnyCodable(credentialData), credentialId: credentialId)
+        } else {
+          throw NSError(
+            domain: "OpenID4VP",
+            code: -1,
+            userInfo: [NSLocalizedDescriptionKey: "Unable to parse the provided credentials map"]
+          )
         }
-        for (docType, deviceAuthentication) in vpResponse {
-          guard let signature = deviceAuthentication["signature"],
-                let algorithm = deviceAuthentication["mdocAuthenticationAlgorithm"] else {
-            throw ParseError(message: "Invalid VP token signing result provided for mdoc format")
-          }
-          docTypeToDeviceAuthentication[docType] = DeviceAuthentication(signature: signature, algorithm: algorithm)
-        }
-        formattedVPTokenSigningResults[.mso_mdoc] = MdocVPTokenSigningResult(docTypeToDeviceAuthentication: docTypeToDeviceAuthentication)
-        
-      case FormatType.vc_sd_jwt.rawValue :
-        guard let vpResponse = vpTokenSigningResult as? [String:String] else {
-          throw ParseError(message: "Invalid VP token signing result format")
-        }
-        formattedVPTokenSigningResults[.vc_sd_jwt] = SdJwtVpTokenSigningResult(uuidToKbJWTSignature: vpResponse)
-      case FormatType.dc_sd_jwt.rawValue :
-        guard let vpResponse = vpTokenSigningResult as? [String:String] else {
-          throw ParseError(message: "Invalid VP token signing result format")
-        }
-        formattedVPTokenSigningResults[.dc_sd_jwt] = SdJwtVpTokenSigningResult(uuidToKbJWTSignature: vpResponse)
-
-      default:
-        let error = NSError(domain: "Credential format '\(credentialFormat)' is not supported", code: 0)
-        throw ParseError(message: error.localizedDescription)
       }
     }
     
-    return formattedVPTokenSigningResults
+    return parsedCredentialsMap
   }
   
-  static func parseVPTokenSigningResultV2(_ vpTokenSigningResults: [[String: Any]]) throws -> [VPTokenSigningResultV2] {
+  static func parseCredentials(_ credentials: AnyObject) throws -> [Credential] {
+    guard let credentials = credentials as? [[String: Any]] else {
+      throw NSError(
+        domain: "OpenID4VP",
+        code: -1,
+        userInfo: [NSLocalizedDescriptionKey: "Unable to parse the provided credentials"]
+      )
+    }
+    
+    var parsedCredentials: [Credential] = []
+    
+    for credential in credentials {
+      if let formatString = credential["format"] as? String,
+         let format = FormatType(rawValue: formatString),
+         let credentialData = credential["credential"],
+         let credentialId = credential["credentialId"] as? String {
+        parsedCredentials.append(
+          Credential(format: format, data: AnyCodable(credentialData), credentialId: credentialId)
+        )
+      } else {
+        throw NSError(
+          domain: "OpenID4VP",
+          code: -1,
+          userInfo: [NSLocalizedDescriptionKey: "Unable to parse the provided credentials map"]
+        )
+      }
+    }
+    
+    return parsedCredentials
+  }
+  
+  static func parseVPTokenSigningResult(_ vpTokenSigningResults: [[String: Any]]) throws -> [VPTokenSigningResult] {
     if(vpTokenSigningResults.isEmpty) {
       return []
     }
     
-    let vpTokenSigningResultsData: [VPTokenSigningResultV2] = try vpTokenSigningResults.map { vpTokenSigningResult in
+    let vpTokenSigningResultsData: [VPTokenSigningResult] = try vpTokenSigningResults.map { vpTokenSigningResult in
       guard let signedData = vpTokenSigningResult["signedData"] as? String else {  
         throw ParseError(message: "Invalid VP token signing result: missing or invalid 'signedData'")  
-      }  
-      return VPTokenSigningResultV2(signedData: signedData)
+      }
+      let decodedSignedData = try decodeBase64ToData(signedData)
+      return VPTokenSigningResult(signedData: decodedSignedData)
     }
       
     return vpTokenSigningResultsData
+  }
+  
+  private static func decodeBase64ToData(_ base64String: String) throws -> Data {
+    guard let decodedData = Data(base64UrlEncoded: base64String) else {
+      throw NSError(domain: "OPENID4VP", code: -1, userInfo: [NSLocalizedDescriptionKey: "Base64 decoding failed"])
+    }
+    return decodedData
   }
   
   static func convertToOpenID4VPException(errorCode: String, error: String, moduleName: String) -> OpenID4VPException {
@@ -137,4 +148,35 @@ struct ParseError: Error {
     let message: String
 }
     
+extension Data {
+    init?(base64UrlEncoded: String) {
+        let base64 = base64UrlEncoded.base64URLToBase64()
+        guard let decoded = Data(base64Encoded: base64) else {
+            return nil
+        }
+        
+        self = decoded
+    }
     
+    func toBase64UrlEncoded() -> String {
+        return self.base64EncodedString()
+            .replacingOccurrences(of: "+", with: "-")
+            .replacingOccurrences(of: "/", with: "_")
+            .replacingOccurrences(of: "=", with: "")
+    }
+}
+
+extension String {
+    func base64URLToBase64() -> String {
+        var base64 = self
+            .replacingOccurrences(of: "-", with: "+")
+            .replacingOccurrences(of: "_", with: "/")
+
+        let paddingLength = 4 - (base64.count % 4)
+        if paddingLength < 4 {
+            base64 += String(repeating: "=", count: paddingLength)
+        }
+
+        return base64
+    }
+}

@@ -1,4 +1,5 @@
 import {useEffect, useState} from 'react';
+import {MatchingVcsResult, MatchResult, VerifierInfo} from "../openID4VP/openid4vp.types";
 
 interface OvpErrorModal {
   show: boolean;
@@ -6,14 +7,19 @@ interface OvpErrorModal {
   message: string;
   additionalMessage: string;
   showRetryButton: boolean;
+  verifierInfo?: VerifierInfo
+  matchingVcsResult?: MatchingVcsResult
+  showBackButton?: boolean;
 }
 
 interface UseOvpErrorModalProps {
   error: string;
   noCredentialsMatchingVPRequest: boolean;
-  requestedClaimsByVerifier: string;
+  requestedClaimsByVerifier: Set<string>;
   getAdditionalMessage: () => string;
   generateAndStoreLogMessage: (logType: string, errorInfo?: string) => void;
+  matchingVcsResult?: MatchingVcsResult;
+  verifierInfo?: VerifierInfo;
   t: (key: string, options?: any) => string;
 }
 export function useOvpErrorModal({
@@ -22,6 +28,8 @@ export function useOvpErrorModal({
   requestedClaimsByVerifier,
   getAdditionalMessage,
   generateAndStoreLogMessage,
+  matchingVcsResult,
+  verifierInfo,
   t,
 }: UseOvpErrorModalProps): [OvpErrorModal, () => void] {
   const [errorModal, setErrorModal] = useState<OvpErrorModal>({
@@ -30,11 +38,14 @@ export function useOvpErrorModal({
     message: '',
     additionalMessage: '',
     showRetryButton: false,
+    matchingVcsResult: undefined,
+    verifierInfo: undefined,
+    showBackButton: false,
   });
 
   useEffect(() => {
     const isClaimsEmpty =
-      !requestedClaimsByVerifier || requestedClaimsByVerifier.trim() === '';
+      requestedClaimsByVerifier.size === 0;
     const additionalMessage = getAdditionalMessage();
 
     if (noCredentialsMatchingVPRequest) {
@@ -45,15 +56,16 @@ export function useOvpErrorModal({
           : t('errors.noMatchingCredentials.title'),
         message: isClaimsEmpty
           ? t('errors.noMatchingCredentialsWithMissingClaims.message')
-          : t('errors.noMatchingCredentials.message', {
-              claims: requestedClaimsByVerifier,
-            }),
+          : '',
         additionalMessage,
         showRetryButton: false,
+        matchingVcsResult,
+        verifierInfo,
+        showBackButton: true,
       });
       generateAndStoreLogMessage(
         'NO_CREDENTIAL_MATCHING_REQUEST',
-        requestedClaimsByVerifier,
+        Array.from(requestedClaimsByVerifier).join(','),
       );
     } else if (
       error.includes('Verifier authentication was unsuccessful') ||
@@ -71,15 +83,13 @@ export function useOvpErrorModal({
       setErrorModal({
         show: true,
         title: t('errors.credentialsMismatch.title'),
-        message: t('errors.credentialsMismatch.message', {
-          claims: requestedClaimsByVerifier,
-        }),
+        message: t('errors.credentialsMismatch.message'),
         additionalMessage,
         showRetryButton: false,
       });
       generateAndStoreLogMessage(
         'CREDENTIAL_MISMATCH_FROM_KEBAB',
-        requestedClaimsByVerifier,
+        Array.from(requestedClaimsByVerifier).join(','),
       );
     } else if (error.includes('none of the selected VC has image')) {
       setErrorModal({

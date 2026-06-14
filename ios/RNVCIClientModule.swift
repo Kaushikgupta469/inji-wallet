@@ -16,6 +16,7 @@ class RNVCIClientModule: NSObject, RCTBridgeModule {
   private var pendingIssuerTrustDecision: ((Bool) -> Void)?
   private var pendingSelectedCredentialsContinuation: CheckedContinuation<AnyObject, Error>?
   private var pendingSignVPContinuation: CheckedContinuation<NSArray, Error>?
+  private var pendingJsonLdCanonicalizeContinuation: CheckedContinuation<String, Error>?
 
   static func moduleName() -> String {
     return "InjiVciClient"
@@ -28,9 +29,14 @@ class RNVCIClientModule: NSObject, RCTBridgeModule {
 
   // MARK: - Public API
 
-  fileprivate func getSupportedAuthorizationMethods(signatureSuite: String?)
+  fileprivate func getSupportedAuthorizationMethods(openId4VpWalletConfig: AnyObject) throws
     -> [AuthorizationMethod]
   {
+    guard let openId4VpWalletConfigDict = openId4VpWalletConfig as? [String: Any] else {
+      throw NSError(domain: "Invalid wallet config format", code: 0)
+    }
+    let parsedOpenId4VpWalletConfigDict = try decode(WalletConfig.self, from: openId4VpWalletConfigDict)
+    
     return [
       .redirectToWeb(openWebPage: { authUrl in
         let result: [String: String] = try await self.getAuthCodeContinuationHook(authUrl: authUrl)
@@ -38,14 +44,17 @@ class RNVCIClientModule: NSObject, RCTBridgeModule {
         return result
       }),
       .presentationDuringIssuance(
+        jsonLdCanonicalizer: { data in
+          try await self.invokeJsonLdCanonicalize(data)
+        },
+        openid4vpWalletConfig: parsedOpenId4VpWalletConfigDict,
         selectCredentialsForPresentation: { vpRequest in
           try await self.getSelectedCredentialsContinuationHook(vpRequest: vpRequest)
         },
         signVerifiablePresentation: { unsignedVPTokens in
           try await self.getSignVerifiablePresentationContinuationHook(
             unsignedVPTokens: unsignedVPTokens)
-        },
-        ldpVpSignatureSuite: signatureSuite
+        }
       ),
     ]
   }
@@ -54,7 +63,7 @@ class RNVCIClientModule: NSObject, RCTBridgeModule {
   func requestCredentialByOffer(
     _ credentialOffer: String,
     clientMetadata: String,
-    signatureSuite: String,
+    openId4VpWalletConfig: AnyObject,
     resolver resolve: @escaping RCTPromiseResolveBlock,
     rejecter reject: @escaping RCTPromiseRejectBlock
   ) {
@@ -77,7 +86,7 @@ class RNVCIClientModule: NSObject, RCTBridgeModule {
               length: length
             )
           },
-          authorizationMethods: getSupportedAuthorizationMethods(signatureSuite: signatureSuite),
+          authorizationMethods: try getSupportedAuthorizationMethods(openId4VpWalletConfig: openId4VpWalletConfig),
           getTokenResponse: { tokenRequest in
             try await self.getTokenResponseHook(tokenRequest: tokenRequest)
           },
@@ -108,7 +117,7 @@ class RNVCIClientModule: NSObject, RCTBridgeModule {
     _ credentialIssuer: String,
     credentialConfigurationId: String,
     clientMetadata: String,
-    signatureSuite: String,
+    openId4VpWalletConfig: AnyObject,
     resolver resolve: @escaping RCTPromiseResolveBlock,
     rejecter reject: @escaping RCTPromiseRejectBlock
   ) {
@@ -128,7 +137,7 @@ class RNVCIClientModule: NSObject, RCTBridgeModule {
           getTokenResponse: { tokenRequest in
             try await self.getTokenResponseHook(tokenRequest: tokenRequest)
           },
-          authorizationMethods: getSupportedAuthorizationMethods(signatureSuite: signatureSuite),
+          authorizationMethods: try getSupportedAuthorizationMethods(openId4VpWalletConfig: openId4VpWalletConfig),
           getProofs: { credentialIssuer, cNonce, algos in
             try await self.getProofsContinuationHook(
               credentialIssuer: credentialIssuer,
@@ -286,7 +295,7 @@ class RNVCIClientModule: NSObject, RCTBridgeModule {
   }
 
   private func getSelectedCredentialsContinuationHook(vpRequest: AuthorizationRequest) async throws
-    -> [String: [FormatType: [OpenID4VPAnyCodable]]]
+    -> [String: [Credential]]
   {
     let vpRequestJson = try OpenId4VPUtils.toJsonString(jsonObject: vpRequest)
     if let bridge = RCTBridge.current() {
@@ -303,17 +312,17 @@ class RNVCIClientModule: NSObject, RCTBridgeModule {
       self.pendingSelectedCredentialsContinuation = continuation
     }
 
-    guard let credentialsMap = selectedCredentials as? [String: [String: [Any]]] else {
+    guard let credentialsMap = selectedCredentials as? [String: [Any]] else {
       print("Invalid credentials map format")
       return [:]
     }
 
-    return OpenId4VPUtils.parseSelectedVCs(credentialsMap)
+    return try OpenId4VPUtils.parseSelectedVCs(credentialsMap)
   }
 
   private func getSignVerifiablePresentationContinuationHook(
-    unsignedVPTokens: [UnsignedVPTokenV2]
-  ) async throws -> [VPTokenSigningResultV2] {
+    unsignedVPTokens: [UnsignedVPToken]
+  ) async throws -> [VPTokenSigningResult] {
     let unsignedVPTokensJson = try OpenId4VPUtils.toJson(unsignedVPTokens)
     if let bridge = RCTBridge.current() {
       bridge.eventDispatcher().sendAppEvent(
@@ -335,7 +344,7 @@ class RNVCIClientModule: NSObject, RCTBridgeModule {
       )
     }
 
-    return try OpenId4VPUtils.parseVPTokenSigningResultV2(signedVPTokens)
+    return try OpenId4VPUtils.parseVPTokenSigningResult(signedVPTokens)
   }
 
   private func getTokenResponseHook(tokenRequest: TokenRequest) async throws -> TokenResponse {
@@ -457,20 +466,7 @@ class RNVCIClientModule: NSObject, RCTBridgeModule {
     pendingIssuerTrustDecision?(trusted)
     pendingIssuerTrustDecision = nil
   }
-
-  // MARK: - JSON Parsing
-
-  private func parseClientMetadata(from jsonString: String) throws -> VciClientMetadata {
-    guard let data = jsonString.data(using: .utf8) else {
-      throw NSError(domain: "Invalid JSON string for clientMetadata", code: 0)
-    }
-    return try JSONDecoder().decode(VciClientMetadata.self, from: data)
-  }
-
-  @objc static func requiresMainQueueSetup() -> Bool {
-    return true
-  }
-
+  
   @objc(abortPresentationFlowFromJS:message:)
   func abortPresentationFlowFromJS(_ code: String, message: String) {
     let error = OpenId4VPUtils.convertToOpenID4VPException(
@@ -487,5 +483,52 @@ class RNVCIClientModule: NSObject, RCTBridgeModule {
     pendingTxCodeContinuation = nil
     pendingTokenResponseContinuation = nil
     pendingIssuerTrustDecision = nil
+  }
+  
+  @objc(sendJsonLdCanonicalizeResultFromJS:)
+  func sendJsonLdCanonicalizeResultFromJS(_ result: String) {
+    pendingJsonLdCanonicalizeContinuation?.resume(returning: result)
+    pendingJsonLdCanonicalizeContinuation = nil
+  }
+  
+  @objc
+  func notifyCanonicalizationFailureFromJS(_ code: String, message: String) {
+    let error = OpenId4VPUtils.convertToOpenID4VPException(
+      errorCode: code, error: message, moduleName: Self.moduleName()
+    )
+
+    pendingJsonLdCanonicalizeContinuation?.resume(throwing: error)
+    pendingJsonLdCanonicalizeContinuation = nil
+  }
+
+  // MARK: - JSON Parsing
+
+  private func parseClientMetadata(from jsonString: String) throws -> VciClientMetadata {
+    guard let data = jsonString.data(using: .utf8) else {
+      throw NSError(domain: "Invalid JSON string for clientMetadata", code: 0)
+    }
+    return try JSONDecoder().decode(VciClientMetadata.self, from: data)
+  }
+
+  @objc static func requiresMainQueueSetup() -> Bool {
+    return true
+  }
+  
+  private func invokeJsonLdCanonicalize(_ data: String) async throws -> String {
+    
+    print("data = \(data)")
+    
+    if let bridge = RCTBridge.current() {
+      bridge.eventDispatcher().sendAppEvent(
+        withName: "onJsonLdCanonicalize",
+        body: [
+          "data": data,
+        ]
+      )
+    }
+    
+    return try await withCheckedThrowingContinuation { (continuation : CheckedContinuation<String, Error>) in
+      self.pendingJsonLdCanonicalizeContinuation = continuation
+    }
   }
 }

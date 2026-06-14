@@ -143,3 +143,22 @@ export const isTranslationKeyFound = (
   const translation = t(translationKey);
   return translation !== translationKey;
 };
+
+export function exactlyOne<T>(
+  items: T[],
+  predicate: (item: T) => boolean,
+): boolean {
+  let count = 0;
+
+  for (const item of items) {
+    if (predicate(item)) {
+      count++;
+
+      if (count > 1) {
+        return false;
+      }
+    }
+  }
+
+  return count === 1;
+}

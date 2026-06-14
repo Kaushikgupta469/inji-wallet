@@ -1,9 +1,36 @@
 import React from 'react';
 import {render} from '@testing-library/react-native';
 
+jest.mock('react-native-safe-area-context', () => ({
+  useSafeAreaInsets: () => ({top: 0, bottom: 0, left: 0, right: 0}),
+  SafeAreaProvider: ({children}: any) => children,
+  SafeAreaConsumer: ({children}: any) => children({}),
+}));
+
+jest.mock(
+  '../../components/openid4vp/matchingVc/MatchingVcListContainer',
+  () => ({
+    MatchingVcListContainer: () => null,
+  }),
+);
+jest.mock('../../components/openid4vp/verifier/VerifierInfo', () => ({
+  VerifierInfo: () => null,
+}));
+jest.mock(
+  '../../components/openid4vp/overlay/WhyWeNeedDocumentsOverlay',
+  () => ({
+    WhyWeNeedDocumentsOverlay: () => null,
+  }),
+);
+jest.mock('../../components/ui/backButton/BackButton', () => ({
+  BackButton: () => null,
+}));
+jest.mock('../../shared/openID4VP/OpenID4VPHelper', () => ({
+  claimPathPointersToJsonPath: jest.fn((path: string[]) => path.join('.')),
+}));
+
 jest.mock('./SendVPScreenController', () => {
   const defaultValues = {
-    vcsMatchingAuthRequest: {},
     error: null,
     noCredentialsMatchingVPRequest: false,
     requestedClaimsByVerifier: [],
@@ -19,7 +46,7 @@ jest.mock('./SendVPScreenController', () => {
     purpose: '',
     isAuthorizationFlow: false,
     areAllVCsChecked: false,
-    inputDescriptorIdToSelectedVcKeys: {},
+    credentialRequestIdToSelectedVcKeys: {},
     getSelectedVCs: jest.fn(() => ({})),
     checkIfAnyVCHasImage: jest.fn(() => false),
     checkIfAllVCsHasImage: jest.fn(() => false),
@@ -40,6 +67,9 @@ jest.mock('./SendVPScreenController', () => {
     DISMISS_POPUP: jest.fn(),
     DISMISS: jest.fn(),
     SELECT_VC_ITEM: jest.fn(() => jest.fn()),
+    SELECT_VC_ITEMS: jest.fn(() => jest.fn()),
+    DESELECT_VC_ITEMS: jest.fn(() => jest.fn()),
+    TOGGLE_VC_ITEMS: jest.fn(() => jest.fn()),
     vpVerifierName: '',
     showConfirmationPopup: false,
     openID4VPRetryCount: 0,
@@ -48,6 +78,9 @@ jest.mock('./SendVPScreenController', () => {
     CHECK_ALL: jest.fn(),
     UNCHECK_ALL: jest.fn(),
     isStartPermissionCheck: false,
+    matchingVcsResult: null,
+    isDcqlFlow: false,
+    successfullySatisfiedCredentialRequest: jest.fn(() => false),
   };
   let overrides = {};
   return {
@@ -61,7 +94,7 @@ jest.mock('./SendVPScreenController', () => {
   };
 });
 
-jest.mock('./ScanScreenController', () => ({
+jest.mock('../Scan/ScanScreenController', () => ({
   useScanScreen: () => ({
     isStartPermissionCheck: false,
     authorizationRequest: '',
@@ -79,15 +112,18 @@ jest.mock('../../shared/GlobalContext', () => {
   };
 });
 
+const defaultErrorModal = {
+  show: false,
+  title: '',
+  message: '',
+  additionalMessage: '',
+  showRetryButton: false,
+  matchingVcsResult: null,
+};
+let mockErrorModalOverrides: Record<string, any> = {};
 jest.mock('../../shared/hooks/useOvpErrorModal', () => ({
   useOvpErrorModal: () => [
-    {
-      show: false,
-      title: '',
-      message: '',
-      additionalMessage: '',
-      showRetryButton: false,
-    },
+    {...defaultErrorModal, ...mockErrorModalOverrides},
     jest.fn(),
   ],
 }));
@@ -113,7 +149,20 @@ jest.mock('../../components/ui/svg', () => ({
   SvgImage: {PermissionDenied: () => 'PermissionDenied'},
 }));
 
+jest.mock(
+  '../../components/openid4vp/missingClaimsView/MissingClaimsView',
+  () => ({
+    MissingClaimsView: ({claims}: {claims: string[]}) => {
+      const {Text} = require('react-native');
+      return <Text testID="missingClaimsView">{claims.join(',')}</Text>;
+    },
+  }),
+);
+
 jest.mock('react-native-linear-gradient', () => 'LinearGradient');
+jest.mock('../../components/ui/Error', () => ({
+  ErrorView: ({additionalContent}: any) => additionalContent || null,
+}));
 jest.mock('react-native-copilot', () => ({
   CopilotProvider: ({children}: any) => children,
   useCopilot: () => ({start: jest.fn()}),
@@ -121,7 +170,6 @@ jest.mock('react-native-copilot', () => ({
 jest.mock('../../components/DeeplinkBanner', () => ({
   DeeplinkBanner: () => null,
 }));
-jest.mock('../../components/ui/Error', () => ({ErrorView: () => null}));
 jest.mock('../../components/ui/Loader', () => ({
   Loader: () => null,
   LoaderSkeleton: () => null,
@@ -129,8 +177,8 @@ jest.mock('../../components/ui/Loader', () => ({
 jest.mock('../VerifyIdentityOverlay', () => ({
   VerifyIdentityOverlay: () => null,
 }));
-jest.mock('./VPShareOverlay', () => ({VPShareOverlay: () => null}));
-jest.mock('./FaceVerificationAlertOverlay', () => ({
+jest.mock('../Scan/VPShareOverlay', () => ({VPShareOverlay: () => null}));
+jest.mock('../Scan/FaceVerificationAlertOverlay', () => ({
   FaceVerificationAlertOverlay: () => null,
 }));
 jest.mock('../../components/TrustModalVerifier', () => ({
@@ -190,6 +238,7 @@ describe('SendVPScreen', () => {
 
   beforeEach(() => {
     mockController.__resetMockOverrides();
+    mockErrorModalOverrides = {};
     jest.clearAllMocks();
   });
 
@@ -218,11 +267,9 @@ describe('SendVPScreen', () => {
 
   it('should render with matching VCs and purpose', () => {
     mockController.__setMockOverrides({
-      vcsMatchingAuthRequest: {
-        desc1: [{vcMetadata: JSON.stringify({isPinned: false})}],
-      },
       purpose: 'Identity verification',
       vpVerifierName: 'TestVerifier',
+      matchingVcsResult: {success: true, matchingVCs: {}},
     });
     const {toJSON} = render(<SendVPScreen {...navProps} />);
     expect(toJSON()).toMatchSnapshot();
@@ -231,10 +278,8 @@ describe('SendVPScreen', () => {
   it('should render authorization flow with consent share button', () => {
     mockController.__setMockOverrides({
       isAuthorizationFlow: true,
-      vcsMatchingAuthRequest: {
-        desc1: [{vcMetadata: JSON.stringify({isPinned: false})}],
-      },
       purpose: 'Authorization',
+      matchingVcsResult: {success: true, matchingVCs: {}},
     });
     const {toJSON} = render(<SendVPScreen {...navProps} />);
     expect(toJSON()).toMatchSnapshot();
@@ -251,9 +296,7 @@ describe('SendVPScreen', () => {
 
   it('should render with overlay details', () => {
     mockController.__setMockOverrides({
-      vcsMatchingAuthRequest: {
-        desc1: [{vcMetadata: JSON.stringify({isPinned: false})}],
-      },
+      matchingVcsResult: {success: true, matchingVCs: {}},
       overlayDetails: {
         title: 'Success',
         titleTestID: 'successTitle',
@@ -270,10 +313,8 @@ describe('SendVPScreen', () => {
 
   it('should render with face verification consent', () => {
     mockController.__setMockOverrides({
-      vcsMatchingAuthRequest: {
-        desc1: [{vcMetadata: JSON.stringify({isPinned: false})}],
-      },
       isFaceVerificationConsent: true,
+      matchingVcsResult: {success: true, matchingVCs: {}},
     });
     const {toJSON} = render(<SendVPScreen {...navProps} />);
     expect(toJSON()).toMatchSnapshot();
@@ -281,10 +322,8 @@ describe('SendVPScreen', () => {
 
   it('should render with all VCs checked', () => {
     mockController.__setMockOverrides({
-      vcsMatchingAuthRequest: {
-        desc1: [{vcMetadata: JSON.stringify({isPinned: false})}],
-      },
       areAllVCsChecked: true,
+      matchingVcsResult: {success: true, matchingVCs: {}},
     });
     const {toJSON} = render(<SendVPScreen {...navProps} />);
     expect(toJSON()).toMatchSnapshot();
@@ -292,10 +331,8 @@ describe('SendVPScreen', () => {
 
   it('should render with cancelling state', () => {
     mockController.__setMockOverrides({
-      vcsMatchingAuthRequest: {
-        desc1: [{vcMetadata: JSON.stringify({isPinned: false})}],
-      },
       isCancelling: true,
+      matchingVcsResult: {success: true, matchingVCs: {}},
     });
     const {toJSON} = render(<SendVPScreen {...navProps} />);
     expect(toJSON()).toMatchSnapshot();
@@ -313,12 +350,10 @@ describe('SendVPScreen', () => {
 
   it('should render with verifying identity state', () => {
     mockController.__setMockOverrides({
-      vcsMatchingAuthRequest: {
-        desc1: [{vcMetadata: JSON.stringify({isPinned: false})}],
-      },
       isVerifyingIdentity: true,
       credentials: [{id: 'vc1'}],
       verifiableCredentialsData: [{credential: 'data'}],
+      matchingVcsResult: {success: true, matchingVCs: {}},
     });
     const {toJSON} = render(<SendVPScreen {...navProps} />);
     expect(toJSON()).toMatchSnapshot();
@@ -338,12 +373,10 @@ describe('SendVPScreen', () => {
   it('should render non-authorization flow share actions with images', () => {
     mockController.__setMockOverrides({
       isAuthorizationFlow: false,
-      vcsMatchingAuthRequest: {
-        desc1: [{vcMetadata: JSON.stringify({isPinned: false})}],
-      },
       checkIfAnyVCHasImage: jest.fn(() => true),
       checkIfAllVCsHasImage: jest.fn(() => false),
       getSelectedVCs: jest.fn(() => ({vc1: {}})),
+      matchingVcsResult: {success: true, matchingVCs: {}},
     });
     const {toJSON} = render(<SendVPScreen {...navProps} />);
     expect(toJSON()).toMatchSnapshot();
@@ -352,12 +385,10 @@ describe('SendVPScreen', () => {
   it('should render non-authorization flow with all VCs having images', () => {
     mockController.__setMockOverrides({
       isAuthorizationFlow: false,
-      vcsMatchingAuthRequest: {
-        desc1: [{vcMetadata: JSON.stringify({isPinned: false})}],
-      },
       checkIfAnyVCHasImage: jest.fn(() => true),
       checkIfAllVCsHasImage: jest.fn(() => true),
       getSelectedVCs: jest.fn(() => ({vc1: {}})),
+      matchingVcsResult: {success: true, matchingVCs: {}},
     });
     const {toJSON} = render(<SendVPScreen {...navProps} />);
     expect(toJSON()).toMatchSnapshot();
@@ -365,15 +396,12 @@ describe('SendVPScreen', () => {
 
   it('should render with multiple input descriptors and cards selected', () => {
     mockController.__setMockOverrides({
-      vcsMatchingAuthRequest: {
-        desc1: [{vcMetadata: JSON.stringify({isPinned: false})}],
-        desc2: [{vcMetadata: JSON.stringify({isPinned: true})}],
-      },
-      inputDescriptorIdToSelectedVcKeys: {
+      credentialRequestIdToSelectedVcKeys: {
         desc1: ['key1'],
         desc2: ['key2'],
       },
       purpose: 'Multi-credential verification',
+      matchingVcsResult: {success: true, matchingVCs: {}},
     });
     const {toJSON} = render(<SendVPScreen {...navProps} />);
     expect(toJSON()).toMatchSnapshot();
@@ -382,11 +410,9 @@ describe('SendVPScreen', () => {
   it('should render authorization flow purpose text', () => {
     mockController.__setMockOverrides({
       isAuthorizationFlow: true,
-      vcsMatchingAuthRequest: {
-        desc1: [{vcMetadata: JSON.stringify({isPinned: false})}],
-      },
       purpose: 'Authorization purpose',
       vpVerifierName: 'AuthVerifier',
+      matchingVcsResult: {success: true, matchingVCs: {}},
     });
     const {toJSON} = render(<SendVPScreen {...navProps} />);
     expect(toJSON()).toMatchSnapshot();
@@ -394,11 +420,9 @@ describe('SendVPScreen', () => {
 
   it('should render with confirmation popup overlay', () => {
     mockController.__setMockOverrides({
-      vcsMatchingAuthRequest: {
-        desc1: [{vcMetadata: JSON.stringify({isPinned: false})}],
-      },
       showConfirmationPopup: true,
       isOVPViaDeepLink: true,
+      matchingVcsResult: {success: true, matchingVCs: {}},
       overlayDetails: {
         title: 'Confirm',
         titleTestID: 'confirmTitle',
@@ -418,14 +442,42 @@ describe('SendVPScreen', () => {
 
   it('should render with invalid identity state', () => {
     mockController.__setMockOverrides({
-      vcsMatchingAuthRequest: {
-        desc1: [{vcMetadata: JSON.stringify({isPinned: false})}],
-      },
       isInvalidIdentity: true,
       credentials: [{id: 'vc1'}],
       verifiableCredentialsData: [{credential: 'data'}],
+      matchingVcsResult: {success: true, matchingVCs: {}},
     });
     const {toJSON} = render(<SendVPScreen {...navProps} />);
     expect(toJSON()).toMatchSnapshot();
+  });
+
+  it('should render MissingClaimsView when errorModal has matchingVcsResult with requestedClaims', () => {
+    mockErrorModalOverrides = {
+      show: true,
+      title: 'No matching credentials found!',
+      message: 'No credentials found.',
+      matchingVcsResult: {
+        requestedClaims: new Set(['claim_a', 'claim_b', 'claim_c', 'claim_d']),
+        matchingVCs: {},
+        success: false,
+      },
+    };
+    const {getByTestId} = render(<SendVPScreen {...navProps} />);
+    expect(getByTestId('missingClaimsView')).toBeTruthy();
+  });
+
+  it('should not render MissingClaimsView when matchingVcsResult has no requestedClaims', () => {
+    mockErrorModalOverrides = {
+      show: true,
+      title: 'No matching credentials found!',
+      message: 'No credentials found.',
+      matchingVcsResult: {
+        requestedClaims: new Set<string>(),
+        matchingVCs: {},
+        success: false,
+      },
+    };
+    const {queryByTestId} = render(<SendVPScreen {...navProps} />);
+    expect(queryByTestId('missingClaimsView')).toBeNull();
   });
 });

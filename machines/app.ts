@@ -321,7 +321,7 @@ export const appMachine = model.createMachine(
       resetCredentialOfferUri: assign({
         credentialOfferUri: '',
       }),
-      forwardToSerices: pure((context, event) =>
+      forwardToServices: pure((context, event) =>
         Object.values(context.serviceRefs).map(serviceRef =>
           send({...event, type: `APP_${event.type}`}, {to: serviceRef}),
         ),

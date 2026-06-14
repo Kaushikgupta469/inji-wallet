@@ -219,7 +219,7 @@ jest.mock('../../components/TrustModal', () => ({
   TrustModal: () => null,
 }));
 
-jest.mock('../Scan/SendVPScreen', () => ({
+jest.mock('../openid4vp/SendVPScreen', () => ({
   SendVPScreen: () => null,
 }));
 

@@ -6,6 +6,7 @@ import {parseJSON} from '../../../shared/Utils';
 import base64url from 'base64url';
 import jwtDecode from 'jwt-decode';
 import {sha256, sha384, sha512} from '@noble/hashes/sha2';
+import {hasMatchingClaimsPath} from '../../../shared/claimsPathMatching';
 
 const {RNPixelpassModule} = NativeModules;
 
@@ -43,7 +44,9 @@ export class VCProcessor {
       const payload: any = jwtDecode(rawJwt);
       const credentialSubject = payload.vc?.credentialSubject;
       if (credentialSubject == null) {
-        throw new Error('Invalid jwt_vc_json: missing payload.vc.credentialSubject');
+        throw new Error(
+          'Invalid jwt_vc_json: missing payload.vc.credentialSubject',
+        );
       }
       return {
         fullResolvedPayload: credentialSubject,
@@ -59,7 +62,7 @@ Input: full SD-JWT string (with disclosures appended)
 Output:
 - fullResolvedPayload: resolved JSON with all disclosed claims
 - disclosedKeys: Set of keys that were disclosed via disclosures (as full JSON paths)
-- publicKeys: Set of keys that were present in JWT payload directly (non-selectively-disclosable)
+- publicKeys: Set of keys that were present in JWT payload directly (non-selectively-disclosable) which are registered JWT claims
 */
 
 function hashDigest(alg: string, input: string): Uint8Array {
@@ -200,4 +203,191 @@ export function reconstructSdJwtFromCompact(sdJwtCompact: string): {
     publicKeys: Array.from(publicKeys),
     pathToDisclosures,
   };
+}
+
+export enum ClaimVisibility {
+  PRIVATE = 'PRIVATE',
+  PUBLIC = 'public',
+}
+
+/**
+ * Responsibility: Converts the payload to flattened structure ensuring only the eligible disclosed keys are flattened
+ *
+ * Examples
+ *
+ * Input:
+ * {
+ *   disclosedKeys: [
+ *     'name',
+ *     'emails[1]',
+ *     'secret', // disclosed but NOT eligible -> removed
+ *   ],
+ *
+ *   eligibleDisclosedKeys: [
+ *     'name',
+ *     'emails[1]',
+ *   ],
+ *
+ *   fullResolvedPayload: {
+ *     // reserved root claim -> skipped
+ *     iss: 'issuer',
+ *
+ *     id: 1,
+ *
+ *     // disclosed + eligible -> PRIVATE
+ *     name: 'John',
+ *
+ *     // arrays
+ *     emails: [
+ *       'a@test.com',
+ *       'b@test.com',
+ *     ],
+ *
+ *     // null primitive
+ *     nullable: null,
+ *
+ *     // nested reserved name -> NOT skipped
+ *     nested: {
+ *       iss: 'nested-issuer',
+ *     },
+ *
+ *     // disclosed but NOT eligible -> removed
+ *     secret: 'hidden',
+ *
+ *     // empty structures -> no output
+ *     emptyObject: {},
+ *     emptyArray: [],
+ *   },
+ * }
+ *
+ * Output:
+ * {
+ *   id: {
+ *     value: 1,
+ *     visibility: ClaimVisibility.PUBLIC,
+ *   },
+ *
+ *   name: {
+ *     value: 'John',
+ *     visibility: ClaimVisibility.PRIVATE,
+ *   },
+ *
+ *   'emails[0]': {
+ *     value: 'a@test.com',
+ *     visibility: ClaimVisibility.PUBLIC,
+ *   },
+ *
+ *   'emails[1]': {
+ *     value: 'b@test.com',
+ *     visibility: ClaimVisibility.PRIVATE,
+ *   },
+ *
+ *   nullable: {
+ *     value: null,
+ *     visibility: ClaimVisibility.PUBLIC,
+ *   },
+ *
+ *   'nested.iss': {
+ *     value: 'nested-issuer',
+ *     visibility: ClaimVisibility.PUBLIC,
+ *   },
+ *
+ *   // secret omitted entirely
+ *   // root iss skipped
+ * }
+ */
+export function flattenSdJwt({
+  disclosedKeys,
+  eligiblePaths,
+  fullResolvedPayload,
+  reservedSdJwtClaims = [
+    'iss',
+    'sub',
+    'aud',
+    'exp',
+    'nbf',
+    'iat',
+    'jti',
+    'cnf',
+    'vct',
+  ],
+}: {
+  disclosedKeys: string[];
+  eligiblePaths: Set<string>;
+  fullResolvedPayload: object;
+  reservedSdJwtClaims?: string[];
+}) {
+  const flattened: Record<string, any> = {};
+
+  const disclosedSet = new Set(disclosedKeys);
+  const eligibleSet = eligiblePaths;
+  const eligibleDisclosureRoots = new Set<string>();
+
+  // If disclosure happens at a parent path, any eligible descendant implies
+  // the entire disclosed parent payload is actually revealed.
+  disclosedSet.forEach(disclosedPath => {
+    if (hasMatchingClaimsPath(eligibleSet, disclosedPath)) {
+      eligibleDisclosureRoots.add(disclosedPath);
+    }
+  });
+
+  function walk(value: unknown, currentPath = '') {
+    // Primitive leaf
+    if (value === null || typeof value !== 'object') {
+      /**
+       * disclosed set path -> currentPath path -> eligible set matches
+       * - address -> address / address.city -> address.city / address
+       * - degrees -> degrees / degrees[0] / degrees[0].type -> degrees[*]
+       */
+      const isDisclosed = hasMatchingClaimsPath(disclosedSet, currentPath);
+      const isEligible =
+        hasMatchingClaimsPath(eligibleSet, currentPath) ||
+        hasMatchingClaimsPath(eligibleDisclosureRoots, currentPath);
+
+      // Skip disclosed/private claims
+      // that are not eligible
+      if (isDisclosed && !isEligible) {
+        return;
+      }
+
+      flattened[currentPath] = {
+        value,
+        visibility: isDisclosed
+          ? ClaimVisibility.PRIVATE
+          : ClaimVisibility.PUBLIC,
+      };
+
+      return;
+    }
+
+    // Array
+    if (Array.isArray(value)) {
+      value.forEach((item, index) => {
+        const nextPath = currentPath
+          ? `${currentPath}[${index}]`
+          : `[${index}]`;
+
+        walk(item, nextPath);
+      });
+
+      return;
+    }
+
+    // Object
+    for (const [key, child] of Object.entries(value)) {
+      // Skip reserved SD-JWT claims
+      // ONLY for nested claims
+      if (currentPath === '' && reservedSdJwtClaims.includes(key)) {
+        continue;
+      }
+
+      const nextPath = currentPath ? `${currentPath}.${key}` : key;
+
+      walk(child, nextPath);
+    }
+  }
+
+  walk(fullResolvedPayload);
+
+  return flattened;
 }

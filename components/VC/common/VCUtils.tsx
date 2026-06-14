@@ -754,9 +754,8 @@ export const getCredentialType = (
     (supportedCredentialsWellknown as any).credential_metadata?.display ??
     supportedCredentialsWellknown.display;
   if (credentialDisplay) {
-    const wellknownDisplayProperty = getDisplayObjectForCurrentLanguage(
-      credentialDisplay,
-    );
+    const wellknownDisplayProperty =
+      getDisplayObjectForCurrentLanguage(credentialDisplay);
     return wellknownDisplayProperty.name;
   }
   if (supportedCredentialsWellknown.format === VCFormat.ldp_vc) {
@@ -832,13 +831,13 @@ export class Display {
   }
 }
 
-export function getIssuerAuthenticationAlorithmForMdocVC(
+export function getIssuerAuthenticationAlgorithmForMdocVC(
   proofType: any,
 ): string {
   return PROOF_TYPE_ALGORITHM_MAP[proofType] || '';
 }
 
-export function getMdocAuthenticationAlorithm(issuerAuth: any): string {
+export function getMdocAuthenticationAlgorithm(issuerAuth: any): string {
   const deviceKey = issuerAuth?.deviceKeyInfo?.deviceKey;
 
   if (!deviceKey) return '';

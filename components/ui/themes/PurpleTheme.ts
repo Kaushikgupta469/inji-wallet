@@ -27,6 +27,7 @@ const Colors = {
   Gray44: '#707070',
   Gray50: '#999999',
   Gray9: '#171717',
+  darkGrey: '#9CA3AF',
   Gray89: '#E3E3E3',
   Gray97: '#F7F7F7',
   DimGray: '#737373',
@@ -80,6 +81,19 @@ export type ElevationLevel = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 
 export const PurpleTheme = {
   Colors: {
+    BadgeColors : {
+      requiredBorder: '#FECACA',
+      requiredText: '#DC2626',
+      requiredBg: '#FEF2F2',
+      optionalBorder: '#AA913F',
+      optionalText: '#79732D',
+      optionalBg: '#FFFDDE',
+    },
+    infoBackground: "#FCF0F7",
+    infoBorder: "#F3DDEA",
+    infoText: "#64748B",
+    dottedBorderColor: "#D6DBE3",
+    instructionLabel: Colors.darkGrey,
     ProfileIconColor: Colors.DarkGray,
     DetailedViewBackground: Colors.Gray97,
     TabItemText: Colors.Primary,
@@ -1006,6 +1020,11 @@ export const PurpleTheme = {
       fontFamily: 'Montserrat_600SemiBold',
       fontSize: 15,
     },
+    sectionHeader: {
+      fontFamily: 'Montserrat_700Bold',
+      fontSize: 15,
+      color: Colors.Black,
+    },
     bold: {
       fontFamily: 'Montserrat_700Bold',
       fontSize: 15,
@@ -1683,6 +1702,8 @@ export const PurpleTheme = {
   }),
   SendVcScreenStyles: StyleSheet.create({
     shareOptionButtonsContainer: {
+      alignItems: 'center',
+      justifyContent: 'center',
       marginBottom: 1,
       marginTop: 1,
       rowGap: 8,
@@ -2586,6 +2607,205 @@ export const PurpleTheme = {
     divider: {
       height: 1,
       backgroundColor: Colors.Grey5,
+    },
+  }),
+  DcqlStyles: StyleSheet.create({
+    sectionContainer: {
+      marginVertical: 4,
+      marginHorizontal: 12,
+    },
+    sectionHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: 10,
+      paddingHorizontal: 12,
+    },
+    sectionTitle: {
+      fontFamily: 'Montserrat_700Bold',
+      fontSize: 11,
+      letterSpacing: 1,
+      color: Colors.Gray40,
+    },
+    sectionStepLabel: {
+      fontFamily: 'Montserrat_400Regular',
+      fontSize: 11,
+      color: Colors.Gray40,
+      marginTop: 2,
+    },
+    sectionSatisfiedIcon: {
+      marginHorizontal: 4,
+    },
+    sectionChevronWrapper: {
+      marginHorizontal: 4,
+    },
+    sectionHeaderSpacer: {
+      flex: 1,
+    },
+    /** Generic badge shell — borderColor and backgroundColor are injected via inline style props */
+    badge: {
+      alignSelf: 'center',
+      flexDirection: 'row',
+      alignItems: 'center',
+      borderWidth: 1,
+      borderRadius: 5,
+      paddingHorizontal: 8,
+      paddingVertical: 3,
+      gap: 3,
+    },
+    badgeText: {
+      fontFamily: 'Montserrat_700Bold',
+      fontSize: 10,
+    },
+    badgeInfoIcon: {
+      marginTop: 1,
+    },
+    bothRequiredBadge: {
+      borderWidth: 1,
+      borderColor: Colors.Primary,
+      borderRadius: 4,
+      paddingHorizontal: 6,
+      paddingVertical: 2,
+      marginLeft: 8,
+    },
+    bothRequiredText: {
+      fontFamily: 'Montserrat_600SemiBold',
+      fontSize: 9,
+      color: Colors.Primary,
+    },
+    verifierBanner: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: Colors.White,
+      marginHorizontal: 12,
+      marginTop: 12,
+      marginBottom: 4,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+      borderRadius: 10,
+      borderWidth: 1,
+      borderColor: Colors.Grey5,
+    },
+    verifierBannerLogo: {
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+    },
+    verifierBannerInfoCol: {
+      flex: 1,
+      flexDirection: 'column',
+      paddingHorizontal: 8,
+    },
+    verifierBannerName: {
+      fontFamily: 'Montserrat_600SemiBold',
+      fontSize: 13,
+      color: Colors.Black,
+    },
+    verifierBannerTrustedBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginTop: 2,
+    },
+    verifierBannerTrustedText: {
+      fontFamily: 'Montserrat_600SemiBold',
+      fontSize: 10,
+      color: '#1976D2',
+      marginLeft: 3,
+    },
+    credentialMissingSectionLabel: {
+      fontFamily: 'Montserrat_700Bold',
+      fontSize: 11,
+      letterSpacing: 1,
+      color: Colors.Gray50,
+      marginHorizontal: 16,
+      marginTop: 16,
+      marginBottom: 6,
+    },
+    credentialMissingCard: {
+      backgroundColor: Colors.White,
+      marginHorizontal: 16,
+      borderRadius: 10,
+      borderWidth: 1,
+      borderColor: Colors.Grey5,
+      overflow: 'hidden',
+    },
+    credentialMissingCardDivider: {
+      height: 1,
+      backgroundColor: Colors.Grey5,
+    },
+    credentialMissingCardBodyText: {
+      fontFamily: 'Montserrat_400Regular',
+      fontSize: 13,
+      lineHeight: 19,
+      color: Colors.mediumDarkGrey,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+    },
+  }),
+  AccordionStyles: StyleSheet.create({
+    container: {
+      borderRadius: 10,
+      borderWidth: 1,
+      borderColor: Colors.Grey5,
+      marginHorizontal: 8,
+      marginBottom: 8,
+      backgroundColor: Colors.White,
+      shadowColor: '#000',
+      shadowOffset: {width: -1, height: 2},
+      shadowOpacity: 0.3,
+      shadowRadius: 4,
+      elevation: 7,
+    },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: 10,
+      paddingHorizontal: 12,
+    },
+    titleRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      flexWrap: 'wrap',
+      rowGap: 4,
+    },
+    titleColumn: {
+      flexDirection: 'column',
+      justifyContent: 'flex-start',
+      alignContent: 'flex-start',
+    },
+    title: {
+      fontFamily: 'Montserrat_700Bold',
+      fontSize: 14,
+      color: Colors.Black,
+    },
+    expandButton: {
+      flex: 1,
+    },
+  }),
+  DividerStyles: StyleSheet.create({
+    container: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginVertical: 4,
+      paddingHorizontal: 12,
+    },
+    line: {
+      flex: 1,
+      height: 0.4,
+      backgroundColor: Colors.Grey5,
+    },
+    badge: {
+      borderWidth: 1,
+      borderColor: '#FDE68A',
+      backgroundColor: '#FFFBEB',
+      borderRadius: 12,
+      paddingHorizontal: 10,
+      paddingVertical: 3,
+      marginHorizontal: 8,
+    },
+    text: {
+      fontFamily: 'Montserrat_700Bold',
+      fontSize: 11,
+      color: '#F59E0B',
     },
   }),
 };
