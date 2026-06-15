@@ -202,11 +202,7 @@ export const ScanScreen: React.FC = () => {
     return (
       <Column crossAlign="center">
         <QrScanner
-          onQrFound={qr => {
-            if (!scanScreenController.isNoSharableVCs) {
-              scanScreenController.SCAN(qr);
-            }
-          }}
+          onQrFound={scanScreenController.SCAN}
           title={t('scanningGuide')}
         />
       </Column>

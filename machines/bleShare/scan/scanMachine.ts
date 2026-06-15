@@ -340,7 +340,6 @@ export const scanMachine =
           after: {
             DESTROY_TIMEOUT: {
               target: '#scan.connecting',
-              actions: [],
               internal: false,
             },
           },
