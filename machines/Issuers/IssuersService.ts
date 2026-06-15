@@ -1,7 +1,7 @@
 import NetInfo from '@react-native-community/netinfo';
-import { NativeModules } from 'react-native';
+import {NativeModules} from 'react-native';
 import Cloud from '../../shared/CloudBackupAndRestoreUtils';
-import getAllConfigurations, { CACHED_API } from '../../shared/api';
+import getAllConfigurations, {CACHED_API} from '../../shared/api';
 import {
   fetchKeyPair,
   generateKeyPair,
@@ -12,17 +12,17 @@ import {
   updateCredentialInformation,
   verifyCredentialData,
 } from '../../shared/openId4VCI/Utils';
-import VciClient, { VciClientErrorResponse } from '../../shared/vciClient/VciClient';
-import { displayType, issuerType } from './IssuersMachine';
-import { setItem } from '../store';
+import VciClient, {
+  VciClientErrorResponse,
+} from '../../shared/vciClient/VciClient';
+import {displayType, issuerType} from './IssuersMachine';
+import {setItem} from '../store';
 import {
   API_CACHED_STORAGE_KEYS,
   AuthorizationType,
 } from '../../shared/constants';
-import { createCacheObject } from '../../shared/Utils';
-import { VerificationResult } from '../../shared/vcjs/verifyCredential';
-import { sign } from '@noble/secp256k1';
-import { ca } from 'date-fns/locale';
+import {createCacheObject} from '../../shared/Utils';
+import {VerificationResult} from '../../shared/vcjs/verifyCredential';
 
 export const IssuersService = () => {
   return {
@@ -31,12 +31,13 @@ export const IssuersService = () => {
     },
     downloadIssuersList: async () => {
       let trustedIssuersList: issuerType[] = [];
-      try { trustedIssuersList = await CACHED_API.fetchIssuers(); }
-      catch (error) {
+      try {
+        trustedIssuersList = await CACHED_API.fetchIssuers();
+      } catch (error) {
         console.error('Error fetching issuers list:', error);
-       trustedIssuersList = [];
+        trustedIssuersList = [];
       }
-      
+
       return trustedIssuersList;
     },
     checkInternet: async () => await NetInfo.fetch(),
@@ -59,7 +60,7 @@ export const IssuersService = () => {
       return wellknownResponse;
     },
     getCredentialTypes: async (context: any) => {
-      const credentialTypes: Array<{ id: string;[key: string]: any }> = [];
+      const credentialTypes: Array<{id: string; [key: string]: any}> = [];
       const selectedIssuer = context.selectedIssuer;
 
       const keys = Object.keys(
@@ -122,7 +123,7 @@ export const IssuersService = () => {
         });
       };
 
-      const { credential } =
+      const {credential} =
         await VciClient.getInstance().requestCredentialFromTrustedIssuer(
           context.selectedIssuer.credential_issuer_host,
           context.selectedCredentialType.id,
@@ -151,7 +152,7 @@ export const IssuersService = () => {
     },
 
     checkIssuerIdInStoredTrustedIssuers: async (context: any) => {
-      const { RNSecureKeystoreModule } = NativeModules;
+      const {RNSecureKeystoreModule} = NativeModules;
       try {
         return await RNSecureKeystoreModule.hasAlias(
           context.credentialOfferCredentialIssuer,
@@ -171,7 +172,7 @@ export const IssuersService = () => {
     },
 
     addIssuerToTrustedIssuers: async (context: any) => {
-      const { RNSecureKeystoreModule } = NativeModules;
+      const {RNSecureKeystoreModule} = NativeModules;
       try {
         await RNSecureKeystoreModule.storeData(
           context.credentialOfferCredentialIssuer,
@@ -335,7 +336,7 @@ export const IssuersService = () => {
     },
 
     getKeyOrderList: async () => {
-      const { RNSecureKeystoreModule } = NativeModules;
+      const {RNSecureKeystoreModule} = NativeModules;
       const keyOrder = JSON.parse(
         (await RNSecureKeystoreModule.getData('keyPreference'))[1],
       );
@@ -380,6 +381,12 @@ export const IssuersService = () => {
         selectedCredentialType.format,
       );
       if (!verificationResult.isVerified) {
+        console.error(
+          'Credential verification failed with error code: ',
+          verificationResult.verificationErrorCode,
+          'and message: ',
+          verificationResult.verificationMessage,
+        );
         throw new Error(verificationResult.verificationErrorCode);
       }
 
@@ -442,11 +449,11 @@ async function sendTokenRequest(
     } catch {
       parsedError = {};
     }
-    //have to throw error in vci error respons eformat
+    //have to throw error in vci error response format
     const errorResponse: VciClientErrorResponse = {
       serverErrorCode: parsedError.error ?? 'UNKNOWN_ERROR',
       serverErrorMessage: parsedError.error_description,
-    }
+    };
     throw errorResponse;
   }
   const tokenResponse = await response.json();

@@ -1,55 +1,60 @@
-import React, {useEffect, useState} from 'react';
+import React, {Fragment, useEffect, useState} from 'react';
 import {
+  Image,
   ImageBackground,
+  ImageBackgroundProps,
   Pressable,
   View,
-  Image,
-  ImageBackgroundProps,
 } from 'react-native';
 import {VCMetadata} from '../../../shared/VCMetadata';
 import {KebabPopUp} from '../../KebabPopUp';
 import {Credential} from '../../../machines/VerifiableCredential/VCMetaMachine/vc';
 import {Column, Row, Text} from '../../ui';
 import {Theme} from '../../ui/styleUtils';
-import {CheckBox, Icon} from 'react-native-elements';
+import {Icon} from 'react-native-elements';
 import {SvgImage} from '../../ui/svg';
+import {Checkbox, CheckboxSelectionType} from '../../ui/checkbox/Checkbox';
 import {VcItemContainerProfileImage} from '../../VcItemContainerProfileImage';
 import {
-  isVCLoaded,
-  getCredentialType,
   Display,
   formatKeyLabel,
+  getCredentialType,
+  isVCLoaded,
 } from '../common/VCUtils';
 import {VCItemFieldValue} from '../common/VCItemField';
 import {WalletBinding} from '../../../screens/Home/MyVcs/WalletBinding';
 import {VCVerification} from '../../VCVerification';
 import {isActivationNeeded} from '../../../shared/openId4VCI/Utils';
 import {VCItemContainerFlowType} from '../../../shared/Utils';
-import {RevocationStatus} from '../../../shared/vcVerifier/VcVerifier';
 import {RemoveVcWarningOverlay} from '../../../screens/Home/MyVcs/RemoveVcWarningOverlay';
 import {HistoryTab} from '../../../screens/Home/MyVcs/HistoryTab';
 import {useCopilot} from 'react-native-copilot';
 import {useTranslation} from 'react-i18next';
 import testIDProps from '../../../shared/commonUtil';
+import {ClaimVisibility, flattenSdJwt} from '../common/VCProcessor';
 
 export const VCCardViewContent: React.FC<VCItemContentProps> = ({
-  isPinned = false,
-  credential,
-  verifiableCredentialData,
-  wellknown,
-  selectable,
-  selected,
-  service,
-  onPress,
-  flow,
-  walletBindingResponse,
-  KEBAB_POPUP,
-  DISMISS,
-  isKebabPopUp,
-  vcMetadata,
-  isInitialLaunch,
-  onDisclosuresChange,
-}) => {
+                                                                  isPinned = false,
+                                                                  credential,
+                                                                  verifiableCredentialData,
+                                                                  wellknown,
+                                                                  selectable,
+                                                                  selected,
+                                                                  disableSelection = false,
+                                                                  minimalDisclosure,
+                                                                  selectionType = CheckboxSelectionType.SINGLE,
+                                                                  service,
+                                                                  onPress,
+                                                                  flow,
+                                                                  walletBindingResponse,
+                                                                  KEBAB_POPUP,
+                                                                  DISMISS,
+                                                                  isKebabPopUp,
+                                                                  vcMetadata,
+                                                                  isInitialLaunch,
+                                                                  claimsPath,
+                                                                  onDisclosuresChange,
+                                                                }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [selectedFields, setSelectedFields] = useState<Record<string, boolean>>(
     {},
@@ -92,6 +97,8 @@ export const VCCardViewContent: React.FC<VCItemContentProps> = ({
   };
 
   const DisclosureNode: React.FC<{
+    selected?: boolean | undefined;
+    lockSelection?: boolean;
     name: string;
     node: any;
     fullPath: string;
@@ -99,7 +106,15 @@ export const VCCardViewContent: React.FC<VCItemContentProps> = ({
     setExpandedNodes: React.Dispatch<
       React.SetStateAction<Record<string, boolean>>
     >;
-  }> = ({name, node, fullPath, expandedNodes, setExpandedNodes}) => {
+  }> = ({
+          name,
+          node,
+          fullPath,
+          expandedNodes,
+          setExpandedNodes,
+          selected = undefined,
+          lockSelection = false,
+        }) => {
     const isExpanded = expandedNodes[fullPath] || false;
 
     const toggleExpand = () => {
@@ -109,7 +124,10 @@ export const VCCardViewContent: React.FC<VCItemContentProps> = ({
       }));
     };
 
-    const isChecked = selectedFields[fullPath] || false;
+    const isChecked =
+      node.visibility === ClaimVisibility.PUBLIC ||
+      selectedFields[fullPath] ||
+      false;
 
     return (
       <Column>
@@ -118,26 +136,17 @@ export const VCCardViewContent: React.FC<VCItemContentProps> = ({
           style={{justifyContent: 'space-between', marginBottom: -10}}>
           <Row crossAlign="center">
             {node.__self && (
-              <CheckBox
-                size={22}
-                checked={isChecked}
-                checkedIcon={SvgImage.selectedCheckBox()}
-                uncheckedIcon={
-                  <Icon
-                    name="check-box-outline-blank"
-                    color={Theme.Colors.uncheckedIcon}
-                    size={22}
-                  />
-                }
+              <Checkbox
+                checked={selected ?? isChecked}
                 onPress={() => handleFieldToggle(fullPath)}
+                selectionType={CheckboxSelectionType.MULTIPLE}
+                testId={fullPath}
+                disabled={node.visibility === ClaimVisibility.PUBLIC}
               />
             )}
-            <Text
-              weight="semibold"
-              color={wellknownDisplayProperty.getTextColor(
-                Theme.Colors.plainText,
-              )}
-              style={{marginLeft: 8}}>
+            <Text weight="semibold"
+                  color={wellknownDisplayProperty.getTextColor(Theme.Colors.plainText)}
+                  style={{marginLeft: 8}}>
               {formatKeyLabel(name)}
             </Text>
           </Row>
@@ -157,6 +166,8 @@ export const VCCardViewContent: React.FC<VCItemContentProps> = ({
           Object.entries(node.children).map(([childName, childNode]) => (
             <Column key={childName} margin="0 0 0 15">
               <DisclosureNode
+                selected={selected}
+                lockSelection={lockSelection}
                 name={childName}
                 node={childNode}
                 fullPath={`${fullPath}.${childName}`}
@@ -198,40 +209,27 @@ export const VCCardViewContent: React.FC<VCItemContentProps> = ({
   };
 
   const wellknownDisplayProperty = new Display(wellknown);
-  const vcSelectableButton =
-    selectable &&
-    (flow === VCItemContainerFlowType.VP_SHARE ? (
-      <CheckBox
-        checked={selected}
-        checkedIcon={SvgImage.selectedCheckBox()}
-        uncheckedIcon={
-          <Icon
-            name="check-box-outline-blank"
-            color={Theme.Colors.uncheckedIcon}
-            size={22}
-          />
-        }
-        onPress={() => onPress()}
-      />
-    ) : (
-      <CheckBox
-        checked={selected}
-        checkedIcon={
-          <Icon name="check-circle" type="material" color={Theme.Colors.Icon} />
-        }
-        uncheckedIcon={
-          <Icon
-            name="radio-button-unchecked"
-            color={Theme.Colors.uncheckedIcon}
-          />
-        }
-        onPress={() => onPress()}
-      />
-    ));
+  const vcSelectableButton = selectable && (
+    <Checkbox
+      testId={'select-vc'}
+      selectionType={selectionType ?? CheckboxSelectionType.SINGLE}
+      checked={selected ?? false}
+      disabled={disableSelection}
+      onPress={onPress}
+    />
+  );
   const issuerLogo = verifiableCredentialData.issuerLogo;
   const faceImage = verifiableCredentialData.face;
   const {start} = useCopilot();
   const {t} = useTranslation();
+
+  function showDisclosedKeys() {
+    return (
+      flow === VCItemContainerFlowType.VP_SHARE &&
+      (credential?.disclosedKeys?.length > 0 ||
+        (claimsPath && claimsPath.size > 0))
+    );
+  }
 
   return (
     <ImageBackground
@@ -251,6 +249,7 @@ export const VCCardViewContent: React.FC<VCItemContentProps> = ({
           isInitialLaunch ? () => start(t('copilot:cardTitle')) : undefined
         }>
         <Row crossAlign="center" padding="3 0 0 3">
+          {flow === VCItemContainerFlowType.VP_SHARE && vcSelectableButton}
           <VcItemContainerProfileImage
             isPinned={isPinned}
             verifiableCredentialData={verifiableCredentialData}
@@ -309,38 +308,40 @@ export const VCCardViewContent: React.FC<VCItemContentProps> = ({
               </Pressable>
             </>
           )}
-          {vcSelectableButton}
-          {flow === VCItemContainerFlowType.VP_SHARE &&
-            credential?.disclosedKeys?.length > 0 && (
-              <Pressable onPress={toggleExpand}>
-                <Icon
-                  name={isExpanded ? 'expand-less' : 'expand-more'}
-                  color={Theme.Colors.Icon}
-                />
-              </Pressable>
-            )}
+          {flow !== VCItemContainerFlowType.VP_SHARE && vcSelectableButton}
+          {showDisclosedKeys() && (
+            <Pressable onPress={toggleExpand}>
+              <Icon
+                name={isExpanded ? 'expand-less' : 'expand-more'}
+                color={Theme.Colors.Icon}
+              />
+            </Pressable>
+          )}
         </Row>
         {/* Expanded section for SD-JWT disclosed keys */}
-        {flow === VCItemContainerFlowType.VP_SHARE &&
-          isExpanded &&
-          credential?.disclosedKeys?.length > 0 && (
-            <Column padding="8 0">
-              <View style={{paddingHorizontal: 6, marginTop: 8}}>
-                <View
-                  style={{
-                    ...Theme.Styles.horizontalSeparator,
-                    marginBottom: 12,
-                  }}
-                />
-                <Column>
-                  <Text style={Theme.Styles.disclosureTitle}>
-                    {t('SendVPScreen:selectedFieldsTitle')}
-                  </Text>
-                  <Text style={Theme.Styles.disclosureSubtitle}>
-                    {t('SendVPScreen:selectedFieldsSubtitle')}
-                  </Text>
-                </Column>
+        {isExpanded && showDisclosedKeys() && (
+          <Column padding="8 0">
+            <View style={{paddingHorizontal: 6, marginTop: 8}}>
+              <View
+                style={{
+                  ...Theme.Styles.horizontalSeparator,
+                  marginBottom: 12,
+                }}
+              />
+              <Column>
+                <Text style={[Theme.Styles.disclosureTitle, {color: wellknownDisplayProperty.getTextColor(
+                    Theme.Colors.Details,
+                  )}]}>
+                  {t('SendVPScreen:selectedFieldsTitle')}
+                </Text>
+                <Text style={[Theme.Styles.disclosureSubtitle, {color: wellknownDisplayProperty.getTextColor(
+                    Theme.Colors.Details,
+                  )}]}>
+                  {t('SendVPScreen:selectedFieldsSubtitle')}
+                </Text>
+              </Column>
 
+              {!claimsPath && (
                 <Row style={{marginTop: 12}} width="100%" align="flex-end">
                   <Pressable onPress={toggleSelectAll}>
                     <Text
@@ -352,27 +353,53 @@ export const VCCardViewContent: React.FC<VCItemContentProps> = ({
                     </Text>
                   </Pressable>
                 </Row>
+              )}
 
-                <View
-                  style={{...Theme.Styles.horizontalSeparator, marginTop: 12}}
-                />
-              </View>
-              {Object.entries(
-                buildDisclosureTree(credential.disclosedKeys),
-              ).map(([name, node]) => (
-                <DisclosureNode
-                  key={name}
-                  name={name}
-                  node={node}
-                  fullPath={name}
-                  expandedNodes={expandedNodes}
-                  setExpandedNodes={setExpandedNodes}
-                />
-              ))}
-            </Column>
-          )}
+              <View
+                style={{...Theme.Styles.horizontalSeparator, marginTop: 12}}
+              />
+            </View>
+            <Fragment>
+              {claimsPath
+                ? Object.entries(
+                  buildDisclosureTree(
+                    flattenSdJwt({
+                      eligiblePaths: claimsPath,
+                      disclosedKeys: credential.disclosedKeys,
+                      fullResolvedPayload: credential.fullResolvedPayload,
+                    }),
+                  ),
+                ).map(([name, node]: [string, any]) => (
+                  <DisclosureNode
+                    selected={claimsPath ? selected : undefined}
+                    lockSelection={!!claimsPath}
+                    key={name}
+                    name={name}
+                    node={node}
+                    fullPath={name}
+                    expandedNodes={expandedNodes}
+                    setExpandedNodes={setExpandedNodes}
+                  />
+                ))
+                : Object.entries(
+                  buildDisclosureTreeForDisclosedClaims(
+                    credential.disclosedKeys,
+                  ),
+                ).map(([name, node]) => (
+                  <DisclosureNode
+                    key={name}
+                    name={name}
+                    node={node}
+                    fullPath={name}
+                    expandedNodes={expandedNodes}
+                    setExpandedNodes={setExpandedNodes}
+                  />
+                ))}
+            </Fragment>
+          </Column>
+        )}
 
-        <WalletBinding service={service} vcMetadata={vcMetadata} />
+        <WalletBinding service={service} vcMetadata={vcMetadata}/>
 
         <RemoveVcWarningOverlay
           testID="removeVcWarningOverlay"
@@ -380,13 +407,55 @@ export const VCCardViewContent: React.FC<VCItemContentProps> = ({
           vcMetadata={vcMetadata}
         />
 
-        <HistoryTab service={service} vcMetadata={vcMetadata} />
+        <HistoryTab service={service} vcMetadata={vcMetadata}/>
       </View>
     </ImageBackground>
   );
 };
 
-function buildDisclosureTree(paths: string[]) {
+type DisclosureData = {
+  __self: boolean;
+  visibility: ClaimVisibility | null;
+  value: unknown;
+  children: Record<string, DisclosureData>;
+};
+
+function buildDisclosureTree(
+  flattened: Record<string, { visibility: ClaimVisibility; value: unknown }>,
+): Record<string, DisclosureData> {
+  const root: Record<string, DisclosureData> = {};
+
+  Object.entries(flattened).forEach(([path, metadata]) => {
+    const parts = path.split('.');
+
+    let node: Record<string, DisclosureData> = root;
+
+    parts.forEach((part, idx) => {
+      // Create node if missing
+      if (!node[part]) {
+        node[part] = {
+          __self: false,
+          visibility: null,
+          value: undefined,
+          children: {},
+        };
+      }
+
+      // Leaf node
+      if (idx === parts.length - 1) {
+        node[part].__self = true;
+        node[part].visibility = metadata.visibility as ClaimVisibility;
+        node[part].value = metadata.value;
+      }
+
+      node = node[part].children;
+    });
+  });
+
+  return root;
+}
+
+function buildDisclosureTreeForDisclosedClaims(paths: string[]) {
   const root: any = {};
   paths.forEach(path => {
     const parts = path.split('.');
@@ -409,8 +478,10 @@ export interface VCItemContentProps {
   fields: [];
   wellknown: {};
   generatedOn: string;
-  selectable: boolean;
-  selected: boolean;
+  selectable?: boolean;
+  selected?: boolean;
+  disableSelection?: boolean;
+  selectionType?: CheckboxSelectionType;
   isPinned?: boolean;
   service: any;
   onPress: () => void;
@@ -422,5 +493,7 @@ export interface VCItemContentProps {
   isKebabPopUp: boolean;
   vcMetadata: VCMetadata;
   isInitialLaunch?: boolean;
+  claimsPath?: Set<string>;
+  minimalDisclosure?: boolean;
   onDisclosuresChange?: (disclosures: string[]) => void;
 }

@@ -25,10 +25,6 @@ export const openID4VPGuards = () => {
     isFlowTypeSimpleShare: context =>
       context.flowType === VCShareFlowType.SIMPLE_SHARE,
 
-    hasKeyPair: (context: any) => {
-      return !!context.publicKey;
-    },
-
     isAnyVCHasImage: (context: any) => {
       const hasImage = Object.values(context.selectedVCs)
         .flatMap(vc => vc)
@@ -43,12 +39,8 @@ export const openID4VPGuards = () => {
 
     isClientValidationRequred: (_, event) => event.data,
 
-    hasNoMatchingVCsAndIsAuthorizationFlow: (context: any) => {
-      const noMatchingVCs = context.hasNoMatchingVCs;
-      return (
-        noMatchingVCs &&
-        context.flowType === VCShareFlowType.OPENID4VP_AUTHORIZATION
-      );
+    hasNoMatchingVCs: (context: any) => {
+      return context.matchingVCsResult.success === false;
     },
   };
 };

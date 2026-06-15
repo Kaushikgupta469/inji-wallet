@@ -14,8 +14,8 @@ export function selectIsGetVCsSatisfyingAuthRequest(state: State) {
   return state.matches('getVCsSatisfyingAuthRequest');
 }
 
-export function selectVCsMatchingAuthRequest(state: State) {
-  return state.context.vcsMatchingAuthRequest;
+export function selectMatchingVcsResult(state: State) {
+  return state.context.matchingVCsResult;
 }
 
 export function selectSelectedVCs(state: State) {
@@ -54,9 +54,8 @@ export function selectIsShowLoadingScreen(state: State) {
 }
 
 export function selectCredentials(state: State) {
-  const processCredential = (vcData: any) =>
-    vcData?.verifiableCredential?.credential || vcData?.verifiableCredential;
-  let selectedCredentials: Credential[] = Object.values(
+  const processCredential = (vcData: any) => vcData?.verifiableCredential?.credential || vcData?.verifiableCredential;
+  const selectedCredentials: Credential[] = Object.values(
     state.context.selectedVCs,
   )
     .flatMap(innerMap => Object.values(innerMap)) // Extract arrays
@@ -102,6 +101,10 @@ export function selectIsSelectingVcs(state: State) {
   return state.matches('selectingVCs');
 }
 
+export function selectIsShowError(state: State) {
+  return state.matches('showError');
+}
+
 export function selectIsError(state: State) {
   return state.context.error;
 }
@@ -118,6 +121,10 @@ export function selectIsFaceVerifiedInVPSharing(state: State) {
   return (
     state.matches('sendingVP') && state.context.showFaceCaptureSuccessBanner
   );
+}
+
+export function selectVPRequest(state: State) {
+  return state.context.authenticationResponse;
 }
 
 export function selectVerifierNameInVPSharing(state: State) {
@@ -138,7 +145,7 @@ export function selectshowTrustConsentModal(state: State) {
 export function selectVerifierNameInTrustModal(state: State) {
   return state.context.authenticationResponse['client_metadata']?.[
     'client_name'
-  ];
+    ];
 }
 
 export function selectVerifierLogoInTrustModal(state: State) {

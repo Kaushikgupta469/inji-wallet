@@ -1,4 +1,4 @@
-import React, {Fragment, useEffect, useLayoutEffect, useState} from 'react';
+import React, {useEffect, useLayoutEffect, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {FlatList, Pressable, View} from 'react-native';
 import {Issuer} from '../../components/openId4VCI/Issuer';
@@ -34,7 +34,6 @@ import {QrScanner} from '../../components/QrScanner';
 import {AUTH_ROUTES} from '../../routes/routesConstants';
 import {TransactionCodeModal} from './TransactionCodeScreen';
 import {TrustModal} from '../../components/TrustModal';
-import {SendVPScreen} from '../Scan/SendVPScreen';
 
 import {AuthorizationType} from '../../shared/constants';
 import {useTimer} from '../../shared/hooks/UseTimer';
@@ -46,6 +45,7 @@ import {
 import {ErrorView} from '../../components/ui/Error';
 import {goBackErrors, goHomeErrors} from '../../shared/openId4VCI/Utils';
 import {VCIServerErrorCode} from '../../shared/openId4VCI/Utils';
+import {SendVPScreen} from '../openid4vp/SendVPScreen';
 
 export const IssuersScreen: React.FC<
   HomeRouteProps | RootRouteProps

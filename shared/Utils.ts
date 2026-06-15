@@ -82,7 +82,7 @@ export enum DEEPLINK_FLOWS {
   CREDENTIAL_OFFER = 'credentialOfferFlow',
 }
 
-export function base64ToByteArray(base64String) {
+export function base64ToByteArray(base64String: string) {
   try {
     let cleanBase64 = base64String.trim();
     cleanBase64 = cleanBase64.replace(/-/g, '+').replace(/_/g, '/');
@@ -100,6 +100,19 @@ export function base64ToByteArray(base64String) {
   }
 }
 
+export function base64UrlToUint8Array(base64Url: string) {
+  const base64 = base64Url
+    .replace(/-/g, '+')
+    .replace(/_/g, '/')
+    .padEnd(base64Url.length + ((4 - (base64Url.length % 4)) % 4), '=');
+
+  return Uint8Array.from(Buffer.from(base64, 'base64'));
+}
+
+export async function jsonLdExpand(data: any) {
+  return await jsonld.expand(data);
+}
+
 export async function canonicalize(unsignedVp: any) {
   try {
     const jsonldProof = {...unsignedVp['proof']};
@@ -108,13 +121,11 @@ export async function canonicalize(unsignedVp: any) {
     if ('proof' in jsonldObjectClone) {
       delete jsonldObjectClone.proof;
     }
-    const expandedJsonldObject = await jsonld.expand(jsonldObjectClone);
-    const normalizedJsonldObject = await jsonld.canonize(expandedJsonldObject, {
+    const normalizedJsonldObject = await jsonld.canonize(jsonldObjectClone, {
       algorithm: 'URDNA2015',
     });
 
-    const expandedJsonldProof = await jsonld.expand(jsonldProof);
-    const normalizedJsonldProof = await jsonld.canonize(expandedJsonldProof, {
+    const normalizedJsonldProof = await jsonld.canonize(jsonldProof, {
       algorithm: 'URDNA2015',
     });
 
@@ -127,6 +138,7 @@ export async function canonicalize(unsignedVp: any) {
     return base64url(canonicalizationResult);
   } catch (err) {
     console.error('Canonization failed:', err);
+    throw err;
   }
 }
 

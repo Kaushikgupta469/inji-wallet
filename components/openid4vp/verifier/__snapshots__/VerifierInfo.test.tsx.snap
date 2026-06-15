@@ -1,0 +1,124 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`VerifierInfo matches snapshot (happy path with logo and name) 1`] = `
+<View
+  style={
+    {
+      "alignItems": "center",
+      "backgroundColor": "#FFFFFF",
+      "borderColor": "#E0E0E0",
+      "borderRadius": 10,
+      "borderWidth": 1,
+      "flexDirection": "row",
+      "marginBottom": 4,
+      "marginHorizontal": 12,
+      "marginTop": 12,
+      "paddingHorizontal": 12,
+      "paddingVertical": 10,
+    }
+  }
+>
+  <View
+    testID="verifier-logo"
+  />
+  <View
+    style={
+      [
+        {
+          "flex": 1,
+          "flexDirection": "column",
+          "paddingHorizontal": 8,
+        },
+        {
+          "justifyContent": "center",
+        },
+      ]
+    }
+  >
+    <View
+      style={
+        {
+          "alignItems": "center",
+          "columnGap": 6,
+          "flexDirection": "row",
+        }
+      }
+    >
+      <Text
+        style={
+          [
+            {
+              "color": "#000000",
+              "fontSize": 16,
+              "lineHeight": 18,
+            },
+            {
+              "fontFamily": "Montserrat_400Regular",
+              "fontSize": 14,
+            },
+            null,
+            {
+              "textAlign": "left",
+            },
+            null,
+            null,
+            {
+              "color": "#000000",
+              "fontFamily": "Montserrat_600SemiBold",
+              "fontSize": 13,
+            },
+          ]
+        }
+      >
+        Test Verifier
+      </Text>
+    </View>
+  </View>
+  <View
+    style={
+      {
+        "alignItems": "center",
+        "flexDirection": "row",
+        "marginTop": 2,
+        "paddingRight": 6,
+      }
+    }
+  >
+    <View
+      color="#1976D2"
+      name="verified-user"
+      size={12}
+      type="material"
+    />
+    <Text
+      style={
+        [
+          {
+            "color": "#000000",
+            "fontSize": 16,
+            "lineHeight": 18,
+          },
+          {
+            "fontFamily": "Montserrat_400Regular",
+            "fontSize": 14,
+          },
+          null,
+          {
+            "textAlign": "left",
+          },
+          null,
+          null,
+          {
+            "color": "#1976D2",
+            "fontFamily": "Montserrat_600SemiBold",
+            "fontSize": 10,
+            "marginLeft": 3,
+          },
+        ]
+      }
+    >
+      verifierInfo.trusted
+    </Text>
+  </View>
+</View>
+`;

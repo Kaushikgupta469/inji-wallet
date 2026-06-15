@@ -123,9 +123,9 @@ export class VCMetadata {
   // Used for mmkv storage purposes and as a key for components and vc maps
   // Update VC_ITEM_STORE_KEY_REGEX in case of changes in vckey
   getVcKey(): string {
-    return this.timestamp !== ''
-      ? `${VC_KEY_PREFIX}_${this.timestamp}_${this.id}`
-      : `${VC_KEY_PREFIX}_${this.id}`;
+      return this.timestamp !== ''
+        ? `${VC_KEY_PREFIX}_${this.timestamp}_${this.id}`
+        : `${VC_KEY_PREFIX}_${this.id}`;
   }
 
   equals(other: VCMetadata): boolean {
@@ -136,6 +136,10 @@ export class VCMetadata {
 export function parseMetadatas(metadataStrings: object[]) {
   return metadataStrings.map(o => new VCMetadata(o));
 }
+
+export const getVcKey = (vcData: VC) => {
+  return VCMetadata.fromVcMetadataString(vcData.vcMetadata).getVcKey();
+};
 
 export const getVCMetadata = (context: object, keyType: string) => {
   const issuerHost =

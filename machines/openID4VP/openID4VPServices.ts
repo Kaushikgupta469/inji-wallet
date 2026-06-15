@@ -1,14 +1,9 @@
 import {CACHED_API} from '../../shared/api';
-import {fetchKeyPair} from '../../shared/cryptoutil/cryptoUtil';
-import {getJWK, hasKeyPair} from '../../shared/openId4VCI/Utils';
-import base64url from 'base64url';
 import OpenID4VP from '../../shared/openID4VP/OpenID4VP';
 import {OVP_ERROR_CODE, OVP_ERROR_MESSAGES} from '../../shared/constants';
 import {getVerifierKey, VCShareFlowType} from '../../shared/Utils';
 import {
-  isClientValidationRequired,
   signDataForVpPreparation,
-  signDataForVpPreparationV2,
 } from '../../shared/openID4VP/OpenID4VPHelper';
 import {NativeModules} from 'react-native';
 import VciClient from '../../shared/vciClient/VciClient';
@@ -22,14 +17,9 @@ export const openID4VPServices = () => {
       return await CACHED_API.fetchTrustedVerifiersList();
     },
 
-    shouldValidateClient: async () => {
-      return await isClientValidationRequired();
-    },
-
     getAuthenticationResponse: (context: any) => async () => {
       return await OpenID4VP.authenticateVerifier(
         context.urlEncodedAuthorizationRequest,
-        context.trustedVerifiers,
       );
     },
 
@@ -70,16 +60,6 @@ export const openID4VPServices = () => {
       }
     },
 
-    getKeyPair: async (context: any) => {
-      if (!!(await hasKeyPair(context.keyType))) {
-        return await fetchKeyPair(context.keyType);
-      }
-    },
-
-    getSelectedKey: async (context: any) => {
-      return await fetchKeyPair(context.keyType);
-    },
-
     shareDeclineStatus: async () => {
       return await OpenID4VP.sendErrorToVerifier(
         OVP_ERROR_MESSAGES.DECLINED,
@@ -87,9 +67,17 @@ export const openID4VPServices = () => {
       );
     },
 
+    getMatchingCredentialsForVPRequest: (context: any) => async () => {
+      return await OpenID4VP.getMatchingCredentials(
+        context.authenticationResponse,
+        context.availableWalletCredentials,
+      );
+    },
+
     sendSelectedCredentialsForVP: (context: any) => async () => {
       const selectedCredentials: SelectedCredentialsForVPSharing =
         await OpenID4VP.prepareCredentialsForVPSharing(
+          context.authenticationResponse,
           context.selectedVCs,
           context.selectedDisclosuresByVc,
         );
@@ -99,25 +87,21 @@ export const openID4VPServices = () => {
     },
 
     signVP: (context: any) => async () => {
-      return await signDataForVpPreparationV2(context.unsignedVPToken, context);
+      return await signDataForVpPreparation(context.unsignedVPToken);
     },
 
     sendVP: (context: any) => async () => {
-      const jwk = await getJWK(context.publicKey, context.keyType);
-      const holderId = 'did:jwk:' + base64url(JSON.stringify(jwk)) + '#0';
-
       const unSignedVpTokens = await OpenID4VP.constructUnsignedVPToken(
+        context.authenticationResponse,
         context.selectedVCs,
         context.selectedDisclosuresByVc,
-        holderId,
-        signatureSuite,
       );
-      const vpTokenSigningResultMap = await signDataForVpPreparation(
+      const vpTokenSigningResults = await signDataForVpPreparation(
         unSignedVpTokens,
-        context,
       );
+
       const verifierResponse = await OpenID4VP.shareVerifiablePresentation(
-        vpTokenSigningResultMap,
+        vpTokenSigningResults,
       );
       if (verifierResponse['status_code'] !== 200) {
         console.error(

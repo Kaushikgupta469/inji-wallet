@@ -65,75 +65,14 @@ export const openID4VPMachine = model.createMachine(
       checkFaceAuthConsent: {
         entry: ['setIsShowLoadingScreen', 'getFaceAuthConsent'],
         on: {
-          STORE_RESPONSE: {target: 'checkIfClientValidationIsRequired'},
-        },
-      },
-      checkIfClientValidationIsRequired: {
-        invoke: {
-          src: 'shouldValidateClient',
-          onDone: [
-            {
-              cond: 'isClientValidationRequred',
-              actions: 'updateShowFaceAuthConsent',
-              target: 'getTrustedVerifiersList',
-            },
-            {
-              actions: 'updateShowFaceAuthConsent',
-              target: 'getKeyPairFromKeystore',
-            },
-          ],
-        },
-      },
-      getTrustedVerifiersList: {
-        invoke: {
-          src: 'fetchTrustedVerifiers',
-          onDone: {
-            actions: 'setTrustedVerifiers',
-            target: 'getKeyPairFromKeystore',
-          },
-          onError: {
-            actions: [
-              'setTrustedVerifiersApiCallError',
-              'resetIsShowLoadingScreen',
-            ],
-          },
-        },
-      },
-      getKeyPairFromKeystore: {
-        invoke: {
-          src: 'getKeyPair',
-          onDone: {
-            actions: ['loadKeyPair'],
-            target: 'checkKeyPair',
-          },
-          onError: [
-            {
-              actions: 'setError',
-            },
-          ],
-        },
-      },
-      checkKeyPair: {
-        description: 'checks whether key pair is generated',
-        invoke: {
-          src: 'getSelectedKey',
-          onDone: [
+          STORE_RESPONSE: [
             {
               cond: 'isAuthorizationFlow',
-              actions: [
-                'setAuthenticationResponseForPresentationAuthFlow',
-                'resetIsShowLoadingScreen',
-              ],
+              actions: ['setAuthenticationResponseForPresentationAuthFlow'],
               target: 'checkVerifierTrust',
             },
             {
-              cond: 'hasKeyPair',
               target: 'authenticateVerifier',
-            },
-          ],
-          onError: [
-            {
-              actions: 'setError',
             },
           ],
         },
@@ -157,10 +96,12 @@ export const openID4VPMachine = model.createMachine(
             },
           ],
         },
-        exit: 'resetIsShowLoadingScreen',
       },
       checkVerifierTrust: {
+        entry: ['resetIsShowLoadingScreen'],
         invoke: {
+          // Has Verifier communications happened before and user has given the trust consent
+          // This is not related to Wallet's pre-registered Verifier
           src: 'isVerifierTrusted',
           onDone: [
             {
@@ -237,11 +178,25 @@ export const openID4VPMachine = model.createMachine(
       },
 
       getVCsSatisfyingAuthRequest: {
-        entry: ['dismissTrustModal'],
+        entry: ['setIsShowLoadingScreen', 'dismissTrustModal'],
         on: {
           DOWNLOADED_VCS: {
-            actions: 'getVcsMatchingAuthRequest',
+            actions: ['setAvailableWalletCredentials'],
+            target: 'matchVPRequestWithVCs',
+          },
+        },
+      },
+
+      matchVPRequestWithVCs: {
+        invoke: {
+          src: 'getMatchingCredentialsForVPRequest',
+          onDone: {
+            actions: ['setMatchingVCs', 'resetIsShowLoadingScreen'],
             target: 'checkIfAnyMatchingVCs',
+          },
+          onError: {
+            actions: ['setError'],
+            target: 'showError',
           },
         },
       },
@@ -249,7 +204,7 @@ export const openID4VPMachine = model.createMachine(
       checkIfAnyMatchingVCs: {
         always: [
           {
-            cond: 'hasNoMatchingVCsAndIsAuthorizationFlow',
+            cond: 'hasNoMatchingVCs',
             target: 'noMatchingVCs',
           },
           {
@@ -263,12 +218,21 @@ export const openID4VPMachine = model.createMachine(
       },
 
       noMatchingVCs: {
-        entry: [
-          model.assign({
-            error: () => OVP_ERROR_MESSAGES.NO_MATCHING_VCS,
-          }),
+        always: [
+          {
+            cond: 'isAuthorizationFlow',
+            actions: [
+              model.assign({
+                error: () => OVP_ERROR_MESSAGES.NO_MATCHING_VCS,
+              }),
+            ],
+            target: 'authFlowFailed',
+          },
+          {
+            actions: 'sendNoMatchingVcsErrorToVerifier',
+            target: 'showError',
+          },
         ],
-        always: [{target: 'authFlowFailed'}],
       },
 
       setSelectedVC: {
@@ -311,6 +275,7 @@ export const openID4VPMachine = model.createMachine(
         },
       },
       selectingVCs: {
+        entry: ['resetIsShowLoadingScreen'],
         // TODO: On entering this state, an event can be sent to parent stating VCs matching done and ready for selection
         on: {
           VERIFY_AND_ACCEPT_REQUEST: {
@@ -430,32 +395,14 @@ export const openID4VPMachine = model.createMachine(
         on: {
           FACE_VALID: [
             {
-              cond: 'hasKeyPair',
               actions: 'updateFaceCaptureBannerStatus',
               target: 'sendingVP',
-            },
-            {
-              target: 'checkKeyPair',
             },
           ],
           FACE_INVALID: [
             {
-              cond: 'isFaceVerificationRetryAttempt',
-              actions: send({
-                type: 'LOG_ACTIVITY',
-                logType: 'FACE_VERIFICATION_FAILED_AFTER_RETRY_ATTEMPT',
-              }),
-              target: 'invalidIdentity',
-            },
-            {
-              actions: [
-                send({
-                  type: 'LOG_ACTIVITY',
-                  logType: 'FACE_VERIFICATION_FAILED',
-                }),
-                'setIsFaceVerificationRetryAttempt',
-              ],
-              target: 'invalidIdentity',
+              actions: 'updateFaceCaptureBannerStatus',
+              target: 'sendingVP',
             },
           ],
           CANCEL: [
@@ -662,6 +609,7 @@ export const openID4VPMachine = model.createMachine(
       },
       showError: {
         id: 'showError',
+        entry: ['resetIsShowLoadingScreen'],
         on: {
           RETRY: {
             actions: ['resetError', 'incrementOpenID4VPRetryCount'],

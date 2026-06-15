@@ -1,10 +1,10 @@
-import { NativeModules, NativeEventEmitter } from 'react-native';
-import { __AppId } from '../GlobalVariables';
+import {NativeEventEmitter, NativeModules} from 'react-native';
+import {__AppId} from '../GlobalVariables';
 import {
   SelectedCredentialsForVPSharing,
   VerifiableCredential,
 } from '../../machines/VerifiableCredential/VCMetaMachine/vc';
-import { signatureSuite } from '../../machines/openID4VP/openID4VPServices';
+import {getWalletConfig, jsonLdCanonicalize} from '../openID4VP/OpenID4VPHelper';
 
 const emitter = new NativeEventEmitter(NativeModules.InjiVciClient);
 
@@ -14,7 +14,7 @@ export type VciClientErrorResponse = {
   serverErrorCode?: string;
   serverErrorMessage?: string;
   sourceErrorCode?: string;
-}
+};
 class VciClient {
   private static instance: VciClient;
   private InjiVciClient = NativeModules.InjiVciClient;
@@ -30,6 +30,22 @@ class VciClient {
     return VciClient.instance;
   }
 
+  private addJsonLdCanonicalizerCallback = () => {
+    emitter.addListener('onJsonLdCanonicalize', ({data}: {data: string}) => {
+      jsonLdCanonicalize(data)
+        .then(result => {
+          this.InjiVciClient.sendJsonLdCanonicalizeResultFromJS(result);
+        })
+        .catch(error => {
+          this.InjiVciClient.notifyCanonicalizationFailureFromJS(
+            'server_error',
+            'An error occurred during JSON-LD canonicalization',
+          );
+          console.error('Error during JSON-LD canonicalization: ', error);
+        });
+    });
+  };
+
   async sendProof(jwt: string) {
     this.InjiVciClient.sendProofFromJS(jwt);
   }
@@ -41,7 +57,9 @@ class VciClient {
   }
 
   async sendSignedVP(vpTokenSigningResult: object) {
-    await this.InjiVciClient.sendVPTokenSigningResultFromJS(vpTokenSigningResult);
+    await this.InjiVciClient.sendVPTokenSigningResultFromJS(
+      vpTokenSigningResult,
+    );
   }
 
   async sendAuthCode(authCode: string) {
@@ -88,7 +106,7 @@ class VciClient {
   ): Promise<any> {
     const proofListener = emitter.addListener(
       'onRequestProof',
-      ({ credentialIssuer, cNonce, proofSigningAlgorithmsSupported }) => {
+      ({credentialIssuer, cNonce, proofSigningAlgorithmsSupported}) => {
         getProofJwt(
           credentialIssuer,
           cNonce,
@@ -99,45 +117,47 @@ class VciClient {
 
     const presentationRequestListener = emitter.addListener(
       'onPresentationRequest',
-      ({ presentationRequest }) => {
+      ({presentationRequest}) => {
         handlePresentationRequest(JSON.parse(presentationRequest));
       },
     );
 
     const signVPListener = emitter.addListener(
       'onRequestSignedVPToken',
-      ({ vpTokenSigningRequest }) => {
+      ({vpTokenSigningRequest}) => {
         signPresentation(vpTokenSigningRequest);
       },
     );
 
     const authListener = emitter.addListener(
       'onRequestAuthCode',
-      ({ authorizationUrl }) => {
+      ({authorizationUrl}) => {
         navigateToAuthView(authorizationUrl);
       },
     );
 
     const txCodeListener = emitter.addListener(
       'onRequestTxCode',
-      ({ inputMode, description, length }) => {
+      ({inputMode, description, length}) => {
         getTxCode(inputMode, description, length);
       },
     );
 
     const tokenResponseListener = emitter.addListener(
       'onRequestTokenResponse',
-      ({ tokenRequest }) => {
+      ({tokenRequest}) => {
         requestTokenResponse(tokenRequest);
       },
     );
 
     const trustIssuerListener = emitter.addListener(
       'onCheckIssuerTrust',
-      ({ credentialIssuer, issuerDisplay }) => {
+      ({credentialIssuer, issuerDisplay}) => {
         requestTrustIssuerConsent(credentialIssuer, JSON.parse(issuerDisplay));
       },
     );
+
+    this.addJsonLdCanonicalizerCallback();
 
     let response = '';
     try {
@@ -145,10 +165,11 @@ class VciClient {
         clientId: 'wallet',
         redirectUri: 'io.mosip.residentapp.inji://oauthredirect',
       };
+      const openId4VpWalletConfig = await getWalletConfig()
       response = await this.InjiVciClient.requestCredentialByOffer(
         credentialOffer,
         JSON.stringify(clientMetadata),
-        signatureSuite,
+        openId4VpWalletConfig
       );
     } catch (error) {
       console.error('Error requesting credential by offer:', error);
@@ -158,7 +179,7 @@ class VciClient {
         serverErrorCode: error?.userInfo?.serverErrorCode,
         serverErrorMessage: error?.userInfo?.serverErrorDescription,
         sourceErrorCode: error?.userInfo?.sourceErrorCode,
-      }
+      };
       throw errorResponse;
     } finally {
       proofListener.remove();
@@ -196,7 +217,7 @@ class VciClient {
   ): Promise<any> {
     const proofListener = emitter.addListener(
       'onRequestProof',
-      ({ credentialIssuer, cNonce, proofSigningAlgorithmsSupported }) => {
+      ({credentialIssuer, cNonce, proofSigningAlgorithmsSupported}) => {
         getProofJwt(
           credentialIssuer,
           cNonce,
@@ -207,40 +228,42 @@ class VciClient {
 
     const presentationRequestListener = emitter.addListener(
       'onPresentationRequest',
-      ({ presentationRequest }) => {
-        //TODO: Handle presentation request
+      ({presentationRequest}) => {
         handlePresentationRequest(JSON.parse(presentationRequest));
       },
     );
 
     const signVPListener = emitter.addListener(
       'onRequestSignedVPToken',
-      ({ vpTokenSigningRequest }) => {
+      ({vpTokenSigningRequest}) => {
         signPresentation(vpTokenSigningRequest);
       },
     );
 
     const authListener = emitter.addListener(
       'onRequestAuthCode',
-      ({ authorizationUrl }) => {
+      ({authorizationUrl}) => {
         navigateToAuthView(authorizationUrl);
       },
     );
 
     const tokenResponseListener = emitter.addListener(
       'onRequestTokenResponse',
-      ({ tokenRequest }) => {
+      ({tokenRequest}) => {
         requestTokenResponse(tokenRequest);
       },
     );
 
+    this.addJsonLdCanonicalizerCallback();
+
     let response = '';
     try {
+      const openId4VpWalletConfig = await getWalletConfig()
       response = await this.InjiVciClient.requestCredentialFromTrustedIssuer(
         credentialIssuerUri,
         credentialConfigurationId,
         JSON.stringify(clientMetadata),
-        signatureSuite,
+        openId4VpWalletConfig
       );
     } catch (error) {
       console.error('Error requesting credential from trusted issuer:', error);
@@ -250,7 +273,7 @@ class VciClient {
         serverErrorCode: error?.userInfo?.serverErrorCode,
         serverErrorMessage: error?.userInfo?.serverErrorDescription,
         sourceErrorCode: error?.userInfo?.sourceErrorCode,
-      }
+      };
       throw errorResponse;
     } finally {
       proofListener.remove();
@@ -270,7 +293,7 @@ class VciClient {
     };
   }
 
-  abortPresentationFlow(error: { code: string; message: string }) {
+  abortPresentationFlow(error: {code: string; message: string}) {
     console.debug(`message ${error.message}`);
     this.InjiVciClient.abortPresentationFlowFromJS(error.code, error.message);
   }

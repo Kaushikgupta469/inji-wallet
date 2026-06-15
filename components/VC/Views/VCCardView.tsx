@@ -6,6 +6,7 @@ import {ErrorMessageOverlay, MessageOverlay} from '../../MessageOverlay';
 import {Theme} from '../../ui/styleUtils';
 import {VCMetadata} from '../../../shared/VCMetadata';
 import {format} from 'date-fns';
+import testIDProps from '../../../shared/commonUtil';
 
 import {VCCardSkeleton} from '../common/VCCardSkeleton';
 import {VCCardViewContent} from './VCCardViewContent';
@@ -16,19 +17,25 @@ import {VCItemMachine} from '../../../machines/VerifiableCredential/VCItemMachin
 import {useTranslation} from 'react-i18next';
 import {Copilot} from '../../ui/Copilot';
 import {VCProcessor} from '../common/VCProcessor';
+import {CheckboxSelectionType} from '../../ui/checkbox/Checkbox';
 
 export const VCCardView: React.FC<VCItemProps> = ({
   vcMetadata,
   selectable,
   selected,
+  selectionType = CheckboxSelectionType.SINGLE,
+  disableSelection = false,
   onPress,
   isDownloading,
   isPinned,
   flow,
   isInitialLaunch = false,
   isTopCard = false,
+  minimalDisclosure = false,
   onDisclosuresChange,
+  sdClaimsPath,
   onMeasured,
+  testId,
 }) => {
   const controller = useVcItemController(vcMetadata);
   const {t} = useTranslation();
@@ -124,16 +131,20 @@ export const VCCardView: React.FC<VCItemProps> = ({
       verifiableCredentialData={verifiableCredentialData}
       wellknown={wellknown}
       selectable={selectable}
+      disableSelection={disableSelection}
       selected={selected}
+      selectionType={selectionType}
       service={service}
       isPinned={isPinned}
-      onPress={() => onPress(service)}
+      onPress={handleVcSelection}
       flow={flow}
       isKebabPopUp={controller.isKebabPopUp}
       DISMISS={controller.DISMISS}
       KEBAB_POPUP={controller.KEBAB_POPUP}
       isInitialLaunch={isInitialLaunch}
       onDisclosuresChange={onDisclosuresChange}
+      claimsPath={sdClaimsPath}
+      minimalDisclosure={minimalDisclosure}
     />
   );
 
@@ -146,6 +157,10 @@ export const VCCardView: React.FC<VCItemProps> = ({
     </Copilot>
   );
 
+  const handleVcSelection = () => {
+    if (!disableSelection) onPress(service);
+  };
+
   return (
     <>
       <MessageOverlay
@@ -157,7 +172,8 @@ export const VCCardView: React.FC<VCItemProps> = ({
       <Pressable
         ref={cardRef}
         accessible={false}
-        onPress={() => onPress(service)}
+        {...(testId ? testIDProps(testId) : {})}
+        onPress={handleVcSelection}
         style={
           selected
             ? Theme.Styles.selectedBindedVc
@@ -182,6 +198,7 @@ export interface VCItemProps {
   margin?: string;
   selectable?: boolean;
   selected?: boolean;
+  selectionType?: CheckboxSelectionType;
   onPress: (vcRef?: ActorRefFrom<typeof VCItemMachine>) => void;
   onShow?: (vcRef?: ActorRefFrom<typeof VCItemMachine>) => void;
   isDownloading?: boolean;
@@ -189,7 +206,11 @@ export interface VCItemProps {
   flow?: string;
   isInitialLaunch?: boolean;
   isTopCard?: boolean;
+  sdClaimsPath?: Set<string>;
+  minimalDisclosure?: boolean;
   onDisclosuresChange?: (paths: string[]) => void;
+  testId?: string;
+  disableSelection?: boolean;
   onMeasured?: (rect: {
     x: number;
     y: number;

@@ -1,19 +1,15 @@
 import {NavigationProp, useNavigation} from '@react-navigation/native';
 import {useSelector} from '@xstate/react';
-import {useCallback, useContext, useRef, useState} from 'react';
+import {useCallback, useContext} from 'react';
 import {useTranslation} from 'react-i18next';
-import {ActorRefFrom} from 'xstate';
 import {Theme} from '../../components/ui/styleUtils';
 import {selectIsCancelling} from '../../machines/bleShare/commonSelectors';
 import {ScanEvents} from '../../machines/bleShare/scan/scanMachine';
+import {selectFlowType, selectIsSendingVPError,} from '../../machines/bleShare/scan/scanSelectors';
 import {
-  selectFlowType,
-  selectIsSendingVPError,
-} from '../../machines/bleShare/scan/scanSelectors';
-import {
-  selectIsAuthorization,
   selectAreAllVCsChecked,
   selectCredentials,
+  selectIsAuthorization,
   selectIsError,
   selectIsFaceVerificationConsent,
   selectIsGetVCsSatisfyingAuthRequest,
@@ -22,34 +18,37 @@ import {
   selectIsOVPViaDeeplink,
   selectIsSelectingVcs,
   selectIsSharingVP,
+  selectIsShowError,
   selectIsShowLoadingScreen,
   selectIsVerifyingIdentity,
+  selectMatchingVcsResult,
   selectOpenID4VPRetryCount,
   selectPurpose,
   selectRequestedClaimsByVerifier,
   selectSelectedVCs,
   selectShowConfirmationPopup,
   selectshowTrustConsentModal,
-  selectVCsMatchingAuthRequest,
   selectVerifiableCredentialsData,
   selectVerifierLogoInTrustModal,
   selectVerifierNameInTrustModal,
   selectVerifierNameInVPSharing,
+  selectVPRequest,
 } from '../../machines/openID4VP/openID4VPSelectors';
 import {OpenID4VPEvents} from '../../machines/openID4VP/openID4VPMachine';
 import {selectMyVcs} from '../../machines/QrLogin/QrLoginSelectors';
-import {VCItemMachine} from '../../machines/VerifiableCredential/VCItemMachine/VCItemMachine';
 import {selectShareableVcs} from '../../machines/VerifiableCredential/VCMetaMachine/VCMetaSelectors';
 import {RootRouteProps} from '../../routes';
 import {BOTTOM_TAB_ROUTES} from '../../routes/routesConstants';
 import {GlobalContext} from '../../shared/GlobalContext';
 import {formatTextWithGivenLimit} from '../../shared/Utils';
-import {VCMetadata} from '../../shared/VCMetadata';
-import {VPShareOverlayProps} from './VPShareOverlay';
+import {VPShareOverlayProps} from '../Scan/VPShareOverlay';
 import {ActivityLogEvents} from '../../machines/activityLog';
 import {VPShareActivityLog} from '../../components/VPShareActivityLogEvent';
 import {isIOS} from '../../shared/constants';
-import {getFaceAttribute} from '../../components/VC/common/VCUtils';
+import {getFaceAttribute, getMosipLogo} from '../../components/VC/common/VCUtils';
+import {Credential, VC, VerifiableCredentialData} from '../../machines/VerifiableCredential/VCMetaMachine/vc';
+import {isDcqlFlow} from '../../shared/openID4VP/OpenID4VPHelper';
+import {VCMetadata} from "../../shared/VCMetadata";
 
 type MyVcsTabNavigation = NavigationProp<RootRouteProps>;
 
@@ -68,13 +67,6 @@ export function useSendVPScreen(props) {
     props?.route?.name === 'IssuersScreen'
       ? props.route.params.ovpService
       : scanService.getSnapshot().context.OpenId4VPRef;
-  // input descriptor id to VCs mapping
-  const [
-    inputDescriptorIdToSelectedVcKeys,
-    setInputDescriptorIdToSelectedVcKeys,
-  ] = useState<Record<string, [string]>>({});
-
-  const hasLoggedErrorRef = useRef(false);
 
   const shareableVcs = useSelector(vcMetaService, selectShareableVcs);
 
@@ -93,36 +85,29 @@ export function useSendVPScreen(props) {
     openID4VPService,
     selectAreAllVCsChecked,
   );
-  const vcsMatchingAuthRequest = useSelector(
+
+  const matchingVcsResult = useSelector(
     openID4VPService,
-    selectVCsMatchingAuthRequest,
+    selectMatchingVcsResult,
   );
 
-  const checkIfAnyVCHasImage = vcs => {
+  const checkIfAnyVCHasImage = (vcs: Record<string, VC[]>) => {
     return Object.values(vcs)
       .flatMap(vc => vc)
       .some(vc => {
-        return getFaceAttribute(vc.verifiableCredential, vc.format) != null;
+        return getFaceAttribute(vc.verifiableCredential, vc.vcMetadata.format) != null;
       });
   };
-
-  const checkIfAllVCsHasImage = vcs => {
-    return Object.values(vcs)
-      .flatMap(vc => vc)
-      .every(
-        vc => getFaceAttribute(vc.verifiableCredential, vc.format) != null,
-      );
-  };
-
-  const getSelectedVCs = (): Record<string, any[]> => {
-    let selectedVcsData: Record<string, any[]> = {}; // input_descriptor_id to VC[]
-    Object.entries(inputDescriptorIdToSelectedVcKeys).forEach(
-      ([inputDescriptorId, vcKeys]) => {
+  const getSelectedVCs = (credentialRequestIdToSelectedVcKeys: Record<string, Set<string>>): Record<string, VC[]> => {
+    const selectedVcsData: Record<string, VC[]> = {}; // input_descriptor_id or credential query ID to VC[]
+    const availableCredentials = myVcs
+    Object.entries(credentialRequestIdToSelectedVcKeys).forEach(
+      ([credentialRequestId, vcKeys]) => {
         vcKeys.forEach((vcKey: string) => {
-          const vcData = myVcs[vcKey];
-          selectedVcsData[inputDescriptorId] =
-            selectedVcsData[inputDescriptorId] || [];
-          selectedVcsData[inputDescriptorId].push(vcData);
+          const vcData = availableCredentials[vcKey];
+          selectedVcsData[credentialRequestId] =
+            selectedVcsData[credentialRequestId] || [];
+          selectedVcsData[credentialRequestId].push(vcData);
         });
       },
     );
@@ -135,6 +120,7 @@ export function useSendVPScreen(props) {
   );
   const isSelectingVCs = useSelector(openID4VPService, selectIsSelectingVcs);
   const error = useSelector(openID4VPService, selectIsError);
+  const showError = useSelector(openID4VPService, selectIsShowError);
   const isVPSharingConsent = useSelector(
     openID4VPService,
     selectIsGetVPSharingConsent,
@@ -154,16 +140,17 @@ export function useSendVPScreen(props) {
     selectOpenID4VPRetryCount,
   );
   const noCredentialsMatchingVPRequest =
-    isSelectingVCs &&
-    (Object.keys(vcsMatchingAuthRequest).length === 0 ||
-      Object.values(vcsMatchingAuthRequest).every(
-        value => Array.isArray(value) && value.length === 0,
-      ));
+    (!matchingVcsResult.success) && Object.keys(matchingVcsResult).length > 0 &&
+    showError;
 
   const isOVPViaDeepLink = useSelector(
     openID4VPService,
     selectIsOVPViaDeeplink,
   );
+
+  const vpRequest = useSelector(openID4VPService, selectVPRequest);
+
+  const isDcqlRequestFlow = isDcqlFlow(vpRequest);
 
   const getAdditionalMessage = useCallback(() => {
     return isOVPViaDeepLink && isIOS() ? t('errors.additionalMessage') : '';
@@ -190,7 +177,7 @@ export function useSendVPScreen(props) {
   );
 
   let overlayDetails: Omit<VPShareOverlayProps, 'isVisible'> | null = null;
-  let vpVerifierName = useSelector(
+  const vpVerifierName = useSelector(
     openID4VPService,
     selectVerifierNameInVPSharing,
   );
@@ -200,7 +187,7 @@ export function useSendVPScreen(props) {
       primaryButtonText: t('consentDialog.confirmButton'),
       primaryButtonEvent: CONFIRM,
       secondaryButtonTestID: 'cancel',
-      secondaryButtonText: t('consentDialog.cancelButton'),
+      secondaryButtonText: t('common:decline'),
       secondaryButtonEvent: CANCEL,
       title: t('consentDialog.title'),
       titleTestID: 'consentTitle',
@@ -248,8 +235,6 @@ export function useSendVPScreen(props) {
     showConfirmationPopup,
     isSelectingVCs,
     checkIfAnyVCHasImage,
-    checkIfAllVCsHasImage,
-    getSelectedVCs,
     error,
     noCredentialsMatchingVPRequest,
     requestedClaimsByVerifier,
@@ -257,10 +242,9 @@ export function useSendVPScreen(props) {
     overlayDetails,
     generateAndStoreLogMessage,
     scanScreenError: useSelector(scanService, selectIsSendingVPError),
-    vcsMatchingAuthRequest,
+    matchingVcsResult,
     userSelectedVCs: useSelector(openID4VPService, selectSelectedVCs),
     areAllVCsChecked,
-    inputDescriptorIdToSelectedVcKeys,
     isVerifyingIdentity: useSelector(
       openID4VPService,
       selectIsVerifyingIdentity,
@@ -278,6 +262,8 @@ export function useSendVPScreen(props) {
       openID4VPService,
       selectVerifiableCredentialsData,
     ),
+    isDcqlFlow: isDcqlRequestFlow,
+
     FACE_VERIFICATION_CONSENT: (isDoNotAskAgainChecked: boolean) =>
       openID4VPService.send(
         OpenID4VPEvents.FACE_VERIFICATION_CONSENT(isDoNotAskAgainChecked),
@@ -297,83 +283,35 @@ export function useSendVPScreen(props) {
         changeTabBarVisible('flex');
       }, 0);
     },
-    SELECT_VC_ITEM:
-      (vcKey: string, inputDescriptorId: string) =>
-      (vcRef: ActorRefFrom<typeof VCItemMachine>) => {
-        let descriptorMappingToVCs = {...inputDescriptorIdToSelectedVcKeys};
 
-        const isVCSelected =
-          Object.keys(inputDescriptorIdToSelectedVcKeys)?.includes(
-            inputDescriptorId,
-          ) &&
-          inputDescriptorIdToSelectedVcKeys[inputDescriptorId]?.includes(vcKey)
-            ? false
-            : true;
-        if (isVCSelected) {
-          if (descriptorMappingToVCs[inputDescriptorId]) {
-            if (!descriptorMappingToVCs[inputDescriptorId].includes(vcKey)) {
-              descriptorMappingToVCs[inputDescriptorId].push(vcKey);
-            }
-          } else {
-            descriptorMappingToVCs[inputDescriptorId] = [vcKey];
-          }
-        } else {
-          // remove vc key from the input descriptor mapping
-          if (descriptorMappingToVCs[inputDescriptorId]) {
-            descriptorMappingToVCs[inputDescriptorId] = descriptorMappingToVCs[
-              inputDescriptorId
-            ].filter(key => key !== vcKey); // remove the vcKey from the array
-            if (descriptorMappingToVCs[inputDescriptorId].length === 0) {
-              // if the array is empty, remove the input descriptor id
-              delete descriptorMappingToVCs[inputDescriptorId];
-            }
-          }
-        }
-        setInputDescriptorIdToSelectedVcKeys(descriptorMappingToVCs);
-        const {serviceRefs, wellknownResponse, ...vcData} =
-          vcRef.getSnapshot().context;
-      },
-
-    UNCHECK_ALL: () => {
-      setInputDescriptorIdToSelectedVcKeys({});
-    },
-
-    CHECK_ALL: () => {
-      const updatedInputDescriptorToCredentialsMapping: Record<string, any[]> =
-        {};
-      Object.entries(vcsMatchingAuthRequest).map(([inputDescriptorId, vcs]) => {
-        updatedInputDescriptorToCredentialsMapping[inputDescriptorId] = [];
-        vcs.map(vcData => {
-          const vcKey = VCMetadata.fromVcMetadataString(
-            vcData.vcMetadata,
-          ).getVcKey();
-          updatedInputDescriptorToCredentialsMapping[inputDescriptorId].push(
-            vcKey,
-          );
-        });
-      });
-      setInputDescriptorIdToSelectedVcKeys({
-        ...updatedInputDescriptorToCredentialsMapping,
-      });
-    },
-
-    ACCEPT_REQUEST: selectedDisclosuresByVc => {
-      openID4VPService.send(
-        OpenID4VPEvents.ACCEPT_REQUEST(
-          getSelectedVCs(),
-          selectedDisclosuresByVc,
-        ),
-      );
+    ACCEPT_REQUEST: (credentialRequestIdToSelectedVcKeys: Record<string, Set<string>>, selectedDisclosuresByVc: Record<string, string[]>) => {
+      const selectedVCs = getSelectedVCs(credentialRequestIdToSelectedVcKeys);
+      const hasImage = checkIfAnyVCHasImage(selectedVCs);
+      if(hasImage) {
+        openID4VPService.send(
+          OpenID4VPEvents.VERIFY_AND_ACCEPT_REQUEST(
+            selectedVCs,
+            selectedDisclosuresByVc,
+          ),
+        );
+      } else {
+        openID4VPService.send(
+          OpenID4VPEvents.ACCEPT_REQUEST(
+            selectedVCs,
+            selectedDisclosuresByVc,
+          ),
+        );
+      }
     },
 
     VERIFIER_TRUST_CONSENT_GIVEN: () => {
       openID4VPService.send(OpenID4VPEvents.VERIFIER_TRUST_CONSENT_GIVEN());
     },
 
-    VERIFY_AND_ACCEPT_REQUEST: selectedDisclosuresByVc => {
+    VERIFY_AND_ACCEPT_REQUEST: (credentialRequestIdToSelectedVcKeys: Record<string, Set<string>>, selectedDisclosuresByVc: Record<string, string[]>) => {
       openID4VPService.send(
         OpenID4VPEvents.VERIFY_AND_ACCEPT_REQUEST(
-          getSelectedVCs(),
+          getSelectedVCs(credentialRequestIdToSelectedVcKeys),
           selectedDisclosuresByVc,
         ),
       );

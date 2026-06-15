@@ -7,7 +7,7 @@ jest.mock('@react-navigation/native', () => ({
 }));
 
 jest.mock('@xstate/react', () => ({
-  useSelector: jest.fn(() => undefined),
+  useSelector: jest.fn((_, selector) => selector?.()),
 }));
 
 jest.mock('react-i18next', () => ({
@@ -56,11 +56,12 @@ jest.mock('../../machines/openID4VP/openID4VPSelectors', () => ({
   selectSelectedVCs: jest.fn(),
   selectShowConfirmationPopup: jest.fn(),
   selectshowTrustConsentModal: jest.fn(),
-  selectVCsMatchingAuthRequest: jest.fn(() => ({})),
   selectVerifiableCredentialsData: jest.fn(),
   selectVerifierLogoInTrustModal: jest.fn(),
   selectVerifierNameInTrustModal: jest.fn(),
   selectVerifierNameInVPSharing: jest.fn(),
+  selectVPRequest: jest.fn(() => ({})),
+  selectMatchingVcsResult: jest.fn(() => ({success: false, matchingVCs: {}})),
 }));
 
 jest.mock('../../machines/openID4VP/openID4VPMachine', () => ({
@@ -242,13 +243,13 @@ describe('useSendVPScreen', () => {
 
   it('ACCEPT_REQUEST sends event with selected VCs', () => {
     const result = useSendVPScreen({});
-    result.ACCEPT_REQUEST({});
+    result.ACCEPT_REQUEST({},{});
     expect(mockOpenID4VPSend).toHaveBeenCalled();
   });
 
   it('VERIFY_AND_ACCEPT_REQUEST sends event', () => {
     const result = useSendVPScreen({});
-    result.VERIFY_AND_ACCEPT_REQUEST({});
+    result.VERIFY_AND_ACCEPT_REQUEST({},{});
     expect(mockOpenID4VPSend).toHaveBeenCalled();
   });
 
@@ -264,14 +265,25 @@ describe('useSendVPScreen', () => {
     expect(mockOpenID4VPSend).toHaveBeenCalled();
   });
 
-  it('SELECT_VC_ITEM returns a curried function', () => {
-    const result = useSendVPScreen({});
-    const selectFn = result.SELECT_VC_ITEM('vc-key', 'desc-1');
-    expect(typeof selectFn).toBe('function');
-  });
-
   it('overlayDetails should be null by default', () => {
     const result = useSendVPScreen({});
     expect(result.overlayDetails).toBeNull();
+  });
+
+  it('isDcqlFlow is false when vpRequest has no dcql_query', () => {
+    const result = useSendVPScreen({});
+    expect(result.isDcqlFlow).toBe(false);
+  });
+
+  it('isDcqlFlow is true when vpRequest has dcql_query', () => {
+    const openID4VPSelectors = require('../../machines/openID4VP/openID4VPSelectors');
+    openID4VPSelectors.selectVPRequest.mockReturnValueOnce({dcql_query: {}});
+    const result = useSendVPScreen({});
+    expect(result.isDcqlFlow).toBe(true);
+  });
+
+  it('noCredentialsMatchingVPRequest is falsy when isSelectingVCs is false', () => {
+    const result = useSendVPScreen({});
+    expect(result.noCredentialsMatchingVPRequest).toBeFalsy();
   });
 });

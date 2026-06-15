@@ -1,6 +1,14 @@
 jest.mock('react-native', () => {
   const ReactNative = jest.requireActual('react-native');
 
+  class MockNativeEventEmitter {
+    addListener(eventType, listener) {
+      return {remove: jest.fn()};
+    }
+    removeAllListeners() {}
+    removeSubscription() {}
+  }
+
   // Define NativeModules using Object.defineProperty
   Object.defineProperty(ReactNative, 'NativeModules', {
     value: {
@@ -25,6 +33,13 @@ jest.mock('react-native', () => {
         hasBiometricsEnabled: jest.fn().mockReturnValue(true),
         getAvailableBiometricType: jest.fn().mockResolvedValue('FINGERPRINT'),
       },
+      InjiOpenID4VP: {
+        initSdk: jest.fn(),
+        authenticateVerifier: jest.fn(),
+        constructUnsignedVPToken: jest.fn(),
+        shareVerifiablePresentation: jest.fn(),
+        sendErrorToVerifier: jest.fn(),
+      },
       InjiVciClient: {
         addListener: jest.fn(),
         removeListeners: jest.fn(),
@@ -42,6 +57,10 @@ jest.mock('react-native', () => {
       Version: 42, // Set a version number that you expect to use in your test
       select: jest.fn(),
     },
+  });
+
+  Object.defineProperty(ReactNative, 'NativeEventEmitter', {
+    value: MockNativeEventEmitter,
   });
 
   return ReactNative;
