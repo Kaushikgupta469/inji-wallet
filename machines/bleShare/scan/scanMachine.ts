@@ -115,7 +115,7 @@ export const scanMachine =
                 target: 'restrictSharingVc',
               },
               {
-                target: 'startPermissionCheck',
+                target: 'checkFaceAuthConsent',
               },
             ],
           },
@@ -248,7 +248,7 @@ export const scanMachine =
                   target: '#scan.checkingLocationState',
                 },
                 {
-                  target: '#scan.clearingConnection',
+                  target: '#scan.clearingConnectionBeforeBleConnect',
                 },
               ],
             },
@@ -278,7 +278,7 @@ export const scanMachine =
                   target: '#scan.checkingLocationState',
                 },
                 {
-                  target: '#scan.clearingConnection',
+                  target: '#scan.clearingConnectionBeforeBleConnect',
                 },
               ],
             },
@@ -327,6 +327,23 @@ export const scanMachine =
             },
           },
         },
+        clearingConnectionBeforeBleConnect: {
+          invoke: {
+            src: 'disconnect',
+          },
+          on: {
+            DISCONNECT: {
+              target: '#scan.connecting',
+              internal: false,
+            },
+          },
+          after: {
+            DESTROY_TIMEOUT: {
+              target: '#scan.connecting',
+              internal: false,
+            },
+          },
+        },
         checkFaceAuthConsent: {
           entry: 'getFaceAuthConsent',
           on: {
@@ -358,11 +375,12 @@ export const scanMachine =
             'registerLoggers',
             'clearUri',
             'resetFaceCaptureBannerStatus',
+            'resetReadyForBluetoothStateCheck',
           ],
           on: {
             SCAN: [
               {
-                target: 'connecting',
+                target: 'startPermissionCheck',
                 cond: 'isOpenIdQr',
                 actions: ['sendVcSharingStartEvent', 'setUri'],
               },
@@ -874,7 +892,7 @@ export const scanMachine =
               },
               on: {
                 LOCATION_ENABLED: {
-                  target: '#scan.clearingConnection',
+                  target: '#scan.clearingConnectionBeforeBleConnect',
                 },
                 LOCATION_DISABLED: {
                   target: 'requestToEnableLocation',
@@ -887,7 +905,7 @@ export const scanMachine =
               },
               on: {
                 LOCATION_ENABLED: {
-                  target: '#scan.clearingConnection',
+                  target: '#scan.clearingConnectionBeforeBleConnect',
                 },
                 LOCATION_DISABLED: {
                   target: 'denied',

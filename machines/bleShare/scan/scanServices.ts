@@ -1,11 +1,11 @@
 import {isLocationEnabled} from 'react-native-device-info';
-import  { isMinimumStorageLimitReached } from '../../../shared/storage';
+import {isMinimumStorageLimitReached} from '../../../shared/storage';
 import BluetoothStateManager from 'react-native-bluetooth-state-manager';
 import {
-  check,
   checkMultiple,
   PERMISSIONS,
   PermissionStatus,
+  request,
   requestMultiple,
   RESULTS,
 } from 'react-native-permissions';
@@ -29,7 +29,7 @@ export const ScanServices = (model: any) => {
         let response: PermissionStatus = RESULTS.GRANTED;
 
         if (isIOS()) {
-          response = await check(PERMISSIONS.IOS.BLUETOOTH_PERIPHERAL);
+          response = await request(PERMISSIONS.IOS.BLUETOOTH_PERIPHERAL);
         }
 
         if (response === RESULTS.GRANTED) {
@@ -94,8 +94,7 @@ export const ScanServices = (model: any) => {
       ])
         .then(response => {
           if (
-            response[PERMISSIONS.ANDROID.BLUETOOTH_ADVERTISE] ===
-              RESULTS.GRANTED &&
+            response[PERMISSIONS.ANDROID.BLUETOOTH_SCAN] === RESULTS.GRANTED &&
             response[PERMISSIONS.ANDROID.BLUETOOTH_CONNECT] === RESULTS.GRANTED
           ) {
             callback(model.events.NEARBY_ENABLED());
@@ -169,11 +168,9 @@ export const ScanServices = (model: any) => {
           });
         }
       };
-      const { processedCredential, ...rest } = context.selectedVc;
+      const {processedCredential, ...rest} = context.selectedVc;
       const payload = JSON.stringify(rest);
-      wallet.sendData(
-        payload
-      );
+      wallet.sendData(payload);
       const subscription = subscribe(statusCallback);
       return () => subscription?.remove();
     },
@@ -188,7 +185,9 @@ export const ScanServices = (model: any) => {
     },
 
     checkStorageAvailability: () => async () => {
-      return Promise.resolve(isMinimumStorageLimitReached('minStorageRequiredForAuditEntry'));
+      return Promise.resolve(
+        isMinimumStorageLimitReached('minStorageRequiredForAuditEntry'),
+      );
     },
   };
 };
