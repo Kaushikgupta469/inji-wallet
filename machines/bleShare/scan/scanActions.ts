@@ -151,6 +151,10 @@ export const ScanActions = (model: any) => {
       readyForBluetoothStateCheck: () => true,
     }),
 
+    resetReadyForBluetoothStateCheck: model.assign({
+      readyForBluetoothStateCheck: () => false,
+    }),
+
     setBleError: assign({
       bleError: (_context, event) => event.bleError,
     }),

@@ -54,6 +54,9 @@ export const ScanScreen: React.FC = () => {
   const {appService} = useContext(GlobalContext);
 
   useEffect(() => {
+    if (!scanScreenController.isReadyForBluetoothStateCheck) {
+      return;
+    }
     (async () => {
       await BluetoothStateManager.onStateChange(state => {
         if (state === 'PoweredOff') {
@@ -63,7 +66,7 @@ export const ScanScreen: React.FC = () => {
         }
       }, true);
     })();
-  }, [isBluetoothOn]);
+  }, [isBluetoothOn, scanScreenController.isReadyForBluetoothStateCheck]);
 
   // TODO(kludge): skip running this hook on every render
   useEffect(() => {
