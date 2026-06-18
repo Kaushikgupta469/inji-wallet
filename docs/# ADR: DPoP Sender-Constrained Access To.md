@@ -53,28 +53,31 @@ OID4VCI 1.0 draft-13 mandates DPoP support as the mechanism for sender-constrain
 
 ### Key design
 
-| Concern                                   | Decision                                                                                                                            |
-| ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| DPoP key algorithms                       | One persistent key pair per supported alg: `DPoP_ES256`, `DPoP_RS256`, `DPoP_EdDSA`, `DPoP_ES256K`                                  |
-| DPoP key storage                          | `RNSecureKeystoreModule` generic key storage, one alias per alg                                                                     |
-| DPoP key generation                       | Per-alg: generated once on first use, loaded from alias on subsequent flows                                                         |
-| DPoP key rotation                         | **Open question** — RFC 9449 is silent on rotation frequency. Policy TBD (wallet reset / periodic / never)                          |
-| DPoP key vs credential proof key          | Always separate — using the same key for both enables JWT-swapping attacks (read: RFC 9449 §11.5)                                   |
-| Alg selection — credential endpoint       | Library picks from `clientMetadata.dpop.keys` intersected with AS `dpop_signing_alg_values_supported`                               |
-| Alg selection — token endpoint + dpop_jkt | Wallet pre-selects using `selectCredentialRequestKey()` against AS metadata (same preference order the library uses, so they agree) |
-| DPoP config transport                     | Embedded in existing `clientMetadata` JSON as `dpop.keys` — no new native method parameters                                         |
-| clientMetadata ownership                  | Built in `IssuersService` for both flows; `VciClient.ts` no longer hardcodes it                                                     |
-| AS nonce                                  | Wallet JS owns: read from token endpoint response, stored as `dpopASNonce` in XState context                                        |
-| RS nonce                                  | Library owns: extracted from 401 response internally, passed as `signingInput` context to wallet on retry — wallet never stores it  |
-| Auth code binding                         | Wallet computes `dpop_jkt` from the pre-selected DPoP key and appends to auth URL (read: RFC 9449 §10)                              |
-| Pre-auth code flow                        | No `dpop_jkt` — just `DPoP` header on token request                                                                                 |
-| Graceful degradation                      | Absent `dpop_signing_alg_values_supported` in AS metadata → skip DPoP, use Bearer                                                   |
+| Concern                                    | Decision                                                                                                                                                                                                                                                                                                 |
+| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| DPoP key algorithms                        | One persistent key pair per supported alg: `DPoP_ES256`, `DPoP_RS256`, `DPoP_EdDSA`, `DPoP_ES256K`                                                                                                                                                                                                       |
+| DPoP key storage                           | `RNSecureKeystoreModule` generic key storage, one alias per alg                                                                                                                                                                                                                                          |
+| DPoP key generation                        | Per-alg: generated once on first use, loaded from alias on subsequent flows                                                                                                                                                                                                                              |
+| DPoP key rotation                          | **Open question** — RFC 9449 is silent on rotation frequency. Policy TBD (wallet reset / periodic / never)                                                                                                                                                                                               |
+| DPoP key vs credential proof key           | Always separate — using the same key for both enables JWT-swapping attacks (read: RFC 9449 §11.5)                                                                                                                                                                                                        |
+| Alg selection — credential endpoint        | Library picks from `clientMetadata.dpop.keys` intersected with AS `dpop_signing_alg_values_supported`                                                                                                                                                                                                    |
+| Alg selection — token endpoint + dpop_jkt  | Wallet pre-selects using `selectCredentialRequestKey()` against AS metadata (same preference order the library uses, so they agree)                                                                                                                                                                      |
+| DPoP config transport                      | Embedded in existing `clientMetadata` JSON as `dpop.keys` — no new native method parameters                                                                                                                                                                                                              |
+| clientMetadata ownership                   | Built in `IssuersService` for both flows; `VciClient.ts` no longer hardcodes it                                                                                                                                                                                                                          |
+| AS nonce                                   | Wallet JS owns: read from token endpoint response, stored as `dpopASNonce` in XState context                                                                                                                                                                                                             |
+| RS nonce                                   | Library owns: extracted from 401 response internally, passed as `signingInput` context to wallet on retry — wallet never stores it                                                                                                                                                                       |
+| Auth code binding                          | Wallet computes `dpop_jkt` from the pre-selected DPoP key and appends to auth URL (read: RFC 9449 §10)                                                                                                                                                                                                   |
+| Pre-auth code flow                         | No `dpop_jkt` — just `DPoP` header on token request                                                                                                                                                                                                                                                      |
+| DPoP attempt — token endpoint              | Always attempt DPoP on the token request (OID4VCI recommends DPoP). `dpop_signing_alg_values_supported` present → use for alg selection. Absent → use wallet's preference order (ES256 first). Check `token_type` in response to confirm whether AS issued a DPoP-bound or Bearer token.                 |
+| Graceful degradation — credential endpoint | Library checks `token_type` from token response. `token_type: "DPoP"` → use DPoP with `ath`. `token_type: "Bearer"` → use Bearer, ignore `clientMetadata.dpop` entirely.                                                                                                                                 |
+| RS Bearer-only 401 fallback                | If credential endpoint returns 401 with `WWW-Authenticate: Bearer` only (no DPoP challenge) → spec §7.2 permits retrying with Bearer as best-effort. Not guaranteed — RS could still reject. If `WWW-Authenticate: DPoP` is present (with or without Bearer) → never downgrade, handle DPoP errors only. |
 
 ### Open questions
 
-| #    | Question                                                                                                       | Impact                    |
-| ---- | -------------------------------------------------------------------------------------------------------------- | ------------------------- |
-| OQ-1 | **DPoP key rotation frequency** — RFC 9449 is silent. Options: wallet reset, time-based (e.g. 90 days), never. | Key management complexity |
+| #    | Question                                                                                                                                                                                                                                                                               | Impact                    |
+| ---- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------- |
+| OQ-1 | **DPoP key rotation frequency** — RFC 9449 is silent. Options: wallet reset, time-based (e.g. 90 days), never.                                                                                                                                                                         | Key management complexity |
+| OQ-2 | **AS rejects DPoP header despite OID4VCI recommendation** — wallet sends DPoP, AS returns error (not `use_dpop_nonce`). Should wallet retry as Bearer or hard-fail? Policy call: retrying as Bearer degrades security; hard-failing is safer but breaks interop with non-compliant AS. | Degradation policy        |
 
 ---
 
@@ -209,13 +212,15 @@ flowchart TD
     A([Start issuance flow]) --> B[Fetch issuer well-known\n/.well-known/openid-credential-issuer]
     B --> C[Resolve AS endpoint\nfrom authorization_servers field\nor use issuer host if absent]
     C --> D[Fetch AS well-known\n/.well-known/oauth-authorization-server]
-    D --> E{dpop_signing_alg_values\n_supported present in AS metadata?}
-    E -- No --> F([Continue without DPoP\nBearer flow])
-    E -- Yes --> G[For each alg in ES256 RS256 EdDSA ES256K\nload DPoP key from storage\ngenerate and store if absent]
+    D --> G[For each alg in ES256 RS256 EdDSA ES256K\nload DPoP key from storage\ngenerate and store if absent]
     G --> H[Build clientMetadata.dpop.keys\nwith all public key JWKs]
-    H --> I{Auth code flow?}
-    I -- Yes --> J[Pre-select alg for dpop_jkt\nselectCredentialRequestKey\nagainst dpop_signing_alg_values_supported]
-    I -- No --> K([Proceed to token request])
+    H --> I1{dpop_signing_alg_values\n_supported present?}
+    I1 -- Yes --> I2[Select alg from intersection\nof wallet keys and AS-supported algs]
+    I1 -- No --> I3[Use wallet preference order\nES256 first\nfield is optional per RFC9449]
+    I2 --> I{Auth code flow?}
+    I3 --> I
+    I -- Yes --> J[Pre-select alg for dpop_jkt\nusing chosen alg above]
+    I -- No --> K([Proceed to token request with DPoP])
     J --> L[Compute dpop_jkt = JWK thumbprint\nof pre-selected DPoP key]
     L --> M([Append dpop_jkt to auth URL\nthen proceed])
 ```
@@ -355,23 +360,28 @@ The library constructs the proof. The wallet only provides the signature.
 
 ```mermaid
 flowchart TD
-    A([Library about to call credential endpoint]) --> B[Select alg from clientMetadata.dpop.keys\nvs dpop_signing_alg_values_supported]
-    B --> C[Generate UUID v4 as jti]
-    C --> D[Compute ath = base64url of SHA-256 of access_token]
-    D --> E{RS nonce available\nfrom prior 401?}
-    E -- Yes --> F[Include nonce claim]
-    E -- No --> G[Omit nonce claim]
-    F --> H[Build JWT header+payload\ntyp=dpop+jwt alg htm=POST htu iat exp jti ath\njwk=matching public key from dpop.keys\nnonce if present]
-    G --> H
-    H --> I[fire onRequestDPoPSign\nsigningInput=base64url-header.base64url-payload\nalg=selectedAlg]
-    I --> J[Wallet signs with DPoP_selectedAlg alias]
-    J --> K[Wallet returns base64url signature]
-    K --> L[Library assembles header.payload.signature]
-    L --> M([Set DPoP header and Authorization=DPoP header\nmake credential HTTP request])
-    M --> N{401 use_dpop_nonce?}
-    N -- Yes --> O[Extract DPoP-Nonce from response\nstore internally]
-    O --> C
-    N -- No --> P([Done])
+    A([Library about to call credential endpoint]) --> B{token_type in\ntoken response == DPoP?}
+    B -- No --> BN([Use Authorization=Bearer\nno DPoP proof])
+    B -- Yes --> C[Select alg from clientMetadata.dpop.keys\nvs dpop_signing_alg_values_supported]
+    C --> D[Generate UUID v4 as jti]
+    D --> E[Compute ath = base64url of SHA-256 of access_token]
+    E --> F{RS nonce available\nfrom prior 401?}
+    F -- Yes --> G[Include nonce claim]
+    F -- No --> H[Omit nonce claim]
+    G --> I[Build JWT header+payload\ntyp=dpop+jwt alg htm=POST htu iat exp jti ath\njwk=matching public key from dpop.keys\nnonce if present]
+    H --> I
+    I --> J[fire onRequestDPoPSign\nsigningInput=base64url-header.base64url-payload\nalg=selectedAlg]
+    J --> K[Wallet signs with DPoP_selectedAlg alias]
+    K --> L[Wallet returns base64url signature]
+    L --> M[Library assembles header.payload.signature]
+    M --> N([Set DPoP header and Authorization=DPoP header\nmake credential HTTP request])
+    N --> O{401 response?}
+    O -- No --> P([Done])
+    O -- Yes --> Q{WWW-Authenticate\ncontains DPoP challenge?}
+    Q -- Yes --> R[Handle DPoP errors\nnonce=extract DPoP-Nonce and retry\nother=propagate error]
+    R --> D
+    Q -- No --> S[WWW-Authenticate=Bearer only\nbest-effort Bearer retry per RFC9449 sect7.2\nnot guaranteed to succeed]
+    S --> T([Retry with Authorization=Bearer\nno DPoP proof])
 ```
 
 ---
@@ -486,7 +496,7 @@ graph LR
 - All four wallet key types (ES256, RS256, EdDSA, ES256K) are available for DPoP — interoperable with any AS regardless of which alg it supports.
 - Library handles RS nonce and retry loop — wallet has no RS nonce state to manage.
 - No new native method parameters — DPoP config travels inside the existing `clientMetadata` JSON.
-- Compatible with ASes enforcing `dpop_bound_access_tokens: true`.
+- `token_type` in the token response drives the credential endpoint decision — wallet and library don't need to coordinate on a DPoP/Bearer flag separately.
 - `dpop_jkt` binding prevents auth code injection (read: RFC 9449 §11.9).
 - Nonce support prevents proof pre-generation (read: RFC 9449 §11.2).
 
@@ -495,6 +505,8 @@ graph LR
 - **`ensuringDPoPKeys` generates up to four key pairs on first run.** Subsequent flows load from storage — cost is one-time.
 - **dpop_jkt alg coordination is implicit.** Wallet and library independently apply the same preference order to the same key list and AS metadata — they must agree. Any divergence in preference order between wallet and library would cause a mismatch.
 - **VCIClient library requires changes.** `ClientMetadata.dpop`, `signDPoP` closure, and internal RS nonce handling must be added upstream.
+- **`dpop_signing_alg_values_supported` is optional in RFC 9449.** When absent, wallet uses its own preference order (ES256 first) and still attempts DPoP. AS ignores an unrecognised DPoP header and returns a Bearer token if it doesn't support DPoP — `token_type` in the response is the actual outcome signal.
+- **Bearer fallback on credential endpoint 401 is best-effort.** RFC 9449 §7.2 uses "would most presumably accept" — a DPoP-aware RS that only sent a Bearer challenge would still reject the downgraded request.
 
 ### Non-goals
 
