@@ -102,10 +102,13 @@ export const SharingStatusModal: React.FC<SharingStatusModalProps> = props => {
                       color: '#666',
                       marginTop: 2,
                     }}>
-                    {`Today at ${new Date().toLocaleTimeString([], {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}`}
+                    {t('status.sharedAt', {
+                      time: new Date().toLocaleTimeString([], {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      }),
+                      defaultValue: 'Today at {{time}}',
+                    })}
                   </Text>
                 </View>
               </Row>

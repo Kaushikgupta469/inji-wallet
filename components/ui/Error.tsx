@@ -10,7 +10,6 @@ import {Theme} from './styleUtils';
 import testIDProps from '../../shared/commonUtil';
 import {Modal} from './Modal';
 import {isIOS} from '../../shared/constants';
-import {BackButton} from './backButton/BackButton';
 
 export const ErrorView: React.FC<ErrorProps> = props => {
   const {t} = useTranslation('common');

@@ -911,6 +911,7 @@
       "offline": "Mangyaring kumonekta sa internet upang i-scan ang mga QR code gamit ang Online sharing mode",
       "sent": "Naipadala na ang card...",
       "sentHint": "Naghihintay para sa receiver na i-save o itapon ang iyong card",
+      "sharedAt": "Ngayon nang {{time}}",
       "sharing": {
         "title": "Isinasagawa ang pagbabahagi...",
         "timeoutHint": "Naantala ang pagbabahagi, posibleng dahil sa isang isyu sa koneksyon.",

@@ -93,19 +93,19 @@ fileignoreconfig:
 - filename: components/BackupAndRestoreAllScreenBanner.tsx
   checksum: 2c98e7e83959c9dac4dd12da32f81483c3d334bd05e279637cf465475fbf54b8
 - filename: locales/en.json
-  checksum: 3bc37ce3bab898761fb14d6ae284e5922ff14fb55eee7c5b5ced4326dd35ced2
+  checksum: 273d7ec454fd9a356c746116f17238cfd6ff8a85a6c89f10b37714c0eeec8c87
 - filename: locales/hin.json
-  checksum: 69bffc48c583a985ed6853988ca9f4a559adbdf14f4763f197e982a3684f3bad
+  checksum: 8ea7e68144c68ae94f30d13f0ed62b1bfc69c7948e7f6b21c4d0b5ade10ace26
 - filename: locales/kan.json
-  checksum: f62d0d6cfd1454b396583ea7d0f438bcabd200c6af68f1327a7dfc3f5177d6d5
+  checksum: bff9d9f99bd0794cf9990f31d68820a343cd8543bc456cf939fff8f6a055dcba
 - filename: locales/ara.json
-  checksum: 89e413bc5884783f0601f8a22855f3da0cdd0ac9e9f80a1edd4e6a5fb10d94d4
+  checksum: b6b2f39a68bf5f8f64f18ebd9c7fa8c76d60ed9a4a6e81011b6b66625ebadae1
 - filename: locales/tam.json
-  checksum: 1beed968fa5d67d57961dbbaaade3596caaf543adb90847b40a558d0b50397bd
+  checksum: 92cebc3427c37bcc48d01238b98781666b00521209a9e08aef8cebf6456781ca
 - filename: locales/spa.json
   checksum: a03c5fa839d761f7bf5bbf0ea9bbd48da57116430a99e1d22f0e7184435d468c
 - filename: locales/fil.json
-  checksum: 29193fd3b14b7332bf7a485f659197002f29a58af88ed0653cae262e7254c84d
+  checksum: 5b40c169dd36b3b4ffb1d5e392f0ea2ebced64bf44c448dc065912f59aaa252a
 - filename: screens/PasscodeScreen.tsx
   checksum: 9af4308001e7e260ffffd26955ca49df3b388e34686509371e23dd837b11d030
 - filename: .github/workflows/ui-automation.yml
@@ -648,7 +648,9 @@ fileignoreconfig:
 - filename: machines/Issuers/IssuersMachine.typegen.ts
   checksum: 8ffa8dfc0adc9d78c525ec8a92e92c82a7fa85ef25f9d2878156df127fef9a5b
 - filename: screens/Issuers/TransactionCodeScreen.tsx
-  checksum: 46c47f18c194378f598751bd3777f8d000870dc9e668087d8d97b657811450b5
+  allowed_patterns:
+  - keyboardShouldPersistTaps
 - filename: screens/Issuers/__snapshots__/TransactionCodeScreen.test.tsx.snap
-  checksum: 50e85ddc22c897f50f32c8ddd09302bf12ff590572fca901c585e0497fe3bd03
-  version: "1.0"
+  allowed_patterns:
+  - keyboardShouldPersistTaps
+version: "1.0"
