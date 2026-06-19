@@ -6,145 +6,156 @@ exports[`SharingStatusModal should match snapshot with gradient and clear button
   showClose={false}
   testID="modal"
 >
-  <View
-    style={
-      [
-        {
-          "alignItems": undefined,
-          "flexDirection": "column",
-          "justifyContent": undefined,
-        },
-        null,
-        null,
-        {
-          "marginBottom": 64,
-          "marginEnd": 0,
-          "marginStart": 0,
-          "marginTop": 64,
-        },
-        null,
-        null,
-        null,
-        null,
-        {
-          "alignItems": "center",
-        },
-        null,
-        {
-          "backgroundColor": "#FFFFFF",
-          "flex": 1,
-        },
-        null,
-        null,
-      ]
+  <RCTScrollView
+    contentContainerStyle={
+      {
+        "flexGrow": 1,
+        "justifyContent": "center",
+      }
     }
   >
-    <View
-      testID="statusImage"
-    />
-    <Text
-      style={
-        [
-          {
-            "color": "#000000",
-            "fontSize": 16,
-            "lineHeight": 18,
-          },
-          {
-            "fontFamily": "Montserrat_400Regular",
-            "fontSize": 14,
-          },
-          null,
-          {
-            "textAlign": "left",
-          },
-          {
-            "marginBottom": 20,
-            "marginEnd": 0,
-            "marginStart": 0,
-            "marginTop": 20,
-          },
-          {
-            "fontSize": 18,
-          },
-          {
-            "fontFamily": "Montserrat_700Bold",
-            "fontSize": 15,
-            "justifyContent": "center",
-          },
-        ]
-      }
-    >
-      Shared Successfully
-    </Text>
-    <Text
-      style={
-        [
-          {
-            "color": "#000000",
-            "fontSize": 16,
-            "lineHeight": 18,
-          },
-          {
-            "fontFamily": "Montserrat_400Regular",
-            "fontSize": 14,
-          },
-          {
-            "color": "#666666",
-          },
-          {
-            "textAlign": "center",
-          },
-          {
-            "marginBottom": 0,
-            "marginEnd": 33,
-            "marginStart": 33,
-            "marginTop": 0,
-          },
-          null,
-          {
-            "fontFamily": "Montserrat_400Regular",
-            "fontSize": 14,
-          },
-        ]
-      }
-    >
-      Your credential has been shared
-    </Text>
-    <Text
-      style={
-        [
-          {
-            "color": "#000000",
-            "fontSize": 16,
-            "lineHeight": 18,
-          },
-          {
-            "fontFamily": "Montserrat_400Regular",
-            "fontSize": 14,
-          },
-          null,
-          {
-            "textAlign": "left",
-          },
-          {
-            "marginBottom": 20,
-            "marginEnd": 0,
-            "marginStart": 0,
-            "marginTop": 20,
-          },
-          {
-            "fontSize": 18,
-          },
-          {
-            "fontFamily": "Montserrat_700Bold",
-            "fontSize": 15,
-            "justifyContent": "center",
-          },
-        ]
-      }
-    />
-  </View>
+    <View>
+      <View
+        style={
+          [
+            {
+              "alignItems": undefined,
+              "flexDirection": "column",
+              "justifyContent": undefined,
+            },
+            null,
+            null,
+            {
+              "marginBottom": 64,
+              "marginEnd": 0,
+              "marginStart": 0,
+              "marginTop": 64,
+            },
+            null,
+            null,
+            null,
+            null,
+            {
+              "alignItems": "center",
+            },
+            null,
+            {
+              "backgroundColor": "#FFFFFF",
+              "flex": 1,
+            },
+            null,
+            null,
+          ]
+        }
+      >
+        <View
+          testID="statusImage"
+        />
+        <Text
+          style={
+            [
+              {
+                "color": "#000000",
+                "fontSize": 16,
+                "lineHeight": 18,
+              },
+              {
+                "fontFamily": "Montserrat_400Regular",
+                "fontSize": 14,
+              },
+              null,
+              {
+                "textAlign": "left",
+              },
+              {
+                "marginBottom": 20,
+                "marginEnd": 0,
+                "marginStart": 0,
+                "marginTop": 20,
+              },
+              {
+                "fontSize": 18,
+              },
+              {
+                "fontFamily": "Montserrat_700Bold",
+                "fontSize": 15,
+                "justifyContent": "center",
+              },
+            ]
+          }
+        >
+          Shared Successfully
+        </Text>
+        <Text
+          style={
+            [
+              {
+                "color": "#000000",
+                "fontSize": 16,
+                "lineHeight": 18,
+              },
+              {
+                "fontFamily": "Montserrat_400Regular",
+                "fontSize": 14,
+              },
+              {
+                "color": "#666666",
+              },
+              {
+                "textAlign": "center",
+              },
+              {
+                "marginBottom": 0,
+                "marginEnd": 33,
+                "marginStart": 33,
+                "marginTop": 0,
+              },
+              null,
+              {
+                "fontFamily": "Montserrat_400Regular",
+                "fontSize": 14,
+              },
+            ]
+          }
+        >
+          Your credential has been shared
+        </Text>
+        <Text
+          style={
+            [
+              {
+                "color": "#000000",
+                "fontSize": 16,
+                "lineHeight": 18,
+              },
+              {
+                "fontFamily": "Montserrat_400Regular",
+                "fontSize": 14,
+              },
+              null,
+              {
+                "textAlign": "left",
+              },
+              {
+                "marginBottom": 20,
+                "marginEnd": 0,
+                "marginStart": 0,
+                "marginTop": 20,
+              },
+              {
+                "fontSize": 18,
+              },
+              {
+                "fontFamily": "Montserrat_700Bold",
+                "fontSize": 15,
+                "justifyContent": "center",
+              },
+            ]
+          }
+        />
+      </View>
+    </View>
+  </RCTScrollView>
   <View
     style={
       [
@@ -422,145 +433,156 @@ exports[`SharingStatusModal should match snapshot with home and history buttons 
   showClose={false}
   testID="modal"
 >
-  <View
-    style={
-      [
-        {
-          "alignItems": undefined,
-          "flexDirection": "column",
-          "justifyContent": undefined,
-        },
-        null,
-        null,
-        {
-          "marginBottom": 64,
-          "marginEnd": 0,
-          "marginStart": 0,
-          "marginTop": 64,
-        },
-        null,
-        null,
-        null,
-        null,
-        {
-          "alignItems": "center",
-        },
-        null,
-        {
-          "backgroundColor": "#FFFFFF",
-          "flex": 1,
-        },
-        null,
-        null,
-      ]
+  <RCTScrollView
+    contentContainerStyle={
+      {
+        "flexGrow": 1,
+        "justifyContent": "center",
+      }
     }
   >
-    <View
-      testID="statusImage"
-    />
-    <Text
-      style={
-        [
-          {
-            "color": "#000000",
-            "fontSize": 16,
-            "lineHeight": 18,
-          },
-          {
-            "fontFamily": "Montserrat_400Regular",
-            "fontSize": 14,
-          },
-          null,
-          {
-            "textAlign": "left",
-          },
-          {
-            "marginBottom": 20,
-            "marginEnd": 0,
-            "marginStart": 0,
-            "marginTop": 20,
-          },
-          {
-            "fontSize": 18,
-          },
-          {
-            "fontFamily": "Montserrat_700Bold",
-            "fontSize": 15,
-            "justifyContent": "center",
-          },
-        ]
-      }
-    >
-      Shared Successfully
-    </Text>
-    <Text
-      style={
-        [
-          {
-            "color": "#000000",
-            "fontSize": 16,
-            "lineHeight": 18,
-          },
-          {
-            "fontFamily": "Montserrat_400Regular",
-            "fontSize": 14,
-          },
-          {
-            "color": "#666666",
-          },
-          {
-            "textAlign": "center",
-          },
-          {
-            "marginBottom": 0,
-            "marginEnd": 33,
-            "marginStart": 33,
-            "marginTop": 0,
-          },
-          null,
-          {
-            "fontFamily": "Montserrat_400Regular",
-            "fontSize": 14,
-          },
-        ]
-      }
-    >
-      Your credential has been shared
-    </Text>
-    <Text
-      style={
-        [
-          {
-            "color": "#000000",
-            "fontSize": 16,
-            "lineHeight": 18,
-          },
-          {
-            "fontFamily": "Montserrat_400Regular",
-            "fontSize": 14,
-          },
-          null,
-          {
-            "textAlign": "left",
-          },
-          {
-            "marginBottom": 20,
-            "marginEnd": 0,
-            "marginStart": 0,
-            "marginTop": 20,
-          },
-          {
-            "fontSize": 18,
-          },
-          {
-            "fontFamily": "Montserrat_700Bold",
-            "fontSize": 15,
-            "justifyContent": "center",
-          },
-        ]
-      }
-    />
-  </View>
+    <View>
+      <View
+        style={
+          [
+            {
+              "alignItems": undefined,
+              "flexDirection": "column",
+              "justifyContent": undefined,
+            },
+            null,
+            null,
+            {
+              "marginBottom": 64,
+              "marginEnd": 0,
+              "marginStart": 0,
+              "marginTop": 64,
+            },
+            null,
+            null,
+            null,
+            null,
+            {
+              "alignItems": "center",
+            },
+            null,
+            {
+              "backgroundColor": "#FFFFFF",
+              "flex": 1,
+            },
+            null,
+            null,
+          ]
+        }
+      >
+        <View
+          testID="statusImage"
+        />
+        <Text
+          style={
+            [
+              {
+                "color": "#000000",
+                "fontSize": 16,
+                "lineHeight": 18,
+              },
+              {
+                "fontFamily": "Montserrat_400Regular",
+                "fontSize": 14,
+              },
+              null,
+              {
+                "textAlign": "left",
+              },
+              {
+                "marginBottom": 20,
+                "marginEnd": 0,
+                "marginStart": 0,
+                "marginTop": 20,
+              },
+              {
+                "fontSize": 18,
+              },
+              {
+                "fontFamily": "Montserrat_700Bold",
+                "fontSize": 15,
+                "justifyContent": "center",
+              },
+            ]
+          }
+        >
+          Shared Successfully
+        </Text>
+        <Text
+          style={
+            [
+              {
+                "color": "#000000",
+                "fontSize": 16,
+                "lineHeight": 18,
+              },
+              {
+                "fontFamily": "Montserrat_400Regular",
+                "fontSize": 14,
+              },
+              {
+                "color": "#666666",
+              },
+              {
+                "textAlign": "center",
+              },
+              {
+                "marginBottom": 0,
+                "marginEnd": 33,
+                "marginStart": 33,
+                "marginTop": 0,
+              },
+              null,
+              {
+                "fontFamily": "Montserrat_400Regular",
+                "fontSize": 14,
+              },
+            ]
+          }
+        >
+          Your credential has been shared
+        </Text>
+        <Text
+          style={
+            [
+              {
+                "color": "#000000",
+                "fontSize": 16,
+                "lineHeight": 18,
+              },
+              {
+                "fontFamily": "Montserrat_400Regular",
+                "fontSize": 14,
+              },
+              null,
+              {
+                "textAlign": "left",
+              },
+              {
+                "marginBottom": 20,
+                "marginEnd": 0,
+                "marginStart": 0,
+                "marginTop": 20,
+              },
+              {
+                "fontSize": 18,
+              },
+              {
+                "fontFamily": "Montserrat_700Bold",
+                "fontSize": 15,
+                "justifyContent": "center",
+              },
+            ]
+          }
+        />
+      </View>
+    </View>
+  </RCTScrollView>
   <View
     style={
       [
@@ -776,145 +798,156 @@ exports[`SharingStatusModal should match snapshot with no buttons 1`] = `
   showClose={false}
   testID="modal"
 >
-  <View
-    style={
-      [
-        {
-          "alignItems": undefined,
-          "flexDirection": "column",
-          "justifyContent": undefined,
-        },
-        null,
-        null,
-        {
-          "marginBottom": 64,
-          "marginEnd": 0,
-          "marginStart": 0,
-          "marginTop": 64,
-        },
-        null,
-        null,
-        null,
-        null,
-        {
-          "alignItems": "center",
-        },
-        null,
-        {
-          "backgroundColor": "#FFFFFF",
-          "flex": 1,
-        },
-        null,
-        null,
-      ]
+  <RCTScrollView
+    contentContainerStyle={
+      {
+        "flexGrow": 1,
+        "justifyContent": "center",
+      }
     }
   >
-    <View
-      testID="statusImage"
-    />
-    <Text
-      style={
-        [
-          {
-            "color": "#000000",
-            "fontSize": 16,
-            "lineHeight": 18,
-          },
-          {
-            "fontFamily": "Montserrat_400Regular",
-            "fontSize": 14,
-          },
-          null,
-          {
-            "textAlign": "left",
-          },
-          {
-            "marginBottom": 20,
-            "marginEnd": 0,
-            "marginStart": 0,
-            "marginTop": 20,
-          },
-          {
-            "fontSize": 18,
-          },
-          {
-            "fontFamily": "Montserrat_700Bold",
-            "fontSize": 15,
-            "justifyContent": "center",
-          },
-        ]
-      }
-    >
-      Shared Successfully
-    </Text>
-    <Text
-      style={
-        [
-          {
-            "color": "#000000",
-            "fontSize": 16,
-            "lineHeight": 18,
-          },
-          {
-            "fontFamily": "Montserrat_400Regular",
-            "fontSize": 14,
-          },
-          {
-            "color": "#666666",
-          },
-          {
-            "textAlign": "center",
-          },
-          {
-            "marginBottom": 0,
-            "marginEnd": 33,
-            "marginStart": 33,
-            "marginTop": 0,
-          },
-          null,
-          {
-            "fontFamily": "Montserrat_400Regular",
-            "fontSize": 14,
-          },
-        ]
-      }
-    >
-      Your credential has been shared
-    </Text>
-    <Text
-      style={
-        [
-          {
-            "color": "#000000",
-            "fontSize": 16,
-            "lineHeight": 18,
-          },
-          {
-            "fontFamily": "Montserrat_400Regular",
-            "fontSize": 14,
-          },
-          null,
-          {
-            "textAlign": "left",
-          },
-          {
-            "marginBottom": 20,
-            "marginEnd": 0,
-            "marginStart": 0,
-            "marginTop": 20,
-          },
-          {
-            "fontSize": 18,
-          },
-          {
-            "fontFamily": "Montserrat_700Bold",
-            "fontSize": 15,
-            "justifyContent": "center",
-          },
-        ]
-      }
-    />
-  </View>
+    <View>
+      <View
+        style={
+          [
+            {
+              "alignItems": undefined,
+              "flexDirection": "column",
+              "justifyContent": undefined,
+            },
+            null,
+            null,
+            {
+              "marginBottom": 64,
+              "marginEnd": 0,
+              "marginStart": 0,
+              "marginTop": 64,
+            },
+            null,
+            null,
+            null,
+            null,
+            {
+              "alignItems": "center",
+            },
+            null,
+            {
+              "backgroundColor": "#FFFFFF",
+              "flex": 1,
+            },
+            null,
+            null,
+          ]
+        }
+      >
+        <View
+          testID="statusImage"
+        />
+        <Text
+          style={
+            [
+              {
+                "color": "#000000",
+                "fontSize": 16,
+                "lineHeight": 18,
+              },
+              {
+                "fontFamily": "Montserrat_400Regular",
+                "fontSize": 14,
+              },
+              null,
+              {
+                "textAlign": "left",
+              },
+              {
+                "marginBottom": 20,
+                "marginEnd": 0,
+                "marginStart": 0,
+                "marginTop": 20,
+              },
+              {
+                "fontSize": 18,
+              },
+              {
+                "fontFamily": "Montserrat_700Bold",
+                "fontSize": 15,
+                "justifyContent": "center",
+              },
+            ]
+          }
+        >
+          Shared Successfully
+        </Text>
+        <Text
+          style={
+            [
+              {
+                "color": "#000000",
+                "fontSize": 16,
+                "lineHeight": 18,
+              },
+              {
+                "fontFamily": "Montserrat_400Regular",
+                "fontSize": 14,
+              },
+              {
+                "color": "#666666",
+              },
+              {
+                "textAlign": "center",
+              },
+              {
+                "marginBottom": 0,
+                "marginEnd": 33,
+                "marginStart": 33,
+                "marginTop": 0,
+              },
+              null,
+              {
+                "fontFamily": "Montserrat_400Regular",
+                "fontSize": 14,
+              },
+            ]
+          }
+        >
+          Your credential has been shared
+        </Text>
+        <Text
+          style={
+            [
+              {
+                "color": "#000000",
+                "fontSize": 16,
+                "lineHeight": 18,
+              },
+              {
+                "fontFamily": "Montserrat_400Regular",
+                "fontSize": 14,
+              },
+              null,
+              {
+                "textAlign": "left",
+              },
+              {
+                "marginBottom": 20,
+                "marginEnd": 0,
+                "marginStart": 0,
+                "marginTop": 20,
+              },
+              {
+                "fontSize": 18,
+              },
+              {
+                "fontFamily": "Montserrat_700Bold",
+                "fontSize": 15,
+                "justifyContent": "center",
+              },
+            ]
+          }
+        />
+      </View>
+    </View>
+  </RCTScrollView>
 </View>
 `;
 
@@ -924,184 +957,51 @@ exports[`SharingStatusModal should match snapshot with verifier info 1`] = `
   showClose={false}
   testID="modal"
 >
-  <View
-    style={
-      [
-        {
-          "alignItems": undefined,
-          "flexDirection": "column",
-          "justifyContent": undefined,
-        },
-        null,
-        null,
-        {
-          "marginBottom": 64,
-          "marginEnd": 0,
-          "marginStart": 0,
-          "marginTop": 64,
-        },
-        null,
-        null,
-        null,
-        null,
-        {
-          "alignItems": "center",
-        },
-        null,
-        {
-          "backgroundColor": "#FFFFFF",
-          "flex": 1,
-        },
-        null,
-        null,
-      ]
+  <RCTScrollView
+    contentContainerStyle={
+      {
+        "flexGrow": 1,
+        "justifyContent": "center",
+      }
     }
   >
-    <View
-      testID="statusImage"
-    />
-    <Text
-      style={
-        [
-          {
-            "color": "#000000",
-            "fontSize": 16,
-            "lineHeight": 18,
-          },
-          {
-            "fontFamily": "Montserrat_400Regular",
-            "fontSize": 14,
-          },
-          null,
-          {
-            "textAlign": "left",
-          },
-          {
-            "marginBottom": 20,
-            "marginEnd": 0,
-            "marginStart": 0,
-            "marginTop": 20,
-          },
-          {
-            "fontSize": 18,
-          },
-          {
-            "fontFamily": "Montserrat_700Bold",
-            "fontSize": 15,
-            "justifyContent": "center",
-          },
-        ]
-      }
-    >
-      Shared Successfully
-    </Text>
-    <Text
-      style={
-        [
-          {
-            "color": "#000000",
-            "fontSize": 16,
-            "lineHeight": 18,
-          },
-          {
-            "fontFamily": "Montserrat_400Regular",
-            "fontSize": 14,
-          },
-          {
-            "color": "#666666",
-          },
-          {
-            "textAlign": "center",
-          },
-          {
-            "marginBottom": 0,
-            "marginEnd": 33,
-            "marginStart": 33,
-            "marginTop": 0,
-          },
-          null,
-          {
-            "fontFamily": "Montserrat_400Regular",
-            "fontSize": 14,
-          },
-        ]
-      }
-    >
-      Your credential has been shared
-    </Text>
-    <Text
-      style={
-        [
-          {
-            "color": "#000000",
-            "fontSize": 16,
-            "lineHeight": 18,
-          },
-          {
-            "fontFamily": "Montserrat_400Regular",
-            "fontSize": 14,
-          },
-          null,
-          {
-            "textAlign": "left",
-          },
-          {
-            "marginBottom": 20,
-            "marginEnd": 0,
-            "marginStart": 0,
-            "marginTop": 20,
-          },
-          {
-            "fontSize": 18,
-          },
-          {
-            "fontFamily": "Montserrat_700Bold",
-            "fontSize": 15,
-            "justifyContent": "center",
-          },
-        ]
-      }
-    />
-    <View
-      style={
-        [
-          {
-            "alignItems": undefined,
-            "flexDirection": "row",
-            "justifyContent": undefined,
-          },
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          {
-            "justifyContent": "center",
-          },
-          null,
-          null,
-          {
-            "alignSelf": "center",
-            "backgroundColor": "#F5F5F5",
-            "borderRadius": 16,
-            "flexDirection": "row",
-            "justifyContent": "center",
-            "paddingHorizontal": 16,
-            "paddingVertical": 12,
-          },
-          null,
-          null,
-        ]
-      }
-    >
+    <View>
       <View
         style={
-          {
-            "alignItems": "flex-start",
-          }
+          [
+            {
+              "alignItems": undefined,
+              "flexDirection": "column",
+              "justifyContent": undefined,
+            },
+            null,
+            null,
+            {
+              "marginBottom": 64,
+              "marginEnd": 0,
+              "marginStart": 0,
+              "marginTop": 64,
+            },
+            null,
+            null,
+            null,
+            null,
+            {
+              "alignItems": "center",
+            },
+            null,
+            {
+              "backgroundColor": "#FFFFFF",
+              "flex": 1,
+            },
+            null,
+            null,
+          ]
         }
       >
+        <View
+          testID="statusImage"
+        />
         <Text
           style={
             [
@@ -1118,8 +1018,15 @@ exports[`SharingStatusModal should match snapshot with verifier info 1`] = `
               {
                 "textAlign": "left",
               },
-              null,
-              null,
+              {
+                "marginBottom": 20,
+                "marginEnd": 0,
+                "marginStart": 0,
+                "marginTop": 20,
+              },
+              {
+                "fontSize": 18,
+              },
               {
                 "fontFamily": "Montserrat_700Bold",
                 "fontSize": 15,
@@ -1128,7 +1035,41 @@ exports[`SharingStatusModal should match snapshot with verifier info 1`] = `
             ]
           }
         >
-          Test Verifier
+          Shared Successfully
+        </Text>
+        <Text
+          style={
+            [
+              {
+                "color": "#000000",
+                "fontSize": 16,
+                "lineHeight": 18,
+              },
+              {
+                "fontFamily": "Montserrat_400Regular",
+                "fontSize": 14,
+              },
+              {
+                "color": "#666666",
+              },
+              {
+                "textAlign": "center",
+              },
+              {
+                "marginBottom": 0,
+                "marginEnd": 33,
+                "marginStart": 33,
+                "marginTop": 0,
+              },
+              null,
+              {
+                "fontFamily": "Montserrat_400Regular",
+                "fontSize": 14,
+              },
+            ]
+          }
+        >
+          Your credential has been shared
         </Text>
         <Text
           style={
@@ -1146,21 +1087,124 @@ exports[`SharingStatusModal should match snapshot with verifier info 1`] = `
               {
                 "textAlign": "left",
               },
-              null,
-              null,
               {
-                "color": "#666",
-                "fontSize": 13,
-                "marginTop": 2,
+                "marginBottom": 20,
+                "marginEnd": 0,
+                "marginStart": 0,
+                "marginTop": 20,
+              },
+              {
+                "fontSize": 18,
+              },
+              {
+                "fontFamily": "Montserrat_700Bold",
+                "fontSize": 15,
+                "justifyContent": "center",
               },
             ]
           }
+        />
+        <View
+          style={
+            [
+              {
+                "alignItems": undefined,
+                "flexDirection": "row",
+                "justifyContent": undefined,
+              },
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              {
+                "justifyContent": "center",
+              },
+              null,
+              null,
+              {
+                "alignSelf": "center",
+                "backgroundColor": "#F5F5F5",
+                "borderRadius": 16,
+                "flexDirection": "row",
+                "justifyContent": "center",
+                "paddingHorizontal": 16,
+                "paddingVertical": 12,
+              },
+              null,
+              null,
+            ]
+          }
         >
-          Today at 12:30 PM
-        </Text>
+          <View
+            style={
+              {
+                "alignItems": "flex-start",
+              }
+            }
+          >
+            <Text
+              style={
+                [
+                  {
+                    "color": "#000000",
+                    "fontSize": 16,
+                    "lineHeight": 18,
+                  },
+                  {
+                    "fontFamily": "Montserrat_400Regular",
+                    "fontSize": 14,
+                  },
+                  null,
+                  {
+                    "textAlign": "left",
+                  },
+                  null,
+                  null,
+                  {
+                    "fontFamily": "Montserrat_700Bold",
+                    "fontSize": 15,
+                    "justifyContent": "center",
+                  },
+                ]
+              }
+            >
+              Test Verifier
+            </Text>
+            <Text
+              style={
+                [
+                  {
+                    "color": "#000000",
+                    "fontSize": 16,
+                    "lineHeight": 18,
+                  },
+                  {
+                    "fontFamily": "Montserrat_400Regular",
+                    "fontSize": 14,
+                  },
+                  null,
+                  {
+                    "textAlign": "left",
+                  },
+                  null,
+                  null,
+                  {
+                    "color": "#666",
+                    "fontSize": 13,
+                    "marginTop": 2,
+                  },
+                ]
+              }
+            >
+              Today at 12:30 PM
+            </Text>
+          </View>
+        </View>
       </View>
     </View>
-  </View>
+  </RCTScrollView>
   <View
     style={
       [

@@ -16,7 +16,7 @@ exports[`TransactionCodeModal should render numeric mode with length > 6 as text
       }
     }
   >
-    <View
+    <RCTScrollView
       accessibilityState={
         {
           "busy": undefined,
@@ -27,7 +27,14 @@ exports[`TransactionCodeModal should render numeric mode with length > 6 as text
         }
       }
       accessible={false}
+      contentContainerStyle={
+        {
+          "flexGrow": 1,
+          "justifyContent": "center",
+        }
+      }
       focusable={true}
+      keyboardShouldPersistTaps="handled"
       onClick={[Function]}
       onResponderGrant={[Function]}
       onResponderMove={[Function]}
@@ -37,192 +44,71 @@ exports[`TransactionCodeModal should render numeric mode with length > 6 as text
       onStartShouldSetResponder={[Function]}
       style={
         {
-          "height": 700,
+          "maxHeight": 800,
+          "width": "100%",
         }
       }
     >
-      <View
-        accessible={true}
-        style={
-          [
-            {
-              "alignItems": undefined,
-              "flexDirection": "column",
-              "justifyContent": undefined,
-            },
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            {
-              "alignItems": "center",
-            },
-            null,
-            {
-              "flex": 1,
-              "justifyContent": "space-around",
-              "marginBottom": 20,
-              "maxHeight": 800,
-            },
-            null,
-            null,
-          ]
-        }
-      >
-        OtpVerificationIcon
-        <View>
-          <View
-            accessible={true}
-            style={
-              [
-                {
-                  "alignItems": undefined,
-                  "flexDirection": "column",
-                  "justifyContent": undefined,
-                },
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                {
-                  "alignItems": "center",
-                },
-                null,
-                null,
-                null,
-                null,
-              ]
-            }
-          >
-            <Text
-              accessibilityLabel="otpVerificationHeader"
-              style={
-                [
-                  {
-                    "color": "#000000",
-                    "fontSize": 16,
-                    "lineHeight": 18,
-                  },
-                  {
-                    "fontFamily": "Montserrat_700Bold",
-                    "fontSize": 15,
-                    "justifyContent": "center",
-                  },
-                  null,
-                  {
-                    "textAlign": "left",
-                  },
-                  null,
-                  null,
-                  {
-                    "color": "#000000",
-                    "fontFamily": "Montserrat_700Bold",
-                    "fontSize": 18,
-                    "lineHeight": 19,
-                    "paddingTop": 5,
-                  },
-                ]
-              }
-            >
-              TransactionCode
-            </Text>
-            <Text
-              accessibilityLabel="otpVerificationDescription"
-              ellipsizeMode="tail"
-              numberOfLines={2}
-              onTextLayout={[Function]}
-              style={
-                [
-                  {
-                    "color": "#000000",
-                    "fontSize": 16,
-                    "lineHeight": 18,
-                  },
-                  {
-                    "fontFamily": "Montserrat_600SemiBold",
-                    "fontSize": 15,
-                  },
-                  {
-                    "color": "#6F6F6F",
-                  },
-                  {
-                    "textAlign": "center",
-                  },
-                  null,
-                  {
-                    "fontSize": 13,
-                    "lineHeight": 21,
-                  },
-                  {
-                    "marginTop": 15,
-                  },
-                ]
-              }
-            >
-              description
-            </Text>
-          </View>
-        </View>
+      <View>
         <View
+          accessible={true}
           style={
-            {
-              "alignItems": "center",
-            }
+            [
+              {
+                "alignItems": undefined,
+                "flexDirection": "column",
+                "justifyContent": undefined,
+              },
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              {
+                "alignItems": "center",
+              },
+              null,
+              {
+                "justifyContent": "space-around",
+                "marginBottom": 20,
+              },
+              null,
+              null,
+            ]
           }
         >
-          <View
-            testID="input"
-          >
-            <TextInput
-              onChangeText={[Function]}
-              placeholder="placeholder"
-              secureTextEntry={true}
-              testID="textInput"
-              value=""
-            />
-          </View>
-          <View
-            accessibilityState={
-              {
-                "busy": undefined,
-                "checked": undefined,
-                "disabled": undefined,
-                "expanded": undefined,
-                "selected": undefined,
+          OtpVerificationIcon
+          <View>
+            <View
+              accessible={true}
+              style={
+                [
+                  {
+                    "alignItems": undefined,
+                    "flexDirection": "column",
+                    "justifyContent": undefined,
+                  },
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  {
+                    "alignItems": "center",
+                  },
+                  null,
+                  null,
+                  null,
+                  null,
+                ]
               }
-            }
-            accessibilityValue={
-              {
-                "max": undefined,
-                "min": undefined,
-                "now": undefined,
-                "text": undefined,
-              }
-            }
-            accessible={true}
-            collapsable={false}
-            focusable={true}
-            onClick={[Function]}
-            onResponderGrant={[Function]}
-            onResponderMove={[Function]}
-            onResponderRelease={[Function]}
-            onResponderTerminate={[Function]}
-            onResponderTerminationRequest={[Function]}
-            onStartShouldSetResponder={[Function]}
-            style={
-              {
-                "opacity": 1,
-              }
-            }
-          >
-            <Text>
+            >
               <Text
+                accessibilityLabel="otpVerificationHeader"
                 style={
                   [
                     {
@@ -235,30 +121,152 @@ exports[`TransactionCodeModal should render numeric mode with length > 6 as text
                       "fontSize": 15,
                       "justifyContent": "center",
                     },
-                    {
-                      "color": "#FFFFFF",
-                    },
+                    null,
                     {
                       "textAlign": "left",
                     },
                     null,
                     null,
-                    [
-                      {
-                        "paddingLeft": 0,
-                      },
-                      undefined,
-                    ],
+                    {
+                      "color": "#000000",
+                      "fontFamily": "Montserrat_700Bold",
+                      "fontSize": 18,
+                      "lineHeight": 19,
+                      "paddingTop": 5,
+                    },
                   ]
                 }
               >
-                Verify
+                TransactionCode
               </Text>
-            </Text>
+              <Text
+                accessibilityLabel="otpVerificationDescription"
+                ellipsizeMode="tail"
+                numberOfLines={2}
+                onTextLayout={[Function]}
+                style={
+                  [
+                    {
+                      "color": "#000000",
+                      "fontSize": 16,
+                      "lineHeight": 18,
+                    },
+                    {
+                      "fontFamily": "Montserrat_600SemiBold",
+                      "fontSize": 15,
+                    },
+                    {
+                      "color": "#6F6F6F",
+                    },
+                    {
+                      "textAlign": "center",
+                    },
+                    null,
+                    {
+                      "fontSize": 13,
+                      "lineHeight": 21,
+                    },
+                    {
+                      "marginTop": 15,
+                    },
+                  ]
+                }
+              >
+                description
+              </Text>
+            </View>
+          </View>
+          <View
+            style={
+              {
+                "alignItems": "center",
+              }
+            }
+          >
+            <View
+              testID="input"
+            >
+              <TextInput
+                onChangeText={[Function]}
+                placeholder="placeholder"
+                secureTextEntry={true}
+                testID="textInput"
+                value=""
+              />
+            </View>
+            <View
+              accessibilityState={
+                {
+                  "busy": undefined,
+                  "checked": undefined,
+                  "disabled": undefined,
+                  "expanded": undefined,
+                  "selected": undefined,
+                }
+              }
+              accessibilityValue={
+                {
+                  "max": undefined,
+                  "min": undefined,
+                  "now": undefined,
+                  "text": undefined,
+                }
+              }
+              accessible={true}
+              collapsable={false}
+              focusable={true}
+              onClick={[Function]}
+              onResponderGrant={[Function]}
+              onResponderMove={[Function]}
+              onResponderRelease={[Function]}
+              onResponderTerminate={[Function]}
+              onResponderTerminationRequest={[Function]}
+              onStartShouldSetResponder={[Function]}
+              style={
+                {
+                  "opacity": 1,
+                }
+              }
+            >
+              <Text>
+                <Text
+                  style={
+                    [
+                      {
+                        "color": "#000000",
+                        "fontSize": 16,
+                        "lineHeight": 18,
+                      },
+                      {
+                        "fontFamily": "Montserrat_700Bold",
+                        "fontSize": 15,
+                        "justifyContent": "center",
+                      },
+                      {
+                        "color": "#FFFFFF",
+                      },
+                      {
+                        "textAlign": "left",
+                      },
+                      null,
+                      null,
+                      [
+                        {
+                          "paddingLeft": 0,
+                        },
+                        undefined,
+                      ],
+                    ]
+                  }
+                >
+                  Verify
+                </Text>
+              </Text>
+            </View>
           </View>
         </View>
       </View>
-    </View>
+    </RCTScrollView>
   </View>
 </View>
 `;
@@ -277,7 +285,7 @@ exports[`TransactionCodeModal should render with PinInput for numeric mode with 
       }
     }
   >
-    <View
+    <RCTScrollView
       accessibilityState={
         {
           "busy": undefined,
@@ -288,7 +296,14 @@ exports[`TransactionCodeModal should render with PinInput for numeric mode with 
         }
       }
       accessible={false}
+      contentContainerStyle={
+        {
+          "flexGrow": 1,
+          "justifyContent": "center",
+        }
+      }
       focusable={true}
+      keyboardShouldPersistTaps="handled"
       onClick={[Function]}
       onResponderGrant={[Function]}
       onResponderMove={[Function]}
@@ -298,184 +313,71 @@ exports[`TransactionCodeModal should render with PinInput for numeric mode with 
       onStartShouldSetResponder={[Function]}
       style={
         {
-          "height": 700,
+          "maxHeight": 800,
+          "width": "100%",
         }
       }
     >
-      <View
-        accessible={true}
-        style={
-          [
-            {
-              "alignItems": undefined,
-              "flexDirection": "column",
-              "justifyContent": undefined,
-            },
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            {
-              "alignItems": "center",
-            },
-            null,
-            {
-              "flex": 1,
-              "justifyContent": "space-around",
-              "marginBottom": 20,
-              "maxHeight": 800,
-            },
-            null,
-            null,
-          ]
-        }
-      >
-        OtpVerificationIcon
-        <View>
-          <View
-            accessible={true}
-            style={
-              [
-                {
-                  "alignItems": undefined,
-                  "flexDirection": "column",
-                  "justifyContent": undefined,
-                },
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                {
-                  "alignItems": "center",
-                },
-                null,
-                null,
-                null,
-                null,
-              ]
-            }
-          >
-            <Text
-              accessibilityLabel="otpVerificationHeader"
-              style={
-                [
-                  {
-                    "color": "#000000",
-                    "fontSize": 16,
-                    "lineHeight": 18,
-                  },
-                  {
-                    "fontFamily": "Montserrat_700Bold",
-                    "fontSize": 15,
-                    "justifyContent": "center",
-                  },
-                  null,
-                  {
-                    "textAlign": "left",
-                  },
-                  null,
-                  null,
-                  {
-                    "color": "#000000",
-                    "fontFamily": "Montserrat_700Bold",
-                    "fontSize": 18,
-                    "lineHeight": 19,
-                    "paddingTop": 5,
-                  },
-                ]
-              }
-            >
-              TransactionCode
-            </Text>
-            <Text
-              accessibilityLabel="otpVerificationDescription"
-              ellipsizeMode="tail"
-              numberOfLines={2}
-              onTextLayout={[Function]}
-              style={
-                [
-                  {
-                    "color": "#000000",
-                    "fontSize": 16,
-                    "lineHeight": 18,
-                  },
-                  {
-                    "fontFamily": "Montserrat_600SemiBold",
-                    "fontSize": 15,
-                  },
-                  {
-                    "color": "#6F6F6F",
-                  },
-                  {
-                    "textAlign": "center",
-                  },
-                  null,
-                  {
-                    "fontSize": 13,
-                    "lineHeight": 21,
-                  },
-                  {
-                    "marginTop": 15,
-                  },
-                ]
-              }
-            >
-              description
-            </Text>
-          </View>
-        </View>
+      <View>
         <View
+          accessible={true}
           style={
-            {
-              "alignItems": "center",
-            }
+            [
+              {
+                "alignItems": undefined,
+                "flexDirection": "column",
+                "justifyContent": undefined,
+              },
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              {
+                "alignItems": "center",
+              },
+              null,
+              {
+                "justifyContent": "space-around",
+                "marginBottom": 20,
+              },
+              null,
+              null,
+            ]
           }
         >
-          <View
-            testID="pinInput"
-          />
-          <View
-            accessibilityState={
-              {
-                "busy": undefined,
-                "checked": undefined,
-                "disabled": undefined,
-                "expanded": undefined,
-                "selected": undefined,
+          OtpVerificationIcon
+          <View>
+            <View
+              accessible={true}
+              style={
+                [
+                  {
+                    "alignItems": undefined,
+                    "flexDirection": "column",
+                    "justifyContent": undefined,
+                  },
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  {
+                    "alignItems": "center",
+                  },
+                  null,
+                  null,
+                  null,
+                  null,
+                ]
               }
-            }
-            accessibilityValue={
-              {
-                "max": undefined,
-                "min": undefined,
-                "now": undefined,
-                "text": undefined,
-              }
-            }
-            accessible={true}
-            collapsable={false}
-            focusable={true}
-            onClick={[Function]}
-            onResponderGrant={[Function]}
-            onResponderMove={[Function]}
-            onResponderRelease={[Function]}
-            onResponderTerminate={[Function]}
-            onResponderTerminationRequest={[Function]}
-            onStartShouldSetResponder={[Function]}
-            style={
-              {
-                "opacity": 1,
-              }
-            }
-          >
-            <Text>
+            >
               <Text
+                accessibilityLabel="otpVerificationHeader"
                 style={
                   [
                     {
@@ -488,30 +390,144 @@ exports[`TransactionCodeModal should render with PinInput for numeric mode with 
                       "fontSize": 15,
                       "justifyContent": "center",
                     },
-                    {
-                      "color": "#FFFFFF",
-                    },
+                    null,
                     {
                       "textAlign": "left",
                     },
                     null,
                     null,
-                    [
-                      {
-                        "paddingLeft": 0,
-                      },
-                      undefined,
-                    ],
+                    {
+                      "color": "#000000",
+                      "fontFamily": "Montserrat_700Bold",
+                      "fontSize": 18,
+                      "lineHeight": 19,
+                      "paddingTop": 5,
+                    },
                   ]
                 }
               >
-                verify
+                TransactionCode
               </Text>
-            </Text>
+              <Text
+                accessibilityLabel="otpVerificationDescription"
+                ellipsizeMode="tail"
+                numberOfLines={2}
+                onTextLayout={[Function]}
+                style={
+                  [
+                    {
+                      "color": "#000000",
+                      "fontSize": 16,
+                      "lineHeight": 18,
+                    },
+                    {
+                      "fontFamily": "Montserrat_600SemiBold",
+                      "fontSize": 15,
+                    },
+                    {
+                      "color": "#6F6F6F",
+                    },
+                    {
+                      "textAlign": "center",
+                    },
+                    null,
+                    {
+                      "fontSize": 13,
+                      "lineHeight": 21,
+                    },
+                    {
+                      "marginTop": 15,
+                    },
+                  ]
+                }
+              >
+                description
+              </Text>
+            </View>
+          </View>
+          <View
+            style={
+              {
+                "alignItems": "center",
+              }
+            }
+          >
+            <View
+              testID="pinInput"
+            />
+            <View
+              accessibilityState={
+                {
+                  "busy": undefined,
+                  "checked": undefined,
+                  "disabled": undefined,
+                  "expanded": undefined,
+                  "selected": undefined,
+                }
+              }
+              accessibilityValue={
+                {
+                  "max": undefined,
+                  "min": undefined,
+                  "now": undefined,
+                  "text": undefined,
+                }
+              }
+              accessible={true}
+              collapsable={false}
+              focusable={true}
+              onClick={[Function]}
+              onResponderGrant={[Function]}
+              onResponderMove={[Function]}
+              onResponderRelease={[Function]}
+              onResponderTerminate={[Function]}
+              onResponderTerminationRequest={[Function]}
+              onStartShouldSetResponder={[Function]}
+              style={
+                {
+                  "opacity": 1,
+                }
+              }
+            >
+              <Text>
+                <Text
+                  style={
+                    [
+                      {
+                        "color": "#000000",
+                        "fontSize": 16,
+                        "lineHeight": 18,
+                      },
+                      {
+                        "fontFamily": "Montserrat_700Bold",
+                        "fontSize": 15,
+                        "justifyContent": "center",
+                      },
+                      {
+                        "color": "#FFFFFF",
+                      },
+                      {
+                        "textAlign": "left",
+                      },
+                      null,
+                      null,
+                      [
+                        {
+                          "paddingLeft": 0,
+                        },
+                        undefined,
+                      ],
+                    ]
+                  }
+                >
+                  verify
+                </Text>
+              </Text>
+            </View>
           </View>
         </View>
       </View>
-    </View>
+    </RCTScrollView>
   </View>
 </View>
 `;
@@ -530,7 +546,7 @@ exports[`TransactionCodeModal should render with description 1`] = `
       }
     }
   >
-    <View
+    <RCTScrollView
       accessibilityState={
         {
           "busy": undefined,
@@ -541,7 +557,14 @@ exports[`TransactionCodeModal should render with description 1`] = `
         }
       }
       accessible={false}
+      contentContainerStyle={
+        {
+          "flexGrow": 1,
+          "justifyContent": "center",
+        }
+      }
       focusable={true}
+      keyboardShouldPersistTaps="handled"
       onClick={[Function]}
       onResponderGrant={[Function]}
       onResponderMove={[Function]}
@@ -551,184 +574,71 @@ exports[`TransactionCodeModal should render with description 1`] = `
       onStartShouldSetResponder={[Function]}
       style={
         {
-          "height": 700,
+          "maxHeight": 800,
+          "width": "100%",
         }
       }
     >
-      <View
-        accessible={true}
-        style={
-          [
-            {
-              "alignItems": undefined,
-              "flexDirection": "column",
-              "justifyContent": undefined,
-            },
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            {
-              "alignItems": "center",
-            },
-            null,
-            {
-              "flex": 1,
-              "justifyContent": "space-around",
-              "marginBottom": 20,
-              "maxHeight": 800,
-            },
-            null,
-            null,
-          ]
-        }
-      >
-        OtpVerificationIcon
-        <View>
-          <View
-            accessible={true}
-            style={
-              [
-                {
-                  "alignItems": undefined,
-                  "flexDirection": "column",
-                  "justifyContent": undefined,
-                },
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                {
-                  "alignItems": "center",
-                },
-                null,
-                null,
-                null,
-                null,
-              ]
-            }
-          >
-            <Text
-              accessibilityLabel="otpVerificationHeader"
-              style={
-                [
-                  {
-                    "color": "#000000",
-                    "fontSize": 16,
-                    "lineHeight": 18,
-                  },
-                  {
-                    "fontFamily": "Montserrat_700Bold",
-                    "fontSize": 15,
-                    "justifyContent": "center",
-                  },
-                  null,
-                  {
-                    "textAlign": "left",
-                  },
-                  null,
-                  null,
-                  {
-                    "color": "#000000",
-                    "fontFamily": "Montserrat_700Bold",
-                    "fontSize": 18,
-                    "lineHeight": 19,
-                    "paddingTop": 5,
-                  },
-                ]
-              }
-            >
-              TransactionCode
-            </Text>
-            <Text
-              accessibilityLabel="otpVerificationDescription"
-              ellipsizeMode="tail"
-              numberOfLines={2}
-              onTextLayout={[Function]}
-              style={
-                [
-                  {
-                    "color": "#000000",
-                    "fontSize": 16,
-                    "lineHeight": 18,
-                  },
-                  {
-                    "fontFamily": "Montserrat_600SemiBold",
-                    "fontSize": 15,
-                  },
-                  {
-                    "color": "#6F6F6F",
-                  },
-                  {
-                    "textAlign": "center",
-                  },
-                  null,
-                  {
-                    "fontSize": 13,
-                    "lineHeight": 21,
-                  },
-                  {
-                    "marginTop": 15,
-                  },
-                ]
-              }
-            >
-              Enter the transaction code
-            </Text>
-          </View>
-        </View>
+      <View>
         <View
+          accessible={true}
           style={
-            {
-              "alignItems": "center",
-            }
+            [
+              {
+                "alignItems": undefined,
+                "flexDirection": "column",
+                "justifyContent": undefined,
+              },
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              {
+                "alignItems": "center",
+              },
+              null,
+              {
+                "justifyContent": "space-around",
+                "marginBottom": 20,
+              },
+              null,
+              null,
+            ]
           }
         >
-          <View
-            testID="pinInput"
-          />
-          <View
-            accessibilityState={
-              {
-                "busy": undefined,
-                "checked": undefined,
-                "disabled": undefined,
-                "expanded": undefined,
-                "selected": undefined,
+          OtpVerificationIcon
+          <View>
+            <View
+              accessible={true}
+              style={
+                [
+                  {
+                    "alignItems": undefined,
+                    "flexDirection": "column",
+                    "justifyContent": undefined,
+                  },
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  {
+                    "alignItems": "center",
+                  },
+                  null,
+                  null,
+                  null,
+                  null,
+                ]
               }
-            }
-            accessibilityValue={
-              {
-                "max": undefined,
-                "min": undefined,
-                "now": undefined,
-                "text": undefined,
-              }
-            }
-            accessible={true}
-            collapsable={false}
-            focusable={true}
-            onClick={[Function]}
-            onResponderGrant={[Function]}
-            onResponderMove={[Function]}
-            onResponderRelease={[Function]}
-            onResponderTerminate={[Function]}
-            onResponderTerminationRequest={[Function]}
-            onStartShouldSetResponder={[Function]}
-            style={
-              {
-                "opacity": 1,
-              }
-            }
-          >
-            <Text>
+            >
               <Text
+                accessibilityLabel="otpVerificationHeader"
                 style={
                   [
                     {
@@ -741,30 +651,144 @@ exports[`TransactionCodeModal should render with description 1`] = `
                       "fontSize": 15,
                       "justifyContent": "center",
                     },
-                    {
-                      "color": "#FFFFFF",
-                    },
+                    null,
                     {
                       "textAlign": "left",
                     },
                     null,
                     null,
-                    [
-                      {
-                        "paddingLeft": 0,
-                      },
-                      undefined,
-                    ],
+                    {
+                      "color": "#000000",
+                      "fontFamily": "Montserrat_700Bold",
+                      "fontSize": 18,
+                      "lineHeight": 19,
+                      "paddingTop": 5,
+                    },
                   ]
                 }
               >
-                verify
+                TransactionCode
               </Text>
-            </Text>
+              <Text
+                accessibilityLabel="otpVerificationDescription"
+                ellipsizeMode="tail"
+                numberOfLines={2}
+                onTextLayout={[Function]}
+                style={
+                  [
+                    {
+                      "color": "#000000",
+                      "fontSize": 16,
+                      "lineHeight": 18,
+                    },
+                    {
+                      "fontFamily": "Montserrat_600SemiBold",
+                      "fontSize": 15,
+                    },
+                    {
+                      "color": "#6F6F6F",
+                    },
+                    {
+                      "textAlign": "center",
+                    },
+                    null,
+                    {
+                      "fontSize": 13,
+                      "lineHeight": 21,
+                    },
+                    {
+                      "marginTop": 15,
+                    },
+                  ]
+                }
+              >
+                Enter the transaction code
+              </Text>
+            </View>
+          </View>
+          <View
+            style={
+              {
+                "alignItems": "center",
+              }
+            }
+          >
+            <View
+              testID="pinInput"
+            />
+            <View
+              accessibilityState={
+                {
+                  "busy": undefined,
+                  "checked": undefined,
+                  "disabled": undefined,
+                  "expanded": undefined,
+                  "selected": undefined,
+                }
+              }
+              accessibilityValue={
+                {
+                  "max": undefined,
+                  "min": undefined,
+                  "now": undefined,
+                  "text": undefined,
+                }
+              }
+              accessible={true}
+              collapsable={false}
+              focusable={true}
+              onClick={[Function]}
+              onResponderGrant={[Function]}
+              onResponderMove={[Function]}
+              onResponderRelease={[Function]}
+              onResponderTerminate={[Function]}
+              onResponderTerminationRequest={[Function]}
+              onStartShouldSetResponder={[Function]}
+              style={
+                {
+                  "opacity": 1,
+                }
+              }
+            >
+              <Text>
+                <Text
+                  style={
+                    [
+                      {
+                        "color": "#000000",
+                        "fontSize": 16,
+                        "lineHeight": 18,
+                      },
+                      {
+                        "fontFamily": "Montserrat_700Bold",
+                        "fontSize": 15,
+                        "justifyContent": "center",
+                      },
+                      {
+                        "color": "#FFFFFF",
+                      },
+                      {
+                        "textAlign": "left",
+                      },
+                      null,
+                      null,
+                      [
+                        {
+                          "paddingLeft": 0,
+                        },
+                        undefined,
+                      ],
+                    ]
+                  }
+                >
+                  verify
+                </Text>
+              </Text>
+            </View>
           </View>
         </View>
       </View>
-    </View>
+    </RCTScrollView>
   </View>
 </View>
 `;
@@ -783,7 +807,7 @@ exports[`TransactionCodeModal should render with error prop 1`] = `
       }
     }
   >
-    <View
+    <RCTScrollView
       accessibilityState={
         {
           "busy": undefined,
@@ -794,7 +818,14 @@ exports[`TransactionCodeModal should render with error prop 1`] = `
         }
       }
       accessible={false}
+      contentContainerStyle={
+        {
+          "flexGrow": 1,
+          "justifyContent": "center",
+        }
+      }
       focusable={true}
+      keyboardShouldPersistTaps="handled"
       onClick={[Function]}
       onResponderGrant={[Function]}
       onResponderMove={[Function]}
@@ -804,224 +835,71 @@ exports[`TransactionCodeModal should render with error prop 1`] = `
       onStartShouldSetResponder={[Function]}
       style={
         {
-          "height": 700,
+          "maxHeight": 800,
+          "width": "100%",
         }
       }
     >
-      <View
-        accessible={true}
-        style={
-          [
-            {
-              "alignItems": undefined,
-              "flexDirection": "column",
-              "justifyContent": undefined,
-            },
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            {
-              "alignItems": "center",
-            },
-            null,
-            {
-              "flex": 1,
-              "justifyContent": "space-around",
-              "marginBottom": 20,
-              "maxHeight": 800,
-            },
-            null,
-            null,
-          ]
-        }
-      >
-        OtpVerificationIcon
-        <View>
-          <View
-            accessible={true}
-            style={
-              [
-                {
-                  "alignItems": undefined,
-                  "flexDirection": "column",
-                  "justifyContent": undefined,
-                },
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                {
-                  "alignItems": "center",
-                },
-                null,
-                null,
-                null,
-                null,
-              ]
-            }
-          >
-            <Text
-              accessibilityLabel="otpVerificationHeader"
+      <View>
+        <View
+          accessible={true}
+          style={
+            [
+              {
+                "alignItems": undefined,
+                "flexDirection": "column",
+                "justifyContent": undefined,
+              },
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              {
+                "alignItems": "center",
+              },
+              null,
+              {
+                "justifyContent": "space-around",
+                "marginBottom": 20,
+              },
+              null,
+              null,
+            ]
+          }
+        >
+          OtpVerificationIcon
+          <View>
+            <View
+              accessible={true}
               style={
                 [
                   {
-                    "color": "#000000",
-                    "fontSize": 16,
-                    "lineHeight": 18,
-                  },
-                  {
-                    "fontFamily": "Montserrat_700Bold",
-                    "fontSize": 15,
-                    "justifyContent": "center",
-                  },
-                  null,
-                  {
-                    "textAlign": "left",
+                    "alignItems": undefined,
+                    "flexDirection": "column",
+                    "justifyContent": undefined,
                   },
                   null,
                   null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
                   {
-                    "color": "#000000",
-                    "fontFamily": "Montserrat_700Bold",
-                    "fontSize": 18,
-                    "lineHeight": 19,
-                    "paddingTop": 5,
+                    "alignItems": "center",
                   },
+                  null,
+                  null,
+                  null,
+                  null,
                 ]
               }
             >
-              TransactionCode
-            </Text>
-            <Text
-              accessibilityLabel="otpVerificationDescription"
-              ellipsizeMode="tail"
-              numberOfLines={2}
-              onTextLayout={[Function]}
-              style={
-                [
-                  {
-                    "color": "#000000",
-                    "fontSize": 16,
-                    "lineHeight": 18,
-                  },
-                  {
-                    "fontFamily": "Montserrat_600SemiBold",
-                    "fontSize": 15,
-                  },
-                  {
-                    "color": "#6F6F6F",
-                  },
-                  {
-                    "textAlign": "center",
-                  },
-                  null,
-                  {
-                    "fontSize": 13,
-                    "lineHeight": 21,
-                  },
-                  {
-                    "marginTop": 15,
-                  },
-                ]
-              }
-            >
-              description
-            </Text>
-          </View>
-        </View>
-        <View
-          style={
-            {
-              "backgroundColor": "#FAEFEF",
-              "borderRadius": 10,
-              "marginBottom": 10,
-              "marginTop": 10,
-              "padding": 8,
-              "width": "80%",
-            }
-          }
-        >
-          <Text
-            accessibilityLabel="otpVerificationError"
-            style={
-              [
-                {
-                  "color": "#000000",
-                  "fontSize": 16,
-                  "lineHeight": 18,
-                },
-                {
-                  "fontFamily": "Montserrat_400Regular",
-                  "fontSize": 14,
-                },
-                {
-                  "color": "#D52929",
-                },
-                {
-                  "textAlign": "center",
-                },
-                null,
-                null,
-                null,
-              ]
-            }
-          >
-            Invalid code
-          </Text>
-        </View>
-        <View
-          style={
-            {
-              "alignItems": "center",
-            }
-          }
-        >
-          <View
-            testID="pinInput"
-          />
-          <View
-            accessibilityState={
-              {
-                "busy": undefined,
-                "checked": undefined,
-                "disabled": undefined,
-                "expanded": undefined,
-                "selected": undefined,
-              }
-            }
-            accessibilityValue={
-              {
-                "max": undefined,
-                "min": undefined,
-                "now": undefined,
-                "text": undefined,
-              }
-            }
-            accessible={true}
-            collapsable={false}
-            focusable={true}
-            onClick={[Function]}
-            onResponderGrant={[Function]}
-            onResponderMove={[Function]}
-            onResponderRelease={[Function]}
-            onResponderTerminate={[Function]}
-            onResponderTerminationRequest={[Function]}
-            onStartShouldSetResponder={[Function]}
-            style={
-              {
-                "opacity": 1,
-              }
-            }
-          >
-            <Text>
               <Text
+                accessibilityLabel="otpVerificationHeader"
                 style={
                   [
                     {
@@ -1034,30 +912,184 @@ exports[`TransactionCodeModal should render with error prop 1`] = `
                       "fontSize": 15,
                       "justifyContent": "center",
                     },
-                    {
-                      "color": "#FFFFFF",
-                    },
+                    null,
                     {
                       "textAlign": "left",
                     },
                     null,
                     null,
-                    [
-                      {
-                        "paddingLeft": 0,
-                      },
-                      undefined,
-                    ],
+                    {
+                      "color": "#000000",
+                      "fontFamily": "Montserrat_700Bold",
+                      "fontSize": 18,
+                      "lineHeight": 19,
+                      "paddingTop": 5,
+                    },
                   ]
                 }
               >
-                verify
+                TransactionCode
               </Text>
+              <Text
+                accessibilityLabel="otpVerificationDescription"
+                ellipsizeMode="tail"
+                numberOfLines={2}
+                onTextLayout={[Function]}
+                style={
+                  [
+                    {
+                      "color": "#000000",
+                      "fontSize": 16,
+                      "lineHeight": 18,
+                    },
+                    {
+                      "fontFamily": "Montserrat_600SemiBold",
+                      "fontSize": 15,
+                    },
+                    {
+                      "color": "#6F6F6F",
+                    },
+                    {
+                      "textAlign": "center",
+                    },
+                    null,
+                    {
+                      "fontSize": 13,
+                      "lineHeight": 21,
+                    },
+                    {
+                      "marginTop": 15,
+                    },
+                  ]
+                }
+              >
+                description
+              </Text>
+            </View>
+          </View>
+          <View
+            style={
+              {
+                "backgroundColor": "#FAEFEF",
+                "borderRadius": 10,
+                "marginBottom": 10,
+                "marginTop": 10,
+                "padding": 8,
+                "width": "80%",
+              }
+            }
+          >
+            <Text
+              accessibilityLabel="otpVerificationError"
+              style={
+                [
+                  {
+                    "color": "#000000",
+                    "fontSize": 16,
+                    "lineHeight": 18,
+                  },
+                  {
+                    "fontFamily": "Montserrat_400Regular",
+                    "fontSize": 14,
+                  },
+                  {
+                    "color": "#D52929",
+                  },
+                  {
+                    "textAlign": "center",
+                  },
+                  null,
+                  null,
+                  null,
+                ]
+              }
+            >
+              Invalid code
             </Text>
+          </View>
+          <View
+            style={
+              {
+                "alignItems": "center",
+              }
+            }
+          >
+            <View
+              testID="pinInput"
+            />
+            <View
+              accessibilityState={
+                {
+                  "busy": undefined,
+                  "checked": undefined,
+                  "disabled": undefined,
+                  "expanded": undefined,
+                  "selected": undefined,
+                }
+              }
+              accessibilityValue={
+                {
+                  "max": undefined,
+                  "min": undefined,
+                  "now": undefined,
+                  "text": undefined,
+                }
+              }
+              accessible={true}
+              collapsable={false}
+              focusable={true}
+              onClick={[Function]}
+              onResponderGrant={[Function]}
+              onResponderMove={[Function]}
+              onResponderRelease={[Function]}
+              onResponderTerminate={[Function]}
+              onResponderTerminationRequest={[Function]}
+              onStartShouldSetResponder={[Function]}
+              style={
+                {
+                  "opacity": 1,
+                }
+              }
+            >
+              <Text>
+                <Text
+                  style={
+                    [
+                      {
+                        "color": "#000000",
+                        "fontSize": 16,
+                        "lineHeight": 18,
+                      },
+                      {
+                        "fontFamily": "Montserrat_700Bold",
+                        "fontSize": 15,
+                        "justifyContent": "center",
+                      },
+                      {
+                        "color": "#FFFFFF",
+                      },
+                      {
+                        "textAlign": "left",
+                      },
+                      null,
+                      null,
+                      [
+                        {
+                          "paddingLeft": 0,
+                        },
+                        undefined,
+                      ],
+                    ]
+                  }
+                >
+                  verify
+                </Text>
+              </Text>
+            </View>
           </View>
         </View>
       </View>
-    </View>
+    </RCTScrollView>
   </View>
 </View>
 `;
@@ -1076,7 +1108,7 @@ exports[`TransactionCodeModal should render with text Input for text mode 1`] = 
       }
     }
   >
-    <View
+    <RCTScrollView
       accessibilityState={
         {
           "busy": undefined,
@@ -1087,7 +1119,14 @@ exports[`TransactionCodeModal should render with text Input for text mode 1`] = 
         }
       }
       accessible={false}
+      contentContainerStyle={
+        {
+          "flexGrow": 1,
+          "justifyContent": "center",
+        }
+      }
       focusable={true}
+      keyboardShouldPersistTaps="handled"
       onClick={[Function]}
       onResponderGrant={[Function]}
       onResponderMove={[Function]}
@@ -1097,192 +1136,71 @@ exports[`TransactionCodeModal should render with text Input for text mode 1`] = 
       onStartShouldSetResponder={[Function]}
       style={
         {
-          "height": 700,
+          "maxHeight": 800,
+          "width": "100%",
         }
       }
     >
-      <View
-        accessible={true}
-        style={
-          [
-            {
-              "alignItems": undefined,
-              "flexDirection": "column",
-              "justifyContent": undefined,
-            },
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            {
-              "alignItems": "center",
-            },
-            null,
-            {
-              "flex": 1,
-              "justifyContent": "space-around",
-              "marginBottom": 20,
-              "maxHeight": 800,
-            },
-            null,
-            null,
-          ]
-        }
-      >
-        OtpVerificationIcon
-        <View>
-          <View
-            accessible={true}
-            style={
-              [
-                {
-                  "alignItems": undefined,
-                  "flexDirection": "column",
-                  "justifyContent": undefined,
-                },
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                {
-                  "alignItems": "center",
-                },
-                null,
-                null,
-                null,
-                null,
-              ]
-            }
-          >
-            <Text
-              accessibilityLabel="otpVerificationHeader"
-              style={
-                [
-                  {
-                    "color": "#000000",
-                    "fontSize": 16,
-                    "lineHeight": 18,
-                  },
-                  {
-                    "fontFamily": "Montserrat_700Bold",
-                    "fontSize": 15,
-                    "justifyContent": "center",
-                  },
-                  null,
-                  {
-                    "textAlign": "left",
-                  },
-                  null,
-                  null,
-                  {
-                    "color": "#000000",
-                    "fontFamily": "Montserrat_700Bold",
-                    "fontSize": 18,
-                    "lineHeight": 19,
-                    "paddingTop": 5,
-                  },
-                ]
-              }
-            >
-              TransactionCode
-            </Text>
-            <Text
-              accessibilityLabel="otpVerificationDescription"
-              ellipsizeMode="tail"
-              numberOfLines={2}
-              onTextLayout={[Function]}
-              style={
-                [
-                  {
-                    "color": "#000000",
-                    "fontSize": 16,
-                    "lineHeight": 18,
-                  },
-                  {
-                    "fontFamily": "Montserrat_600SemiBold",
-                    "fontSize": 15,
-                  },
-                  {
-                    "color": "#6F6F6F",
-                  },
-                  {
-                    "textAlign": "center",
-                  },
-                  null,
-                  {
-                    "fontSize": 13,
-                    "lineHeight": 21,
-                  },
-                  {
-                    "marginTop": 15,
-                  },
-                ]
-              }
-            >
-              description
-            </Text>
-          </View>
-        </View>
+      <View>
         <View
+          accessible={true}
           style={
-            {
-              "alignItems": "center",
-            }
+            [
+              {
+                "alignItems": undefined,
+                "flexDirection": "column",
+                "justifyContent": undefined,
+              },
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              {
+                "alignItems": "center",
+              },
+              null,
+              {
+                "justifyContent": "space-around",
+                "marginBottom": 20,
+              },
+              null,
+              null,
+            ]
           }
         >
-          <View
-            testID="input"
-          >
-            <TextInput
-              onChangeText={[Function]}
-              placeholder="placeholder"
-              secureTextEntry={true}
-              testID="textInput"
-              value=""
-            />
-          </View>
-          <View
-            accessibilityState={
-              {
-                "busy": undefined,
-                "checked": undefined,
-                "disabled": undefined,
-                "expanded": undefined,
-                "selected": undefined,
+          OtpVerificationIcon
+          <View>
+            <View
+              accessible={true}
+              style={
+                [
+                  {
+                    "alignItems": undefined,
+                    "flexDirection": "column",
+                    "justifyContent": undefined,
+                  },
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  {
+                    "alignItems": "center",
+                  },
+                  null,
+                  null,
+                  null,
+                  null,
+                ]
               }
-            }
-            accessibilityValue={
-              {
-                "max": undefined,
-                "min": undefined,
-                "now": undefined,
-                "text": undefined,
-              }
-            }
-            accessible={true}
-            collapsable={false}
-            focusable={true}
-            onClick={[Function]}
-            onResponderGrant={[Function]}
-            onResponderMove={[Function]}
-            onResponderRelease={[Function]}
-            onResponderTerminate={[Function]}
-            onResponderTerminationRequest={[Function]}
-            onStartShouldSetResponder={[Function]}
-            style={
-              {
-                "opacity": 1,
-              }
-            }
-          >
-            <Text>
+            >
               <Text
+                accessibilityLabel="otpVerificationHeader"
                 style={
                   [
                     {
@@ -1295,30 +1213,152 @@ exports[`TransactionCodeModal should render with text Input for text mode 1`] = 
                       "fontSize": 15,
                       "justifyContent": "center",
                     },
-                    {
-                      "color": "#FFFFFF",
-                    },
+                    null,
                     {
                       "textAlign": "left",
                     },
                     null,
                     null,
-                    [
-                      {
-                        "paddingLeft": 0,
-                      },
-                      undefined,
-                    ],
+                    {
+                      "color": "#000000",
+                      "fontFamily": "Montserrat_700Bold",
+                      "fontSize": 18,
+                      "lineHeight": 19,
+                      "paddingTop": 5,
+                    },
                   ]
                 }
               >
-                Verify
+                TransactionCode
               </Text>
-            </Text>
+              <Text
+                accessibilityLabel="otpVerificationDescription"
+                ellipsizeMode="tail"
+                numberOfLines={2}
+                onTextLayout={[Function]}
+                style={
+                  [
+                    {
+                      "color": "#000000",
+                      "fontSize": 16,
+                      "lineHeight": 18,
+                    },
+                    {
+                      "fontFamily": "Montserrat_600SemiBold",
+                      "fontSize": 15,
+                    },
+                    {
+                      "color": "#6F6F6F",
+                    },
+                    {
+                      "textAlign": "center",
+                    },
+                    null,
+                    {
+                      "fontSize": 13,
+                      "lineHeight": 21,
+                    },
+                    {
+                      "marginTop": 15,
+                    },
+                  ]
+                }
+              >
+                description
+              </Text>
+            </View>
+          </View>
+          <View
+            style={
+              {
+                "alignItems": "center",
+              }
+            }
+          >
+            <View
+              testID="input"
+            >
+              <TextInput
+                onChangeText={[Function]}
+                placeholder="placeholder"
+                secureTextEntry={true}
+                testID="textInput"
+                value=""
+              />
+            </View>
+            <View
+              accessibilityState={
+                {
+                  "busy": undefined,
+                  "checked": undefined,
+                  "disabled": undefined,
+                  "expanded": undefined,
+                  "selected": undefined,
+                }
+              }
+              accessibilityValue={
+                {
+                  "max": undefined,
+                  "min": undefined,
+                  "now": undefined,
+                  "text": undefined,
+                }
+              }
+              accessible={true}
+              collapsable={false}
+              focusable={true}
+              onClick={[Function]}
+              onResponderGrant={[Function]}
+              onResponderMove={[Function]}
+              onResponderRelease={[Function]}
+              onResponderTerminate={[Function]}
+              onResponderTerminationRequest={[Function]}
+              onStartShouldSetResponder={[Function]}
+              style={
+                {
+                  "opacity": 1,
+                }
+              }
+            >
+              <Text>
+                <Text
+                  style={
+                    [
+                      {
+                        "color": "#000000",
+                        "fontSize": 16,
+                        "lineHeight": 18,
+                      },
+                      {
+                        "fontFamily": "Montserrat_700Bold",
+                        "fontSize": 15,
+                        "justifyContent": "center",
+                      },
+                      {
+                        "color": "#FFFFFF",
+                      },
+                      {
+                        "textAlign": "left",
+                      },
+                      null,
+                      null,
+                      [
+                        {
+                          "paddingLeft": 0,
+                        },
+                        undefined,
+                      ],
+                    ]
+                  }
+                >
+                  Verify
+                </Text>
+              </Text>
+            </View>
           </View>
         </View>
       </View>
-    </View>
+    </RCTScrollView>
   </View>
 </View>
 `;

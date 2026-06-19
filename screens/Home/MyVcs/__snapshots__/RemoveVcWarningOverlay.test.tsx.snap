@@ -60,7 +60,7 @@ exports[`RemoveVcWarningOverlay should match snapshot when visible 1`] = `
           null,
           {
             "marginBottom": -10,
-            "marginEnd": 80,
+            "marginEnd": 0,
             "marginStart": 0,
             "marginTop": 0,
           },
@@ -81,38 +81,6 @@ exports[`RemoveVcWarningOverlay should match snapshot when visible 1`] = `
       }
     >
       WarningLogo
-      <Text
-        style={
-          [
-            {
-              "color": "#000000",
-              "fontSize": 16,
-              "lineHeight": 18,
-            },
-            {
-              "fontFamily": "Montserrat_700Bold",
-              "fontSize": 15,
-              "justifyContent": "center",
-            },
-            {
-              "color": "#FFFFFF",
-            },
-            {
-              "textAlign": "left",
-            },
-            {
-              "marginBottom": 0,
-              "marginEnd": 0,
-              "marginStart": -80,
-              "marginTop": 0,
-            },
-            null,
-            null,
-          ]
-        }
-      >
-        !
-      </Text>
     </View>
     <View
       accessible={true}

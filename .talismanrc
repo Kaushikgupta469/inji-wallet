@@ -647,4 +647,8 @@ fileignoreconfig:
   checksum: 80871e0695f0305858036160cffe00d28990565d0437ce966a6eb272db1c5aac
 - filename: machines/Issuers/IssuersMachine.typegen.ts
   checksum: 8ffa8dfc0adc9d78c525ec8a92e92c82a7fa85ef25f9d2878156df127fef9a5b
+- filename: screens/Issuers/TransactionCodeScreen.tsx
+  checksum: 46c47f18c194378f598751bd3777f8d000870dc9e668087d8d97b657811450b5
+- filename: screens/Issuers/__snapshots__/TransactionCodeScreen.test.tsx.snap
+  checksum: 50e85ddc22c897f50f32c8ddd09302bf12ff590572fca901c585e0497fe3bd03
   version: "1.0"

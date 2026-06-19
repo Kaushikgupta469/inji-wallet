@@ -19,6 +19,7 @@ export const LoaderSkeleton: React.FC<{
       {...testIDProps(`loader-skeleton-${testID}`)}
       style={{backgroundColor: Theme.Colors.whiteBackgroundColor}}
       crossAlign="center"
+      scroll
       fill>
       <Column margin="24 0" align="space-around">
         <LoaderAnimation testID={'loader'} />
