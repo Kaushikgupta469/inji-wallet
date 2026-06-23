@@ -211,7 +211,7 @@ export const ErrorView: React.FC<ErrorProps> = props => {
               onPress={textButtonEvent}
               width={Dimensions.get('screen').width * 0.54}
               title={t(textButtonText)}
-              type="clear"
+              type={textButtonType}
               testID={textButtonTestID}
             />
           )}
