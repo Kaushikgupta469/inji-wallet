@@ -19,6 +19,8 @@ jest.mock('../../shared/openId4VCI/Utils', () => ({
   VCIServerErrorCode: {
     SERVER_ERROR: 'server_error',
     INVALID_CREDENTIAL_OFFER: 'invalid_credential_offer',
+    TIMEOUT_ERROR: 'timeout_error',
+    UNSUPPORTED_GRANT_TYPE: 'unsupported_grant_type',
     UNKNOWN_ERROR: 'unknown_error',
   },
   OIDCErrors: {
@@ -304,10 +306,11 @@ describe('IssuersActions', () => {
       expect(actions.resetLoadingReason.assignment.loadingReason).toBeNull();
     });
 
-    it('resetAuthorization resets auth type and success', () => {
+    it('resetAuthorization resets auth type, success and auth endpoint flag', () => {
       const asg = actions.resetAuthorization.assignment;
       expect(asg.authorizationType).toBe('implicit');
       expect(asg.authorizationSuccess).toBe(false);
+      expect(asg.authEndpointToOpen).toBe(false);
     });
 
     it('setSelectedCredentialType picks credType and wellknown key types', () => {
@@ -371,9 +374,9 @@ describe('IssuersActions', () => {
     it('setError returns invalid credential offer for VCI-008 source error', () => {
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
       const fn = actions.setError.assignment.errorMessage;
-      expect(
-        fn({isInternetAvailable: true}, {data: {sourceErrorCode: 'VCI-008'}}),
-      ).toBe('invalid_credential_offer');
+      expect(fn({isInternetAvailable: true}, {data: {code: 'VCI-008'}})).toBe(
+        'invalid_credential_offer',
+      );
       consoleSpy.mockRestore();
     });
 
@@ -383,9 +386,21 @@ describe('IssuersActions', () => {
       expect(
         fn(
           {isInternetAvailable: true},
-          {data: {serverErrorCode: 'unsupported_grant_type'}},
+          {data: {issuerErrorCode: 'unsupported_grant_type'}},
         ),
       ).toBe('unsupported_grant_type');
+      consoleSpy.mockRestore();
+    });
+
+    it('setError falls back to server error for an unmapped issuer error code', () => {
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+      const fn = actions.setError.assignment.errorMessage;
+      expect(
+        fn(
+          {isInternetAvailable: true},
+          {data: {issuerErrorCode: 'some_unmapped_issuer_error'}},
+        ),
+      ).toBe('server_error');
       consoleSpy.mockRestore();
     });
 

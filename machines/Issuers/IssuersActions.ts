@@ -82,6 +82,7 @@ export const IssuersActions = (model: any) => {
     resetAuthorization: model.assign({
       authorizationType: AuthorizationType.IMPLICIT,
       authorizationSuccess: false,
+      authEndpointToOpen: false,
     }),
     setSelectedCredentialType: model.assign({
       selectedCredentialType: (_: any, event: any) => event.credType,
@@ -125,13 +126,19 @@ export const IssuersActions = (model: any) => {
       errorMessage: (context: any, event: any) => {
         const error = (event.data ?? event) as VciClientErrorResponse;
         console.error(`Error occurred while ${event} -> `, error);
-        if (error.serverErrorCode)
-          return error.serverErrorCode as VCIServerErrorCode;
+        if (error.issuerErrorCode) {
+          const isMappedIssuerError = Object.values(
+            VCIServerErrorCode,
+          ).includes(error.issuerErrorCode as VCIServerErrorCode);
+          return isMappedIssuerError
+            ? (error.issuerErrorCode as VCIServerErrorCode)
+            : VCIServerErrorCode.SERVER_ERROR;
+        }
         if (!context.isInternetAvailable) {
           return ErrorMessage.NO_INTERNET;
-        } else if (error.sourceErrorCode === 'VCI-008') {
+        } else if (error.code === 'VCI-008') {
           return VCIServerErrorCode.INVALID_CREDENTIAL_OFFER;
-        } else if (error.sourceErrorCode === 'VCI-007') {
+        } else if (error.code === 'VCI-007') {
           return VCIServerErrorCode.TIMEOUT_ERROR;
         } else if (error.code) return VCIServerErrorCode.SERVER_ERROR;
         else return VCIServerErrorCode.UNKNOWN_ERROR;
