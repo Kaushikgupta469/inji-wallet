@@ -128,31 +128,40 @@ export const ErrorView: React.FC<ErrorProps> = props => {
     );
 
     if (alignActionsOnEnd) {
+      const actionsOnEndContent = (
+        <Fragment>
+          {headerSection}
+          <View style={{flex: 1}}>
+            <View style={{alignItems: 'center'}}>
+              <Text
+                style={[
+                  Theme.ErrorStyles.message,
+                  compactHeader ? {marginBottom: 10} : undefined,
+                ]}
+                testID={`${testID}Message`}>
+                {message}
+              </Text>
+              {additionalMessage && (
+                <Text
+                  style={Theme.ErrorStyles.additionalMessage}
+                  testID={`${testID}AdditionalMessage`}>
+                  {additionalMessage}
+                </Text>
+              )}
+            </View>
+            {additionalContent}
+          </View>
+        </Fragment>
+      );
       return (
         <Fragment>
-          <ScrollView>
-            {headerSection}
-            <View style={{flex: 1}}>
-              <View style={{alignItems: 'center'}}>
-                <Text
-                  style={[
-                    Theme.ErrorStyles.message,
-                    compactHeader ? {marginBottom: 10} : undefined,
-                  ]}
-                  testID={`${testID}Message`}>
-                  {message}
-                </Text>
-                {additionalMessage && (
-                  <Text
-                    style={Theme.ErrorStyles.additionalMessage}
-                    testID={`${testID}AdditionalMessage`}>
-                    {additionalMessage}
-                  </Text>
-                )}
-              </View>
-              {additionalContent}
-            </View>
-          </ScrollView>
+          {additionalContent ? (
+            <ScrollView contentContainerStyle={{flexGrow: 1}}>
+              {actionsOnEndContent}
+            </ScrollView>
+          ) : (
+            <View style={{flex: 1}}>{actionsOnEndContent}</View>
+          )}
           {buttonsSection}
         </Fragment>
       );
@@ -160,8 +169,7 @@ export const ErrorView: React.FC<ErrorProps> = props => {
 
     return (
       <Fragment>
-        <ScrollView
-          contentContainerStyle={{flexGrow: 1, justifyContent: 'center'}}>
+        <View style={{flex: 1, justifyContent: 'center'}}>
           <View
             style={[{alignItems: 'center', marginHorizontal: 1}, customStyles]}>
             <View>
@@ -188,7 +196,7 @@ export const ErrorView: React.FC<ErrorProps> = props => {
             </View>
             {additionalContent}
           </View>
-        </ScrollView>
+        </View>
         <View style={{paddingBottom: insets.bottom, alignItems: 'center'}}>
           {primaryButtonText && (
             <Button

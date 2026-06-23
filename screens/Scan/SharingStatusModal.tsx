@@ -2,14 +2,7 @@ import React, {useEffect, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Theme} from '../../components/ui/styleUtils';
 import {Modal} from '../../components/ui/Modal';
-import {
-  Pressable,
-  Dimensions,
-  BackHandler,
-  View,
-  Image,
-  ScrollView,
-} from 'react-native';
+import {Pressable, Dimensions, BackHandler, View, Image} from 'react-native';
 import {Button, Column, Row, Text} from '../../components/ui';
 import testIDProps from '../../shared/commonUtil';
 import {SvgImage} from '../../components/ui/svg';
@@ -47,8 +40,7 @@ export const SharingStatusModal: React.FC<SharingStatusModalProps> = props => {
         isVisible={props.isVisible}
         showClose={false}
         {...testIDProps(props.testId)}>
-        <ScrollView
-          contentContainerStyle={{flexGrow: 1, justifyContent: 'center'}}>
+        <View style={{flex: 1, justifyContent: 'center'}}>
           <Column
             margin="64 0"
             crossAlign="center"
@@ -114,7 +106,7 @@ export const SharingStatusModal: React.FC<SharingStatusModalProps> = props => {
               </Row>
             )}
           </Column>
-        </ScrollView>
+        </View>
         {props.buttonStatus === 'homeAndHistoryIcons' ? (
           <Row
             align="space-evenly"
