@@ -1,15 +1,15 @@
-import React, { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Theme } from '../../components/ui/styleUtils';
-import { Modal } from '../../components/ui/Modal';
-import { Pressable, Dimensions, BackHandler, View, Image } from 'react-native';
-import { Button, Column, Row, Text } from '../../components/ui';
+import React, {useEffect, useState} from 'react';
+import {useTranslation} from 'react-i18next';
+import {Theme} from '../../components/ui/styleUtils';
+import {Modal} from '../../components/ui/Modal';
+import {Pressable, Dimensions, BackHandler, View, Image} from 'react-native';
+import {Button, Column, Row, Text} from '../../components/ui';
 import testIDProps from '../../shared/commonUtil';
-import { SvgImage } from '../../components/ui/svg';
-import { isIOS } from '../../shared/constants';
+import {SvgImage} from '../../components/ui/svg';
+import {isIOS} from '../../shared/constants';
 
 export const SharingStatusModal: React.FC<SharingStatusModalProps> = props => {
-  const { t } = useTranslation('ScanScreen');
+  const {t} = useTranslation('ScanScreen');
   const [logoFailed, setLogoFailed] = useState(false);
   const showLogo = !!props.verifierLogo && !logoFailed;
   const resetAndExit = () => {
@@ -40,72 +40,82 @@ export const SharingStatusModal: React.FC<SharingStatusModalProps> = props => {
         isVisible={props.isVisible}
         showClose={false}
         {...testIDProps(props.testId)}>
-        <Column
-          margin="64 0"
-          crossAlign="center"
-          style={Theme.SelectVcOverlayStyles.sharedSuccessfully}>
-          {props.image}
-          <Text
-            testID="sharingStatusTitle"
-            margin="20 0"
-            style={Theme.TextStyles.bold}
-            size={'large'}>
-            {props.title}
-          </Text>
-          <Text
-            testID="sharingStatusMessage"
-            align="center"
-            margin="0 33 0 33"
-            style={Theme.TextStyles.regular}
-            color={Theme.Colors.statusMessage}>
-            {props.message}
-          </Text>
-          <Text
-            testID="sharingStatusAdditionalMessage"
-            margin="20 0"
-            style={Theme.TextStyles.bold}
-            size={'large'}>
-            {props.additionalMessage}
-          </Text>
-          {(props.verifierLogo || props.verifierName) && <Row
-            align="center"
-            style={Theme.SelectVcOverlayStyles.sharedSuccessfullyVerifierInfo}
-          >
-            {showLogo && (
-              <Image
-                source={{ uri: props.verifierLogo }}
-                style={Theme.SelectVcOverlayStyles.sharedSuccessfullyVerifierLogo}
-                resizeMode="contain"
-                onError={() => setLogoFailed(true)}
-              />
+        <View style={{flex: 1, justifyContent: 'center'}}>
+          <Column
+            margin="64 0"
+            crossAlign="center"
+            style={Theme.SelectVcOverlayStyles.sharedSuccessfully}>
+            {props.image}
+            <Text
+              testID="sharingStatusTitle"
+              margin="20 0"
+              style={Theme.TextStyles.bold}
+              size={'large'}>
+              {props.title}
+            </Text>
+            <Text
+              testID="sharingStatusMessage"
+              align="center"
+              margin="0 33 0 33"
+              style={Theme.TextStyles.regular}
+              color={Theme.Colors.statusMessage}>
+              {props.message}
+            </Text>
+            <Text
+              testID="sharingStatusAdditionalMessage"
+              margin="20 0"
+              style={Theme.TextStyles.bold}
+              size={'large'}>
+              {props.additionalMessage}
+            </Text>
+            {(props.verifierLogo || props.verifierName) && (
+              <Row
+                align="center"
+                style={
+                  Theme.SelectVcOverlayStyles.sharedSuccessfullyVerifierInfo
+                }>
+                {showLogo && (
+                  <Image
+                    source={{uri: props.verifierLogo}}
+                    style={
+                      Theme.SelectVcOverlayStyles.sharedSuccessfullyVerifierLogo
+                    }
+                    resizeMode="contain"
+                    onError={() => setLogoFailed(true)}
+                  />
+                )}
+                <View style={{alignItems: 'flex-start'}}>
+                  <Text style={Theme.TextStyles.bold}>
+                    {props.verifierName}
+                  </Text>
+                  <Text
+                    style={{
+                      fontSize: 13,
+                      color: '#666',
+                      marginTop: 2,
+                    }}>
+                    {t('status.sharedAt', {
+                      time: new Date().toLocaleTimeString([], {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      }),
+                      defaultValue: 'Today at {{time}}',
+                    })}
+                  </Text>
+                </View>
+              </Row>
             )}
-            <View style={{ alignItems: 'flex-start' }}>
-              <Text
-                style={Theme.TextStyles.bold}
-              >
-                {props.verifierName}
-              </Text>
-              <Text
-                style={{
-                  fontSize: 13,
-                  color: '#666',
-                  marginTop: 2,
-                }}
-              >
-                {`Today at ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
-              </Text>
-            </View>
-          </Row>}
-        </Column>
+          </Column>
+        </View>
         {props.buttonStatus === 'homeAndHistoryIcons' ? (
           <Row
             align="space-evenly"
-            style={{ marginBottom: Dimensions.get('screen').height * 0.06 }}>
+            style={{marginBottom: Dimensions.get('screen').height * 0.06}}>
             <Column>
               <Pressable
                 accessible={false}
                 testID="successfullyVcSharedHomeIcon"
-                style={{ height: 75, justifyContent: 'space-between' }}
+                style={{height: 75, justifyContent: 'space-between'}}
                 onPress={props.goToHome}>
                 {SvgImage.SuccessHomeIcon()}
                 <Text align="center" weight="bold">
@@ -118,7 +128,7 @@ export const SharingStatusModal: React.FC<SharingStatusModalProps> = props => {
               <Pressable
                 accessible={false}
                 testID="successfullyVcSharedHistoryIcon"
-                style={{ height: 75, justifyContent: 'space-between' }}
+                style={{height: 75, justifyContent: 'space-between'}}
                 onPress={props.goToHistory}>
                 {SvgImage.SuccessHistoryIcon()}
                 <Text align="center" weight="bold">
@@ -130,7 +140,7 @@ export const SharingStatusModal: React.FC<SharingStatusModalProps> = props => {
         ) : null}
         {props.gradientButtonTitle && (
           <Column
-            style={{ marginBottom: Dimensions.get('screen').height * 0.012 }}>
+            style={{marginBottom: Dimensions.get('screen').height * 0.012}}>
             <Button
               testID="failedVcSharedRetryButton"
               type="gradient"
@@ -144,7 +154,7 @@ export const SharingStatusModal: React.FC<SharingStatusModalProps> = props => {
             <Button
               testID="failedVcSharedHomeButton"
               type="clear"
-              styles={{ marginBottom: 9 }}
+              styles={{marginBottom: 9}}
               title={props.clearButtonTitle}
               onPress={props.onClearButton}
             />

@@ -81,7 +81,7 @@ export type ElevationLevel = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 
 export const PurpleTheme = {
   Colors: {
-    BadgeColors : {
+    BadgeColors: {
       requiredBorder: '#FECACA',
       requiredText: '#DC2626',
       requiredBg: '#FEF2F2',
@@ -89,10 +89,10 @@ export const PurpleTheme = {
       optionalText: '#79732D',
       optionalBg: '#FFFDDE',
     },
-    infoBackground: "#FCF0F7",
-    infoBorder: "#F3DDEA",
-    infoText: "#64748B",
-    dottedBorderColor: "#D6DBE3",
+    infoBackground: '#FCF0F7',
+    infoBorder: '#F3DDEA',
+    infoText: '#64748B',
+    dottedBorderColor: '#D6DBE3',
     instructionLabel: Colors.darkGrey,
     ProfileIconColor: Colors.DarkGray,
     DetailedViewBackground: Colors.Gray97,
@@ -1197,6 +1197,12 @@ export const PurpleTheme = {
     radius: {
       borderRadius: 10,
       backgroundColor: Colors.Primary,
+    },
+    copilotButton: {
+      width: 104,
+      height: 40,
+      minHeight: 40,
+      borderRadius: 9,
     },
   }),
   OIDCAuthStyles: StyleSheet.create({

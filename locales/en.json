@@ -929,6 +929,7 @@
       "offline": "Please connect to the internet to scan QR codes using Online sharing mode",
       "sent": "Card has been sent...",
       "sentHint": "Waiting for receiver to save or discard your Card",
+      "sharedAt": "Today at {{time}}",
       "sharing": {
         "title": "Sharing in progress...",
         "hint": "Please wait while we share the chosen card...",

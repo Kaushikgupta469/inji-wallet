@@ -79,7 +79,7 @@ export type ElevationLevel = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 
 export const DefaultTheme = {
   Colors: {
-    BadgeColors : {
+    BadgeColors: {
       requiredBorder: '#FECACA',
       requiredText: '#DC2626',
       requiredBg: '#FEF2F2',
@@ -87,10 +87,10 @@ export const DefaultTheme = {
       optionalText: '#79732D',
       optionalBg: '#FFFDDE',
     },
-    infoBackground: "#FCF0F7",
-    infoBorder: "#F3DDEA",
-    infoText: "#64748B",
-    dottedBorderColor: "#D6DBE3",
+    infoBackground: '#FCF0F7',
+    infoBorder: '#F3DDEA',
+    infoText: '#64748B',
+    dottedBorderColor: '#D6DBE3',
     instructionLabel: Colors.darkGrey,
     ProfileIconColor: Colors.DarkGray,
     DetailedViewBackground: Colors.Gray97,
@@ -1179,6 +1179,12 @@ export const DefaultTheme = {
     },
     Large: {
       width: Dimensions.get('window').width * 0.9,
+    },
+    copilotButton: {
+      width: 104,
+      height: 40,
+      minHeight: 40,
+      borderRadius: 9,
     },
   }),
   OIDCAuthStyles: StyleSheet.create({
@@ -2693,7 +2699,7 @@ export const DefaultTheme = {
       flexDirection: 'row',
       alignItems: 'center',
       marginTop: 2,
-      paddingRight: 6
+      paddingRight: 6,
     },
     verifierBannerTrustedText: {
       fontFamily: 'Montserrat_600SemiBold',
@@ -2796,7 +2802,6 @@ export const DefaultTheme = {
     },
   }),
 };
-
 
 function generateBoxShadowStyle() {
   if (isIOS()) {

@@ -10,7 +10,6 @@ import {Theme} from './styleUtils';
 import testIDProps from '../../shared/commonUtil';
 import {Modal} from './Modal';
 import {isIOS} from '../../shared/constants';
-import {BackButton} from './backButton/BackButton';
 
 export const ErrorView: React.FC<ErrorProps> = props => {
   const {t} = useTranslation('common');
@@ -129,31 +128,40 @@ export const ErrorView: React.FC<ErrorProps> = props => {
     );
 
     if (alignActionsOnEnd) {
+      const actionsOnEndContent = (
+        <Fragment>
+          {headerSection}
+          <View style={{flex: 1}}>
+            <View style={{alignItems: 'center'}}>
+              <Text
+                style={[
+                  Theme.ErrorStyles.message,
+                  compactHeader ? {marginBottom: 10} : undefined,
+                ]}
+                testID={`${testID}Message`}>
+                {message}
+              </Text>
+              {additionalMessage && (
+                <Text
+                  style={Theme.ErrorStyles.additionalMessage}
+                  testID={`${testID}AdditionalMessage`}>
+                  {additionalMessage}
+                </Text>
+              )}
+            </View>
+            {additionalContent}
+          </View>
+        </Fragment>
+      );
       return (
         <Fragment>
-          <ScrollView>
-            {headerSection}
-            <View style={{flex: 1}}>
-              <View style={{alignItems: 'center'}}>
-                <Text
-                  style={[
-                    Theme.ErrorStyles.message,
-                    compactHeader ? {marginBottom: 10} : undefined,
-                  ]}
-                  testID={`${testID}Message`}>
-                  {message}
-                </Text>
-                {additionalMessage && (
-                  <Text
-                    style={Theme.ErrorStyles.additionalMessage}
-                    testID={`${testID}AdditionalMessage`}>
-                    {additionalMessage}
-                  </Text>
-                )}
-              </View>
-              {additionalContent}
-            </View>
-          </ScrollView>
+          {additionalContent ? (
+            <ScrollView contentContainerStyle={{flexGrow: 1}}>
+              {actionsOnEndContent}
+            </ScrollView>
+          ) : (
+            <View style={{flex: 1}}>{actionsOnEndContent}</View>
+          )}
           {buttonsSection}
         </Fragment>
       );
@@ -161,48 +169,52 @@ export const ErrorView: React.FC<ErrorProps> = props => {
 
     return (
       <Fragment>
-        <View
-          style={[{alignItems: 'center', marginHorizontal: 1}, customStyles]}>
-          <View>
-            <Row
-              align="center"
-              style={[Theme.ErrorStyles.image, customImageStyles]}>
-              {image}
-            </Row>
-            <Text style={Theme.ErrorStyles.title} testID={`${testID}Title`}>
-              {title}
-            </Text>
-            <Text style={Theme.ErrorStyles.message} testID={`${testID}Message`}>
-              {message}
-            </Text>
-            {additionalMessage && (
-              <Text
-                style={Theme.ErrorStyles.additionalMessage}
-                testID={`${testID}AdditionalMessage`}>
-                {additionalMessage}
+        <View style={{flex: 1, justifyContent: 'center'}}>
+          <View
+            style={[{alignItems: 'center', marginHorizontal: 1}, customStyles]}>
+            <View>
+              <Row
+                align="center"
+                style={[Theme.ErrorStyles.image, customImageStyles]}>
+                {image}
+              </Row>
+              <Text style={Theme.ErrorStyles.title} testID={`${testID}Title`}>
+                {title}
               </Text>
-            )}
+              <Text
+                style={Theme.ErrorStyles.message}
+                testID={`${testID}Message`}>
+                {message}
+              </Text>
+              {additionalMessage && (
+                <Text
+                  style={Theme.ErrorStyles.additionalMessage}
+                  testID={`${testID}AdditionalMessage`}>
+                  {additionalMessage}
+                </Text>
+              )}
+            </View>
+            {additionalContent}
           </View>
-          {additionalContent}
-          <View style={{paddingBottom: insets.bottom, alignItems: 'center'}}>
-            {primaryButtonText && (
-              <Button
-                onPress={primaryButtonEvent}
-                title={t(primaryButtonText)}
-                type={'gradient'}
-                testID={primaryButtonTestID}
-              />
-            )}
-            {textButtonText && (
-              <Button
-                onPress={textButtonEvent}
-                width={Dimensions.get('screen').width * 0.54}
-                title={t(textButtonText)}
-                type="clear"
-                testID={textButtonTestID}
-              />
-            )}
-          </View>
+        </View>
+        <View style={{paddingBottom: insets.bottom, alignItems: 'center'}}>
+          {primaryButtonText && (
+            <Button
+              onPress={primaryButtonEvent}
+              title={t(primaryButtonText)}
+              type={'gradient'}
+              testID={primaryButtonTestID}
+            />
+          )}
+          {textButtonText && (
+            <Button
+              onPress={textButtonEvent}
+              width={Dimensions.get('screen').width * 0.54}
+              title={t(textButtonText)}
+              type={textButtonType}
+              testID={textButtonTestID}
+            />
+          )}
         </View>
       </Fragment>
     );

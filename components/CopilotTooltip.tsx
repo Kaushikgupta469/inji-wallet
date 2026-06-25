@@ -55,6 +55,7 @@ export const CopilotTooltip = () => {
               testID={'copilot-prev-action'}
               title={t('previous')}
               type="outline"
+              size="copilotButton"
               styles={Theme.Styles.copilotButton}
               onPress={controller.goToPrev}
             />
@@ -65,6 +66,7 @@ export const CopilotTooltip = () => {
               testID={'copilot-next-action'}
               title={t('done')}
               type="gradient"
+              size="copilotButton"
               styles={Theme.Styles.copilotButton}
               onPress={controller.stop}
             />
@@ -73,6 +75,7 @@ export const CopilotTooltip = () => {
               testID={'copilot-next-action'}
               title={t('next')}
               type="gradient"
+              size="copilotButton"
               styles={Theme.Styles.copilotButton}
               onPress={controller.goToNext}
             />

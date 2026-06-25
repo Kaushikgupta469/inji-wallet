@@ -6,6 +6,7 @@ import {
   Dimensions,
   Keyboard,
   KeyboardAvoidingView,
+  ScrollView,
   TouchableWithoutFeedback,
   View,
   ModalProps,
@@ -76,15 +77,16 @@ export const TransactionCodeModal: React.FC<ExtendedModalProps> = props => {
             <TouchableWithoutFeedback
               onPress={Keyboard.dismiss}
               accessible={false}>
-              <View style={{height: 700}}>
+              <ScrollView
+                style={{maxHeight: screenHeight, width: '100%'}}
+                contentContainerStyle={{flexGrow: 1, justifyContent: 'center'}}
+                keyboardShouldPersistTaps="handled">
                 <Column
                   crossAlign="center"
                   style={
                     isSmallScreen
                       ? null
                       : {
-                          maxHeight: screenHeight,
-                          flex: 1,
                           justifyContent: 'space-around',
                           marginBottom: 20,
                         }
@@ -216,7 +218,7 @@ export const TransactionCodeModal: React.FC<ExtendedModalProps> = props => {
                     )}
                   </View>
                 </Column>
-              </View>
+              </ScrollView>
             </TouchableWithoutFeedback>
           </KeyboardAvoidingView>
         </Modal>

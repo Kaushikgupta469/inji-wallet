@@ -8,142 +8,151 @@ exports[`SharingStatusModal should match snapshot with gradient and clear button
 >
   <View
     style={
-      [
-        {
-          "alignItems": undefined,
-          "flexDirection": "column",
-          "justifyContent": undefined,
-        },
-        null,
-        null,
-        {
-          "marginBottom": 64,
-          "marginEnd": 0,
-          "marginStart": 0,
-          "marginTop": 64,
-        },
-        null,
-        null,
-        null,
-        null,
-        {
-          "alignItems": "center",
-        },
-        null,
-        {
-          "backgroundColor": "#FFFFFF",
-          "flex": 1,
-        },
-        null,
-        null,
-      ]
+      {
+        "flex": 1,
+        "justifyContent": "center",
+      }
     }
   >
     <View
-      testID="statusImage"
-    />
-    <Text
       style={
         [
           {
-            "color": "#000000",
-            "fontSize": 16,
-            "lineHeight": 18,
+            "alignItems": undefined,
+            "flexDirection": "column",
+            "justifyContent": undefined,
           },
+          null,
+          null,
           {
-            "fontFamily": "Montserrat_400Regular",
-            "fontSize": 14,
+            "marginBottom": 64,
+            "marginEnd": 0,
+            "marginStart": 0,
+            "marginTop": 64,
+          },
+          null,
+          null,
+          null,
+          null,
+          {
+            "alignItems": "center",
           },
           null,
           {
-            "textAlign": "left",
+            "backgroundColor": "#FFFFFF",
+            "flex": 1,
           },
-          {
-            "marginBottom": 20,
-            "marginEnd": 0,
-            "marginStart": 0,
-            "marginTop": 20,
-          },
-          {
-            "fontSize": 18,
-          },
-          {
-            "fontFamily": "Montserrat_700Bold",
-            "fontSize": 15,
-            "justifyContent": "center",
-          },
+          null,
+          null,
         ]
       }
     >
-      Shared Successfully
-    </Text>
-    <Text
-      style={
-        [
-          {
-            "color": "#000000",
-            "fontSize": 16,
-            "lineHeight": 18,
-          },
-          {
-            "fontFamily": "Montserrat_400Regular",
-            "fontSize": 14,
-          },
-          {
-            "color": "#666666",
-          },
-          {
-            "textAlign": "center",
-          },
-          {
-            "marginBottom": 0,
-            "marginEnd": 33,
-            "marginStart": 33,
-            "marginTop": 0,
-          },
-          null,
-          {
-            "fontFamily": "Montserrat_400Regular",
-            "fontSize": 14,
-          },
-        ]
-      }
-    >
-      Your credential has been shared
-    </Text>
-    <Text
-      style={
-        [
-          {
-            "color": "#000000",
-            "fontSize": 16,
-            "lineHeight": 18,
-          },
-          {
-            "fontFamily": "Montserrat_400Regular",
-            "fontSize": 14,
-          },
-          null,
-          {
-            "textAlign": "left",
-          },
-          {
-            "marginBottom": 20,
-            "marginEnd": 0,
-            "marginStart": 0,
-            "marginTop": 20,
-          },
-          {
-            "fontSize": 18,
-          },
-          {
-            "fontFamily": "Montserrat_700Bold",
-            "fontSize": 15,
-            "justifyContent": "center",
-          },
-        ]
-      }
-    />
+      <View
+        testID="statusImage"
+      />
+      <Text
+        style={
+          [
+            {
+              "color": "#000000",
+              "fontSize": 16,
+              "lineHeight": 18,
+            },
+            {
+              "fontFamily": "Montserrat_400Regular",
+              "fontSize": 14,
+            },
+            null,
+            {
+              "textAlign": "left",
+            },
+            {
+              "marginBottom": 20,
+              "marginEnd": 0,
+              "marginStart": 0,
+              "marginTop": 20,
+            },
+            {
+              "fontSize": 18,
+            },
+            {
+              "fontFamily": "Montserrat_700Bold",
+              "fontSize": 15,
+              "justifyContent": "center",
+            },
+          ]
+        }
+      >
+        Shared Successfully
+      </Text>
+      <Text
+        style={
+          [
+            {
+              "color": "#000000",
+              "fontSize": 16,
+              "lineHeight": 18,
+            },
+            {
+              "fontFamily": "Montserrat_400Regular",
+              "fontSize": 14,
+            },
+            {
+              "color": "#666666",
+            },
+            {
+              "textAlign": "center",
+            },
+            {
+              "marginBottom": 0,
+              "marginEnd": 33,
+              "marginStart": 33,
+              "marginTop": 0,
+            },
+            null,
+            {
+              "fontFamily": "Montserrat_400Regular",
+              "fontSize": 14,
+            },
+          ]
+        }
+      >
+        Your credential has been shared
+      </Text>
+      <Text
+        style={
+          [
+            {
+              "color": "#000000",
+              "fontSize": 16,
+              "lineHeight": 18,
+            },
+            {
+              "fontFamily": "Montserrat_400Regular",
+              "fontSize": 14,
+            },
+            null,
+            {
+              "textAlign": "left",
+            },
+            {
+              "marginBottom": 20,
+              "marginEnd": 0,
+              "marginStart": 0,
+              "marginTop": 20,
+            },
+            {
+              "fontSize": 18,
+            },
+            {
+              "fontFamily": "Montserrat_700Bold",
+              "fontSize": 15,
+              "justifyContent": "center",
+            },
+          ]
+        }
+      />
+    </View>
   </View>
   <View
     style={
@@ -424,142 +433,151 @@ exports[`SharingStatusModal should match snapshot with home and history buttons 
 >
   <View
     style={
-      [
-        {
-          "alignItems": undefined,
-          "flexDirection": "column",
-          "justifyContent": undefined,
-        },
-        null,
-        null,
-        {
-          "marginBottom": 64,
-          "marginEnd": 0,
-          "marginStart": 0,
-          "marginTop": 64,
-        },
-        null,
-        null,
-        null,
-        null,
-        {
-          "alignItems": "center",
-        },
-        null,
-        {
-          "backgroundColor": "#FFFFFF",
-          "flex": 1,
-        },
-        null,
-        null,
-      ]
+      {
+        "flex": 1,
+        "justifyContent": "center",
+      }
     }
   >
     <View
-      testID="statusImage"
-    />
-    <Text
       style={
         [
           {
-            "color": "#000000",
-            "fontSize": 16,
-            "lineHeight": 18,
+            "alignItems": undefined,
+            "flexDirection": "column",
+            "justifyContent": undefined,
           },
+          null,
+          null,
           {
-            "fontFamily": "Montserrat_400Regular",
-            "fontSize": 14,
+            "marginBottom": 64,
+            "marginEnd": 0,
+            "marginStart": 0,
+            "marginTop": 64,
+          },
+          null,
+          null,
+          null,
+          null,
+          {
+            "alignItems": "center",
           },
           null,
           {
-            "textAlign": "left",
+            "backgroundColor": "#FFFFFF",
+            "flex": 1,
           },
-          {
-            "marginBottom": 20,
-            "marginEnd": 0,
-            "marginStart": 0,
-            "marginTop": 20,
-          },
-          {
-            "fontSize": 18,
-          },
-          {
-            "fontFamily": "Montserrat_700Bold",
-            "fontSize": 15,
-            "justifyContent": "center",
-          },
+          null,
+          null,
         ]
       }
     >
-      Shared Successfully
-    </Text>
-    <Text
-      style={
-        [
-          {
-            "color": "#000000",
-            "fontSize": 16,
-            "lineHeight": 18,
-          },
-          {
-            "fontFamily": "Montserrat_400Regular",
-            "fontSize": 14,
-          },
-          {
-            "color": "#666666",
-          },
-          {
-            "textAlign": "center",
-          },
-          {
-            "marginBottom": 0,
-            "marginEnd": 33,
-            "marginStart": 33,
-            "marginTop": 0,
-          },
-          null,
-          {
-            "fontFamily": "Montserrat_400Regular",
-            "fontSize": 14,
-          },
-        ]
-      }
-    >
-      Your credential has been shared
-    </Text>
-    <Text
-      style={
-        [
-          {
-            "color": "#000000",
-            "fontSize": 16,
-            "lineHeight": 18,
-          },
-          {
-            "fontFamily": "Montserrat_400Regular",
-            "fontSize": 14,
-          },
-          null,
-          {
-            "textAlign": "left",
-          },
-          {
-            "marginBottom": 20,
-            "marginEnd": 0,
-            "marginStart": 0,
-            "marginTop": 20,
-          },
-          {
-            "fontSize": 18,
-          },
-          {
-            "fontFamily": "Montserrat_700Bold",
-            "fontSize": 15,
-            "justifyContent": "center",
-          },
-        ]
-      }
-    />
+      <View
+        testID="statusImage"
+      />
+      <Text
+        style={
+          [
+            {
+              "color": "#000000",
+              "fontSize": 16,
+              "lineHeight": 18,
+            },
+            {
+              "fontFamily": "Montserrat_400Regular",
+              "fontSize": 14,
+            },
+            null,
+            {
+              "textAlign": "left",
+            },
+            {
+              "marginBottom": 20,
+              "marginEnd": 0,
+              "marginStart": 0,
+              "marginTop": 20,
+            },
+            {
+              "fontSize": 18,
+            },
+            {
+              "fontFamily": "Montserrat_700Bold",
+              "fontSize": 15,
+              "justifyContent": "center",
+            },
+          ]
+        }
+      >
+        Shared Successfully
+      </Text>
+      <Text
+        style={
+          [
+            {
+              "color": "#000000",
+              "fontSize": 16,
+              "lineHeight": 18,
+            },
+            {
+              "fontFamily": "Montserrat_400Regular",
+              "fontSize": 14,
+            },
+            {
+              "color": "#666666",
+            },
+            {
+              "textAlign": "center",
+            },
+            {
+              "marginBottom": 0,
+              "marginEnd": 33,
+              "marginStart": 33,
+              "marginTop": 0,
+            },
+            null,
+            {
+              "fontFamily": "Montserrat_400Regular",
+              "fontSize": 14,
+            },
+          ]
+        }
+      >
+        Your credential has been shared
+      </Text>
+      <Text
+        style={
+          [
+            {
+              "color": "#000000",
+              "fontSize": 16,
+              "lineHeight": 18,
+            },
+            {
+              "fontFamily": "Montserrat_400Regular",
+              "fontSize": 14,
+            },
+            null,
+            {
+              "textAlign": "left",
+            },
+            {
+              "marginBottom": 20,
+              "marginEnd": 0,
+              "marginStart": 0,
+              "marginTop": 20,
+            },
+            {
+              "fontSize": 18,
+            },
+            {
+              "fontFamily": "Montserrat_700Bold",
+              "fontSize": 15,
+              "justifyContent": "center",
+            },
+          ]
+        }
+      />
+    </View>
   </View>
   <View
     style={
@@ -778,142 +796,151 @@ exports[`SharingStatusModal should match snapshot with no buttons 1`] = `
 >
   <View
     style={
-      [
-        {
-          "alignItems": undefined,
-          "flexDirection": "column",
-          "justifyContent": undefined,
-        },
-        null,
-        null,
-        {
-          "marginBottom": 64,
-          "marginEnd": 0,
-          "marginStart": 0,
-          "marginTop": 64,
-        },
-        null,
-        null,
-        null,
-        null,
-        {
-          "alignItems": "center",
-        },
-        null,
-        {
-          "backgroundColor": "#FFFFFF",
-          "flex": 1,
-        },
-        null,
-        null,
-      ]
+      {
+        "flex": 1,
+        "justifyContent": "center",
+      }
     }
   >
     <View
-      testID="statusImage"
-    />
-    <Text
       style={
         [
           {
-            "color": "#000000",
-            "fontSize": 16,
-            "lineHeight": 18,
+            "alignItems": undefined,
+            "flexDirection": "column",
+            "justifyContent": undefined,
           },
+          null,
+          null,
           {
-            "fontFamily": "Montserrat_400Regular",
-            "fontSize": 14,
+            "marginBottom": 64,
+            "marginEnd": 0,
+            "marginStart": 0,
+            "marginTop": 64,
+          },
+          null,
+          null,
+          null,
+          null,
+          {
+            "alignItems": "center",
           },
           null,
           {
-            "textAlign": "left",
+            "backgroundColor": "#FFFFFF",
+            "flex": 1,
           },
-          {
-            "marginBottom": 20,
-            "marginEnd": 0,
-            "marginStart": 0,
-            "marginTop": 20,
-          },
-          {
-            "fontSize": 18,
-          },
-          {
-            "fontFamily": "Montserrat_700Bold",
-            "fontSize": 15,
-            "justifyContent": "center",
-          },
+          null,
+          null,
         ]
       }
     >
-      Shared Successfully
-    </Text>
-    <Text
-      style={
-        [
-          {
-            "color": "#000000",
-            "fontSize": 16,
-            "lineHeight": 18,
-          },
-          {
-            "fontFamily": "Montserrat_400Regular",
-            "fontSize": 14,
-          },
-          {
-            "color": "#666666",
-          },
-          {
-            "textAlign": "center",
-          },
-          {
-            "marginBottom": 0,
-            "marginEnd": 33,
-            "marginStart": 33,
-            "marginTop": 0,
-          },
-          null,
-          {
-            "fontFamily": "Montserrat_400Regular",
-            "fontSize": 14,
-          },
-        ]
-      }
-    >
-      Your credential has been shared
-    </Text>
-    <Text
-      style={
-        [
-          {
-            "color": "#000000",
-            "fontSize": 16,
-            "lineHeight": 18,
-          },
-          {
-            "fontFamily": "Montserrat_400Regular",
-            "fontSize": 14,
-          },
-          null,
-          {
-            "textAlign": "left",
-          },
-          {
-            "marginBottom": 20,
-            "marginEnd": 0,
-            "marginStart": 0,
-            "marginTop": 20,
-          },
-          {
-            "fontSize": 18,
-          },
-          {
-            "fontFamily": "Montserrat_700Bold",
-            "fontSize": 15,
-            "justifyContent": "center",
-          },
-        ]
-      }
-    />
+      <View
+        testID="statusImage"
+      />
+      <Text
+        style={
+          [
+            {
+              "color": "#000000",
+              "fontSize": 16,
+              "lineHeight": 18,
+            },
+            {
+              "fontFamily": "Montserrat_400Regular",
+              "fontSize": 14,
+            },
+            null,
+            {
+              "textAlign": "left",
+            },
+            {
+              "marginBottom": 20,
+              "marginEnd": 0,
+              "marginStart": 0,
+              "marginTop": 20,
+            },
+            {
+              "fontSize": 18,
+            },
+            {
+              "fontFamily": "Montserrat_700Bold",
+              "fontSize": 15,
+              "justifyContent": "center",
+            },
+          ]
+        }
+      >
+        Shared Successfully
+      </Text>
+      <Text
+        style={
+          [
+            {
+              "color": "#000000",
+              "fontSize": 16,
+              "lineHeight": 18,
+            },
+            {
+              "fontFamily": "Montserrat_400Regular",
+              "fontSize": 14,
+            },
+            {
+              "color": "#666666",
+            },
+            {
+              "textAlign": "center",
+            },
+            {
+              "marginBottom": 0,
+              "marginEnd": 33,
+              "marginStart": 33,
+              "marginTop": 0,
+            },
+            null,
+            {
+              "fontFamily": "Montserrat_400Regular",
+              "fontSize": 14,
+            },
+          ]
+        }
+      >
+        Your credential has been shared
+      </Text>
+      <Text
+        style={
+          [
+            {
+              "color": "#000000",
+              "fontSize": 16,
+              "lineHeight": 18,
+            },
+            {
+              "fontFamily": "Montserrat_400Regular",
+              "fontSize": 14,
+            },
+            null,
+            {
+              "textAlign": "left",
+            },
+            {
+              "marginBottom": 20,
+              "marginEnd": 0,
+              "marginStart": 0,
+              "marginTop": 20,
+            },
+            {
+              "fontSize": 18,
+            },
+            {
+              "fontFamily": "Montserrat_700Bold",
+              "fontSize": 15,
+              "justifyContent": "center",
+            },
+          ]
+        }
+      />
+    </View>
   </View>
 </View>
 `;
@@ -926,169 +953,39 @@ exports[`SharingStatusModal should match snapshot with verifier info 1`] = `
 >
   <View
     style={
-      [
-        {
-          "alignItems": undefined,
-          "flexDirection": "column",
-          "justifyContent": undefined,
-        },
-        null,
-        null,
-        {
-          "marginBottom": 64,
-          "marginEnd": 0,
-          "marginStart": 0,
-          "marginTop": 64,
-        },
-        null,
-        null,
-        null,
-        null,
-        {
-          "alignItems": "center",
-        },
-        null,
-        {
-          "backgroundColor": "#FFFFFF",
-          "flex": 1,
-        },
-        null,
-        null,
-      ]
+      {
+        "flex": 1,
+        "justifyContent": "center",
+      }
     }
   >
-    <View
-      testID="statusImage"
-    />
-    <Text
-      style={
-        [
-          {
-            "color": "#000000",
-            "fontSize": 16,
-            "lineHeight": 18,
-          },
-          {
-            "fontFamily": "Montserrat_400Regular",
-            "fontSize": 14,
-          },
-          null,
-          {
-            "textAlign": "left",
-          },
-          {
-            "marginBottom": 20,
-            "marginEnd": 0,
-            "marginStart": 0,
-            "marginTop": 20,
-          },
-          {
-            "fontSize": 18,
-          },
-          {
-            "fontFamily": "Montserrat_700Bold",
-            "fontSize": 15,
-            "justifyContent": "center",
-          },
-        ]
-      }
-    >
-      Shared Successfully
-    </Text>
-    <Text
-      style={
-        [
-          {
-            "color": "#000000",
-            "fontSize": 16,
-            "lineHeight": 18,
-          },
-          {
-            "fontFamily": "Montserrat_400Regular",
-            "fontSize": 14,
-          },
-          {
-            "color": "#666666",
-          },
-          {
-            "textAlign": "center",
-          },
-          {
-            "marginBottom": 0,
-            "marginEnd": 33,
-            "marginStart": 33,
-            "marginTop": 0,
-          },
-          null,
-          {
-            "fontFamily": "Montserrat_400Regular",
-            "fontSize": 14,
-          },
-        ]
-      }
-    >
-      Your credential has been shared
-    </Text>
-    <Text
-      style={
-        [
-          {
-            "color": "#000000",
-            "fontSize": 16,
-            "lineHeight": 18,
-          },
-          {
-            "fontFamily": "Montserrat_400Regular",
-            "fontSize": 14,
-          },
-          null,
-          {
-            "textAlign": "left",
-          },
-          {
-            "marginBottom": 20,
-            "marginEnd": 0,
-            "marginStart": 0,
-            "marginTop": 20,
-          },
-          {
-            "fontSize": 18,
-          },
-          {
-            "fontFamily": "Montserrat_700Bold",
-            "fontSize": 15,
-            "justifyContent": "center",
-          },
-        ]
-      }
-    />
     <View
       style={
         [
           {
             "alignItems": undefined,
-            "flexDirection": "row",
+            "flexDirection": "column",
             "justifyContent": undefined,
           },
           null,
           null,
-          null,
-          null,
-          null,
-          null,
           {
-            "justifyContent": "center",
+            "marginBottom": 64,
+            "marginEnd": 0,
+            "marginStart": 0,
+            "marginTop": 64,
           },
           null,
           null,
+          null,
+          null,
           {
-            "alignSelf": "center",
-            "backgroundColor": "#F5F5F5",
-            "borderRadius": 16,
-            "flexDirection": "row",
-            "justifyContent": "center",
-            "paddingHorizontal": 16,
-            "paddingVertical": 12,
+            "alignItems": "center",
+          },
+          null,
+          {
+            "backgroundColor": "#FFFFFF",
+            "flex": 1,
           },
           null,
           null,
@@ -1096,68 +993,207 @@ exports[`SharingStatusModal should match snapshot with verifier info 1`] = `
       }
     >
       <View
+        testID="statusImage"
+      />
+      <Text
         style={
-          {
-            "alignItems": "flex-start",
-          }
+          [
+            {
+              "color": "#000000",
+              "fontSize": 16,
+              "lineHeight": 18,
+            },
+            {
+              "fontFamily": "Montserrat_400Regular",
+              "fontSize": 14,
+            },
+            null,
+            {
+              "textAlign": "left",
+            },
+            {
+              "marginBottom": 20,
+              "marginEnd": 0,
+              "marginStart": 0,
+              "marginTop": 20,
+            },
+            {
+              "fontSize": 18,
+            },
+            {
+              "fontFamily": "Montserrat_700Bold",
+              "fontSize": 15,
+              "justifyContent": "center",
+            },
+          ]
         }
       >
-        <Text
+        Shared Successfully
+      </Text>
+      <Text
+        style={
+          [
+            {
+              "color": "#000000",
+              "fontSize": 16,
+              "lineHeight": 18,
+            },
+            {
+              "fontFamily": "Montserrat_400Regular",
+              "fontSize": 14,
+            },
+            {
+              "color": "#666666",
+            },
+            {
+              "textAlign": "center",
+            },
+            {
+              "marginBottom": 0,
+              "marginEnd": 33,
+              "marginStart": 33,
+              "marginTop": 0,
+            },
+            null,
+            {
+              "fontFamily": "Montserrat_400Regular",
+              "fontSize": 14,
+            },
+          ]
+        }
+      >
+        Your credential has been shared
+      </Text>
+      <Text
+        style={
+          [
+            {
+              "color": "#000000",
+              "fontSize": 16,
+              "lineHeight": 18,
+            },
+            {
+              "fontFamily": "Montserrat_400Regular",
+              "fontSize": 14,
+            },
+            null,
+            {
+              "textAlign": "left",
+            },
+            {
+              "marginBottom": 20,
+              "marginEnd": 0,
+              "marginStart": 0,
+              "marginTop": 20,
+            },
+            {
+              "fontSize": 18,
+            },
+            {
+              "fontFamily": "Montserrat_700Bold",
+              "fontSize": 15,
+              "justifyContent": "center",
+            },
+          ]
+        }
+      />
+      <View
+        style={
+          [
+            {
+              "alignItems": undefined,
+              "flexDirection": "row",
+              "justifyContent": undefined,
+            },
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            {
+              "justifyContent": "center",
+            },
+            null,
+            null,
+            {
+              "alignSelf": "center",
+              "backgroundColor": "#F5F5F5",
+              "borderRadius": 16,
+              "flexDirection": "row",
+              "justifyContent": "center",
+              "paddingHorizontal": 16,
+              "paddingVertical": 12,
+            },
+            null,
+            null,
+          ]
+        }
+      >
+        <View
           style={
-            [
-              {
-                "color": "#000000",
-                "fontSize": 16,
-                "lineHeight": 18,
-              },
-              {
-                "fontFamily": "Montserrat_400Regular",
-                "fontSize": 14,
-              },
-              null,
-              {
-                "textAlign": "left",
-              },
-              null,
-              null,
-              {
-                "fontFamily": "Montserrat_700Bold",
-                "fontSize": 15,
-                "justifyContent": "center",
-              },
-            ]
+            {
+              "alignItems": "flex-start",
+            }
           }
         >
-          Test Verifier
-        </Text>
-        <Text
-          style={
-            [
-              {
-                "color": "#000000",
-                "fontSize": 16,
-                "lineHeight": 18,
-              },
-              {
-                "fontFamily": "Montserrat_400Regular",
-                "fontSize": 14,
-              },
-              null,
-              {
-                "textAlign": "left",
-              },
-              null,
-              null,
-              {
-                "color": "#666",
-                "fontSize": 13,
-                "marginTop": 2,
-              },
-            ]
-          }
-        >
-          Today at 12:30 PM
-        </Text>
+          <Text
+            style={
+              [
+                {
+                  "color": "#000000",
+                  "fontSize": 16,
+                  "lineHeight": 18,
+                },
+                {
+                  "fontFamily": "Montserrat_400Regular",
+                  "fontSize": 14,
+                },
+                null,
+                {
+                  "textAlign": "left",
+                },
+                null,
+                null,
+                {
+                  "fontFamily": "Montserrat_700Bold",
+                  "fontSize": 15,
+                  "justifyContent": "center",
+                },
+              ]
+            }
+          >
+            Test Verifier
+          </Text>
+          <Text
+            style={
+              [
+                {
+                  "color": "#000000",
+                  "fontSize": 16,
+                  "lineHeight": 18,
+                },
+                {
+                  "fontFamily": "Montserrat_400Regular",
+                  "fontSize": 14,
+                },
+                null,
+                {
+                  "textAlign": "left",
+                },
+                null,
+                null,
+                {
+                  "color": "#666",
+                  "fontSize": 13,
+                  "marginTop": 2,
+                },
+              ]
+            }
+          >
+            status.sharedAt
+          </Text>
+        </View>
       </View>
     </View>
   </View>
