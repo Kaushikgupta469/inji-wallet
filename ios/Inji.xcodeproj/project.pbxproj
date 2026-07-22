@@ -934,7 +934,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.23.0;
+				MARKETING_VERSION = 1.0.0;
 				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu99 c++20";
 				OTHER_LDFLAGS = (
 					"$(inherited)",
@@ -975,7 +975,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.23.0;
+				MARKETING_VERSION = 1.0.0;
 				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu99 c++20";
 				OTHER_LDFLAGS = (
 					"$(inherited)",
@@ -1056,10 +1056,7 @@
 				LIBRARY_SEARCH_PATHS = "$(SDKROOT)/usr/lib/swift\"$(inherited)\"";
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -1123,10 +1120,7 @@
 				);
 				LIBRARY_SEARCH_PATHS = "$(SDKROOT)/usr/lib/swift\"$(inherited)\"";
 				MTL_ENABLE_DEBUG_INFO = NO;
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -1164,16 +1158,16 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/mosip/pixelpass-ios-swift/";
 			requirement = {
-				kind = exactVersion;
-				version = 0.6.3;
+				branch = "release-1.0.x";
+				kind = branch;
 			};
 		};
 		9CCC57752E9D7C7000669DB7 /* XCRemoteSwiftPackageReference "tuvali-ios-swift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/mosip/tuvali-ios-swift/";
 			requirement = {
-				kind = exactVersion;
-				version = 0.5.0;
+				branch = "release-1.0.x";
+				kind = branch;
 			};
 		};
 		9CCCA19C2CF87A8400D5A461 /* XCRemoteSwiftPackageReference "secure-keystore-ios-swift" */ = {
@@ -1188,8 +1182,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/mosip/inji-vc-renderer-ios-swift.git";
 			requirement = {
-				kind = exactVersion;
-				version = 0.1.0;
+				branch = "release-1.0.x";
+				kind = branch;
 			};
 		};
 		E641C9E42FEAE9C9002D18A7 /* XCRemoteSwiftPackageReference "inji-vci-client-ios-swift" */ = {
