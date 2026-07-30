@@ -7,6 +7,7 @@ import {
   generateKeyPair,
 } from '../../shared/cryptoutil/cryptoUtil';
 import {
+  collectCryptographicBindingMethods,
   constructProofJWT,
   hasKeyPair,
   updateCredentialInformation,
@@ -305,6 +306,14 @@ export const IssuersService = () => {
       return issuerMetadata;
     },
     constructProof: async (context: any) => {
+      let bindingMethods =
+        context.selectedCredentialType?.cryptographic_binding_methods_supported;
+      if (!bindingMethods?.length) {
+        const issuerMetadata = await VciClient.getInstance().getIssuerMetadata(
+          context.credentialOfferCredentialIssuer,
+        );
+        bindingMethods = collectCryptographicBindingMethods(issuerMetadata);
+      }
       const proofJWT = await constructProofJWT(
         context.publicKey,
         context.privateKey,
@@ -312,8 +321,8 @@ export const IssuersService = () => {
         null,
         context.keyType,
         context.wellknownKeyTypes,
-        true,
         context.cNonce,
+        bindingMethods,
       );
       await VciClient.getInstance().sendProof(proofJWT);
       return proofJWT;
@@ -327,8 +336,8 @@ export const IssuersService = () => {
         context.selectedIssuer.client_id,
         context.keyType,
         context.wellknownKeyTypes,
-        false,
         context.cNonce,
+        context.selectedCredentialType?.cryptographic_binding_methods_supported,
       );
       await VciClient.getInstance().sendProof(proofJWT);
       return proofJWT;

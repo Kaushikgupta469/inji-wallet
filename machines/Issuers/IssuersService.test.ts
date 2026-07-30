@@ -32,6 +32,7 @@ jest.mock('../../shared/cryptoutil/cryptoUtil', () => ({
 }));
 jest.mock('../../shared/openId4VCI/Utils', () => ({
   constructProofJWT: jest.fn().mockResolvedValue('proof-jwt'),
+  collectCryptographicBindingMethods: jest.fn(() => ['jwk']),
   hasKeyPair: jest.fn().mockResolvedValue(true),
   updateCredentialInformation: jest
     .fn()

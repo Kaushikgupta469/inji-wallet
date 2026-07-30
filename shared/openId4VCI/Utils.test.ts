@@ -19,9 +19,14 @@ import {
   vcDownloadTimeout,
   verifyCredentialData,
   constructProofJWT,
+  selectCryptographicBindingMethod,
+  collectCryptographicBindingMethods,
+  constructDidKey,
   getCredentialIssuersWellKnownConfig,
   getDetailedViewFields,
 } from './Utils';
+import {getJWT} from '../cryptoutil/cryptoUtil';
+import bs58 from 'bs58';
 import {VCFormat} from '../VCFormat';
 
 // Mock VCProcessor
@@ -92,13 +97,15 @@ jest.mock('../cryptoutil/KeyTypes', () => ({
   },
 }));
 
-jest.mock('base64url', () =>
-  jest.fn((input: any) =>
+jest.mock('base64url', () => {
+  const base64url: any = jest.fn((input: any) =>
     Buffer.from(
       typeof input === 'string' ? input : JSON.stringify(input),
     ).toString('base64url'),
-  ),
-);
+  );
+  base64url.toBuffer = (input: string) => Buffer.from(input, 'base64url');
+  return base64url;
+});
 
 jest.mock('../cryptoutil/cryptoUtil', () => ({
   getJWT: jest.fn(async () => 'mock-jwt-token'),
@@ -680,7 +687,6 @@ describe('openId4VCI Utils', () => {
         'client-123',
         'RS256',
         ['RS256'],
-        false,
         'test-nonce',
       );
       expect(typeof result).toBe('string');
@@ -694,7 +700,6 @@ describe('openId4VCI Utils', () => {
         'client-123',
         'Ed25519',
         ['EdDSA'],
-        true,
         'test-nonce',
       );
       expect(typeof result).toBe('string');
@@ -708,7 +713,6 @@ describe('openId4VCI Utils', () => {
         null,
         'RS256',
         ['RS256'],
-        false,
         'test-nonce',
       );
       expect(typeof result).toBe('string');
@@ -716,16 +720,249 @@ describe('openId4VCI Utils', () => {
 
     it('should throw for unsupported key type', async () => {
       await expect(
-        constructProofJWT(
-          'key',
-          'key',
-          'issuer',
-          'client',
-          'UNKNOWN',
-          [],
-          false,
-        ),
+        constructProofJWT('key', 'key', 'issuer', 'client', 'UNKNOWN', []),
       ).rejects.toThrow('Unsupported algorithm');
+    });
+
+    it('should send raw jwk header when issuer only supports jwk', async () => {
+      await constructProofJWT(
+        'rsa-public-key',
+        'rsa-private-key',
+        'https://issuer.example.com',
+        null,
+        'RS256',
+        ['RS256'],
+        'test-nonce',
+        ['jwk', 'cose_key'],
+      );
+      const header = (getJWT as jest.Mock).mock.calls[
+        (getJWT as jest.Mock).mock.calls.length - 1
+      ][0];
+      expect(header.jwk).toBeDefined();
+      expect(header.kid).toBeUndefined();
+    });
+
+    it('should send kid: did:jwk when issuer supports did:jwk but not did:key', async () => {
+      await constructProofJWT(
+        'rsa-public-key',
+        'rsa-private-key',
+        'https://issuer.example.com',
+        null,
+        'RS256',
+        ['RS256'],
+        'test-nonce',
+        ['did:jwk', 'jwk'],
+      );
+      const header = (getJWT as jest.Mock).mock.calls[
+        (getJWT as jest.Mock).mock.calls.length - 1
+      ][0];
+      expect(header.jwk).toBeUndefined();
+      expect(header.kid).toMatch(/^did:jwk:.+#0$/);
+    });
+
+    it('should send kid: did:key when issuer supports did:key (highest priority)', async () => {
+      await constructProofJWT(
+        'rsa-public-key',
+        'rsa-private-key',
+        'https://issuer.example.com',
+        null,
+        'RS256',
+        ['RS256'],
+        'test-nonce',
+        ['did:jwk', 'did:key'],
+      );
+      const header = (getJWT as jest.Mock).mock.calls[
+        (getJWT as jest.Mock).mock.calls.length - 1
+      ][0];
+      expect(header.jwk).toBeUndefined();
+      expect(header.kid).toMatch(/^did:key:z.+#z.+$/);
+    });
+
+    it('should fall back to did:jwk when nothing in the issuer list matches wallet support', async () => {
+      await constructProofJWT(
+        'rsa-public-key',
+        'rsa-private-key',
+        'https://issuer.example.com',
+        null,
+        'RS256',
+        ['RS256'],
+        'test-nonce',
+        ['x5c'],
+      );
+      const header = (getJWT as jest.Mock).mock.calls[
+        (getJWT as jest.Mock).mock.calls.length - 1
+      ][0];
+      expect(header.kid).toMatch(/^did:jwk:.+#0$/);
+    });
+
+    it('should fall back to did:jwk when cryptographicBindingMethodsSupported is not provided', async () => {
+      await constructProofJWT(
+        'rsa-public-key',
+        'rsa-private-key',
+        'https://issuer.example.com',
+        null,
+        'RS256',
+        ['RS256'],
+        'test-nonce',
+      );
+      const header = (getJWT as jest.Mock).mock.calls[
+        (getJWT as jest.Mock).mock.calls.length - 1
+      ][0];
+      expect(header.kid).toMatch(/^did:jwk:.+#0$/);
+    });
+  });
+
+  describe('selectCryptographicBindingMethod', () => {
+    it('should pick did:key when present, regardless of position', () => {
+      expect(
+        selectCryptographicBindingMethod(['jwk', 'did:key', 'did:jwk']),
+      ).toBe('did:key');
+    });
+
+    it('should pick did:jwk when did:key is absent but did:jwk is present', () => {
+      expect(selectCryptographicBindingMethod(['jwk', 'did:jwk'])).toBe(
+        'did:jwk',
+      );
+    });
+
+    it('should pick jwk when only jwk is present', () => {
+      expect(selectCryptographicBindingMethod(['jwk', 'cose_key'])).toBe('jwk');
+    });
+
+    it('should fall back to did:jwk when nothing matches', () => {
+      expect(selectCryptographicBindingMethod(['x5c', 'cose_key'])).toBe(
+        'did:jwk',
+      );
+    });
+
+    it('should fall back to did:jwk when the list is empty', () => {
+      expect(selectCryptographicBindingMethod([])).toBe('did:jwk');
+    });
+
+    it('should fall back to did:jwk when undefined', () => {
+      expect(selectCryptographicBindingMethod(undefined)).toBe('did:jwk');
+    });
+  });
+
+  describe('collectCryptographicBindingMethods', () => {
+    it('should collect binding methods across all credential configurations', () => {
+      const wellknown = {
+        credential_configurations_supported: {
+          configA: {cryptographic_binding_methods_supported: ['jwk']},
+          configB: {
+            cryptographic_binding_methods_supported: ['jwk', 'cose_key'],
+          },
+        },
+      };
+      const result = collectCryptographicBindingMethods(wellknown);
+      expect(result.sort()).toEqual(['cose_key', 'jwk']);
+    });
+
+    it('should resolve to jwk for an EUDI-shaped issuer metadata', () => {
+      const wellknown = {
+        credential_configurations_supported: {
+          pid: {cryptographic_binding_methods_supported: ['jwk', 'cose_key']},
+          mdl: {cryptographic_binding_methods_supported: ['jwk', 'cose_key']},
+        },
+      };
+      expect(
+        selectCryptographicBindingMethod(
+          collectCryptographicBindingMethods(wellknown),
+        ),
+      ).toBe('jwk');
+    });
+
+    it('should resolve to did:key for a MOSIP-shaped issuer metadata', () => {
+      const wellknown = {
+        credential_configurations_supported: {
+          insurance: {
+            cryptographic_binding_methods_supported: ['did:jwk', 'did:key'],
+          },
+        },
+      };
+      expect(
+        selectCryptographicBindingMethod(
+          collectCryptographicBindingMethods(wellknown),
+        ),
+      ).toBe('did:key');
+    });
+
+    it('should return an empty list for missing or malformed metadata', () => {
+      expect(collectCryptographicBindingMethods(undefined)).toEqual([]);
+      expect(collectCryptographicBindingMethods({})).toEqual([]);
+      expect(
+        collectCryptographicBindingMethods({
+          credential_configurations_supported: {a: {}},
+        }),
+      ).toEqual([]);
+    });
+  });
+
+  describe('constructDidKey', () => {
+    const toB64Url = (buf: Buffer) =>
+      buf
+        .toString('base64')
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_')
+        .replace(/=+$/, '');
+
+    it('should encode Ed25519 with the correct multicodec prefix', () => {
+      const rawKey = Buffer.alloc(32, 1);
+      const jwk = {x: toB64Url(rawKey)};
+
+      const did = constructDidKey(jwk, 'Ed25519');
+
+      expect(did.startsWith('did:key:z')).toBe(true);
+      const decoded = Buffer.from(bs58.decode(did.slice('did:key:z'.length)));
+      expect(decoded[0]).toBe(0xed);
+      expect(decoded[1]).toBe(0x01);
+      expect(decoded.subarray(2)).toEqual(rawKey);
+    });
+
+    it('should encode ES256 as a compressed point with the correct multicodec prefix', () => {
+      const x = Buffer.alloc(32, 2);
+      const y = Buffer.alloc(32, 0); // even last byte -> 0x02 parity prefix
+      const jwk = {x: toB64Url(x), y: toB64Url(y)};
+
+      const did = constructDidKey(jwk, 'ES256');
+
+      const decoded = Buffer.from(bs58.decode(did.slice('did:key:z'.length)));
+      expect(decoded[0]).toBe(0x80);
+      expect(decoded[1]).toBe(0x24);
+      expect(decoded[2]).toBe(0x02); // parity byte
+      expect(decoded.subarray(3)).toEqual(x);
+    });
+
+    it('should encode ES256K as a compressed point with the correct multicodec prefix', () => {
+      const x = Buffer.alloc(32, 3);
+      const y = Buffer.alloc(32, 1); // odd last byte -> 0x03 parity prefix
+      const jwk = {x: toB64Url(x), y: toB64Url(y)};
+
+      const did = constructDidKey(jwk, 'ES256K');
+
+      const decoded = Buffer.from(bs58.decode(did.slice('did:key:z'.length)));
+      expect(decoded[0]).toBe(0xe7);
+      expect(decoded[1]).toBe(0x01);
+      expect(decoded[2]).toBe(0x03); // parity byte
+      expect(decoded.subarray(3)).toEqual(x);
+    });
+
+    it('should encode RS256 as a DER RSAPublicKey with the correct multicodec prefix', () => {
+      const n = Buffer.concat([Buffer.from([1]), Buffer.alloc(255, 0xff)]);
+      const e = Buffer.from([0x01, 0x00, 0x01]); // 65537
+      const jwk = {n: toB64Url(n), e: toB64Url(e)};
+
+      const did = constructDidKey(jwk, 'RS256');
+
+      const decoded = Buffer.from(bs58.decode(did.slice('did:key:z'.length)));
+      expect(decoded[0]).toBe(0x85);
+      expect(decoded[1]).toBe(0x24);
+    });
+
+    it('should throw for a keyType with no known did:key multicodec mapping', () => {
+      expect(() => constructDidKey({x: 'abc'}, 'UNKNOWN')).toThrow(
+        'did:key construction not supported',
+      );
     });
   });
 

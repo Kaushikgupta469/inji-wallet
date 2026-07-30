@@ -104,6 +104,7 @@ export interface CredentialTypes {
   scope: string;
   display: [displayType];
   proof_types_supported: Object;
+  cryptographic_binding_methods_supported?: string[];
   credential_definition: {
     type: Object[];
     context: string[];

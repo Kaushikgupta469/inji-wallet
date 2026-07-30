@@ -1,4 +1,7 @@
+import asn1 from 'asn1.js';
 import base64url from 'base64url';
+import BN from 'bn.js';
+import bs58 from 'bs58';
 import {Buffer} from 'buffer';
 import i18next from 'i18next';
 import jose from 'node-jose';
@@ -532,6 +535,85 @@ export const ErrorLogMessages: Record<VCIServerErrorCode, string> = {
     'Unknown error occurred during credential issuance flow.',
 };
 
+const BINDING_METHOD_PRIORITY = ['did:key', 'did:jwk', 'jwk'] as const;
+type BindingMethod = (typeof BINDING_METHOD_PRIORITY)[number];
+
+export function collectCryptographicBindingMethods(wellknown: any): string[] {
+  const configurations = wellknown?.credential_configurations_supported ?? {};
+  const methods = new Set<string>();
+  Object.values(configurations).forEach((configuration: any) => {
+    (configuration?.cryptographic_binding_methods_supported ?? []).forEach(
+      (method: string) => methods.add(method),
+    );
+  });
+  return Array.from(methods);
+}
+
+export function selectCryptographicBindingMethod(
+  cryptographicBindingMethodsSupported?: string[],
+): BindingMethod {
+  const supported = cryptographicBindingMethodsSupported ?? [];
+  const match = BINDING_METHOD_PRIORITY.find(method =>
+    supported.includes(method),
+  );
+  return match ?? 'did:jwk';
+}
+
+const MULTICODEC_PREFIX: Partial<Record<string, number[]>> = {
+  [KeyTypes.ED25519]: [0xed, 0x01],
+  [KeyTypes.ES256]: [0x80, 0x24],
+  [KeyTypes.ES256K]: [0xe7, 0x01],
+  [KeyTypes.RS256]: [0x85, 0x24],
+};
+
+function compressEcPoint(x: Buffer, y: Buffer): Buffer {
+  const parityPrefix = (y[y.length - 1] & 1) === 0 ? 0x02 : 0x03;
+  return Buffer.concat([Buffer.from([parityPrefix]), x]);
+}
+
+function rsaPublicKeyDer(n: Buffer, e: Buffer): Buffer {
+  const RSAPublicKey = asn1.define('RSAPublicKey', function (this: any) {
+    this.seq().obj(this.key('modulus').int(), this.key('publicExponent').int());
+  });
+  return RSAPublicKey.encode(
+    {modulus: new BN(n), publicExponent: new BN(e)},
+    'der',
+  );
+}
+
+export function constructDidKey(jwk: any, keyType: string): string {
+  const prefix = MULTICODEC_PREFIX[keyType];
+  let keyBytes: Buffer | undefined;
+
+  switch (keyType) {
+    case KeyTypes.ED25519:
+      keyBytes = base64url.toBuffer(jwk.x);
+      break;
+    case KeyTypes.ES256:
+    case KeyTypes.ES256K:
+      keyBytes = compressEcPoint(
+        base64url.toBuffer(jwk.x),
+        base64url.toBuffer(jwk.y),
+      );
+      break;
+    case KeyTypes.RS256:
+      keyBytes = rsaPublicKeyDer(
+        base64url.toBuffer(jwk.n),
+        base64url.toBuffer(jwk.e),
+      );
+      break;
+  }
+
+  if (!prefix || !keyBytes) {
+    throw new Error(
+      `did:key construction not supported for keyType: ${keyType}`,
+    );
+  }
+
+  const multicodecBytes = Buffer.concat([Buffer.from(prefix), keyBytes]);
+  return `did:key:z${bs58.encode(multicodecBytes)}`;
+}
+
 export async function constructProofJWT(
   publicKey: any,
   privateKey: any,
@@ -539,8 +621,8 @@ export async function constructProofJWT(
   client_id: string | null,
   keyType: string,
   proofSigningAlgosSupported: string[] = [],
-  isCredentialOfferFlow: boolean,
   cNonce?: string,
+  cryptographicBindingMethodsSupported?: string[],
 ): Promise<string> {
   const jwk = await getJWK(publicKey, keyType);
   const nonce = cNonce;
@@ -553,13 +635,23 @@ export async function constructProofJWT(
     throw new Error(`Unsupported algorithm for keyType: ${keyType}`);
   }
 
+  const bindingMethod = selectCryptographicBindingMethod(
+    cryptographicBindingMethodsSupported,
+  );
+
   const jwtHeader: Record<string, any> = {
     alg,
     typ: 'openid4vci-proof+jwt',
-    ...(isCredentialOfferFlow
-      ? {kid: `did:jwk:${base64url(JSON.stringify(jwk))}#0`}
-      : {jwk}),
   };
+  if (bindingMethod === 'jwk') {
+    jwtHeader.jwk = jwk;
+  } else if (bindingMethod === 'did:jwk') {
+    jwtHeader.kid = `did:jwk:${base64url(JSON.stringify(jwk))}#0`;
+  } else {
+    const did = constructDidKey(jwk, keyType);
+    jwtHeader.kid = `${did}#${did.slice('did:key:'.length)}`;
+  }
+
   const jwtPayload = {
     ...(client_id ? {iss: client_id} : {}),
     nonce,
