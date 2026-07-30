@@ -303,6 +303,101 @@ describe('IssuersService', () => {
     const instance =
       require('../../shared/vciClient/VciClient').default.getInstance();
     expect(instance.sendProof).toHaveBeenCalledWith('proof-jwt');
+    const {constructProofJWT} = require('../../shared/openId4VCI/Utils');
+    expect(constructProofJWT).toHaveBeenCalledWith(
+      'pk',
+      'sk',
+      'issuer',
+      null,
+      'ES256',
+      ['ES256'],
+      'nonce1',
+      ['jwk'],
+    );
+  });
+
+  it('constructProof falls back to issuer metadata binding methods when credential type has none', async () => {
+    const {
+      collectCryptographicBindingMethods,
+      constructProofJWT,
+    } = require('../../shared/openId4VCI/Utils');
+    collectCryptographicBindingMethods.mockReturnValueOnce(['did:key']);
+    const context = {
+      publicKey: 'pk',
+      privateKey: 'sk',
+      credentialOfferCredentialIssuer: 'issuer',
+      keyType: 'ES256',
+      wellknownKeyTypes: ['ES256'],
+      cNonce: 'nonce1',
+    };
+    await services.constructProof(context);
+    expect(constructProofJWT).toHaveBeenCalledWith(
+      'pk',
+      'sk',
+      'issuer',
+      null,
+      'ES256',
+      ['ES256'],
+      'nonce1',
+      ['did:key'],
+    );
+  });
+
+  it('constructProof prefers credential type binding methods over issuer metadata', async () => {
+    const {
+      collectCryptographicBindingMethods,
+      constructProofJWT,
+    } = require('../../shared/openId4VCI/Utils');
+    const context = {
+      publicKey: 'pk',
+      privateKey: 'sk',
+      credentialOfferCredentialIssuer: 'issuer',
+      keyType: 'ES256',
+      wellknownKeyTypes: ['ES256'],
+      cNonce: 'nonce1',
+      selectedCredentialType: {
+        cryptographic_binding_methods_supported: ['did:jwk'],
+      },
+    };
+    await services.constructProof(context);
+    expect(collectCryptographicBindingMethods).not.toHaveBeenCalled();
+    expect(constructProofJWT).toHaveBeenCalledWith(
+      'pk',
+      'sk',
+      'issuer',
+      null,
+      'ES256',
+      ['ES256'],
+      'nonce1',
+      ['did:jwk'],
+    );
+  });
+
+  it('constructProof still builds proof when issuer metadata fetch fails', async () => {
+    const instance =
+      require('../../shared/vciClient/VciClient').default.getInstance();
+    instance.getIssuerMetadata.mockRejectedValueOnce(new Error('network down'));
+    const {constructProofJWT} = require('../../shared/openId4VCI/Utils');
+    const context = {
+      publicKey: 'pk',
+      privateKey: 'sk',
+      credentialOfferCredentialIssuer: 'issuer',
+      keyType: 'ES256',
+      wellknownKeyTypes: ['ES256'],
+      cNonce: 'nonce1',
+    };
+    const result = await services.constructProof(context);
+    expect(result).toBe('proof-jwt');
+    expect(constructProofJWT).toHaveBeenCalledWith(
+      'pk',
+      'sk',
+      'issuer',
+      null,
+      'ES256',
+      ['ES256'],
+      'nonce1',
+      undefined,
+    );
   });
 
   it('constructAndSendProofForTrustedIssuers builds proof', async () => {
@@ -313,11 +408,25 @@ describe('IssuersService', () => {
       keyType: 'ES256',
       wellknownKeyTypes: ['ES256'],
       cNonce: 'nonce2',
+      selectedCredentialType: {
+        cryptographic_binding_methods_supported: ['did:key'],
+      },
     };
     const result = await services.constructAndSendProofForTrustedIssuers(
       context,
     );
     expect(result).toBe('proof-jwt');
+    const {constructProofJWT} = require('../../shared/openId4VCI/Utils');
+    expect(constructProofJWT).toHaveBeenCalledWith(
+      'pk',
+      'sk',
+      'host',
+      'client',
+      'ES256',
+      ['ES256'],
+      'nonce2',
+      ['did:key'],
+    );
   });
 
   it('getKeyOrderList returns parsed key order', async () => {

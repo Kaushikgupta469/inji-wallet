@@ -492,7 +492,7 @@ fileignoreconfig:
 - filename: components/VC/Views/__snapshots__/ShareableInfoModal.test.tsx.snap
   checksum: 844623e199557801c2e922771955db858bd119220062f79d60407a390c18756d
 - filename: machines/Issuers/IssuersService.test.ts
-  checksum: 34b7ffe81d54bd3f124cef4a0c18297a152692dabd8aadf47195732f74fc6fd5
+  checksum: 5664b880cf4a2ff7ce2766304efd6869c1f56de81d0d7bec6d973f90e090daaf
 - filename: machines/VerifiableCredential/VCItemMachine/VCItemGaurds.test.ts
   checksum: ccc360edfacaea11ddf0ff46f361301bcb102bb7982ed894e7bc37d37226ccc7
 - filename: screens/BiometricScreen.test.tsx

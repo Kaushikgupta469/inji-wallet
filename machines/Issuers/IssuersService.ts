@@ -309,10 +309,18 @@ export const IssuersService = () => {
       let bindingMethods =
         context.selectedCredentialType?.cryptographic_binding_methods_supported;
       if (!bindingMethods?.length) {
-        const issuerMetadata = await VciClient.getInstance().getIssuerMetadata(
-          context.credentialOfferCredentialIssuer,
-        );
-        bindingMethods = collectCryptographicBindingMethods(issuerMetadata);
+        try {
+          const issuerMetadata =
+            await VciClient.getInstance().getIssuerMetadata(
+              context.credentialOfferCredentialIssuer,
+            );
+          bindingMethods = collectCryptographicBindingMethods(issuerMetadata);
+        } catch (error) {
+          console.error(
+            'Error fetching issuer metadata for binding method selection:',
+            error,
+          );
+        }
       }
       const proofJWT = await constructProofJWT(
         context.publicKey,
