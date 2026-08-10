@@ -79,6 +79,11 @@ jest.mock('@noble/secp256k1', () => ({
 }));
 
 import {IssuersService} from './IssuersService';
+import {CACHED_API} from '../../shared/api';
+import {
+  collectCryptographicBindingMethods,
+  constructProofJWT,
+} from '../../shared/openId4VCI/Utils';
 
 describe('IssuersService', () => {
   let services: ReturnType<typeof IssuersService>;
@@ -303,7 +308,6 @@ describe('IssuersService', () => {
     const instance =
       require('../../shared/vciClient/VciClient').default.getInstance();
     expect(instance.sendProof).toHaveBeenCalledWith('proof-jwt');
-    const {constructProofJWT} = require('../../shared/openId4VCI/Utils');
     expect(constructProofJWT).toHaveBeenCalledWith(
       'pk',
       'sk',
@@ -317,11 +321,9 @@ describe('IssuersService', () => {
   });
 
   it('constructProof falls back to issuer metadata binding methods when credential type has none', async () => {
-    const {
-      collectCryptographicBindingMethods,
-      constructProofJWT,
-    } = require('../../shared/openId4VCI/Utils');
-    collectCryptographicBindingMethods.mockReturnValueOnce(['did:key']);
+    (collectCryptographicBindingMethods as jest.Mock).mockReturnValueOnce([
+      'did:key',
+    ]);
     const context = {
       publicKey: 'pk',
       privateKey: 'sk',
@@ -344,10 +346,6 @@ describe('IssuersService', () => {
   });
 
   it('constructProof prefers credential type binding methods over issuer metadata', async () => {
-    const {
-      collectCryptographicBindingMethods,
-      constructProofJWT,
-    } = require('../../shared/openId4VCI/Utils');
     const context = {
       publicKey: 'pk',
       privateKey: 'sk',
@@ -374,11 +372,9 @@ describe('IssuersService', () => {
   });
 
   it('constructProof still builds proof when issuer wellknown fetch fails', async () => {
-    const {CACHED_API} = require('../../shared/api');
-    CACHED_API.fetchIssuerWellknownConfig.mockRejectedValueOnce(
+    (CACHED_API.fetchIssuerWellknownConfig as jest.Mock).mockRejectedValueOnce(
       new Error('network down'),
     );
-    const {constructProofJWT} = require('../../shared/openId4VCI/Utils');
     const context = {
       publicKey: 'pk',
       privateKey: 'sk',
@@ -417,7 +413,6 @@ describe('IssuersService', () => {
       context,
     );
     expect(result).toBe('proof-jwt');
-    const {constructProofJWT} = require('../../shared/openId4VCI/Utils');
     expect(constructProofJWT).toHaveBeenCalledWith(
       'pk',
       'sk',
