@@ -373,10 +373,11 @@ describe('IssuersService', () => {
     );
   });
 
-  it('constructProof still builds proof when issuer metadata fetch fails', async () => {
-    const instance =
-      require('../../shared/vciClient/VciClient').default.getInstance();
-    instance.getIssuerMetadata.mockRejectedValueOnce(new Error('network down'));
+  it('constructProof still builds proof when issuer wellknown fetch fails', async () => {
+    const {CACHED_API} = require('../../shared/api');
+    CACHED_API.fetchIssuerWellknownConfig.mockRejectedValueOnce(
+      new Error('network down'),
+    );
     const {constructProofJWT} = require('../../shared/openId4VCI/Utils');
     const context = {
       publicKey: 'pk',

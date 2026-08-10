@@ -538,8 +538,17 @@ export const ErrorLogMessages: Record<VCIServerErrorCode, string> = {
 const BINDING_METHOD_PRIORITY = ['did:key', 'did:jwk', 'jwk'] as const;
 type BindingMethod = (typeof BINDING_METHOD_PRIORITY)[number];
 
-export function collectCryptographicBindingMethods(wellknown: any): string[] {
+export function collectCryptographicBindingMethods(
+  wellknown: any,
+  credentialConfigurationId?: string,
+): string[] {
   const configurations = wellknown?.credential_configurations_supported ?? {};
+  if (credentialConfigurationId && configurations[credentialConfigurationId]) {
+    return (
+      getMatchingCredentialIssuerMetadata(wellknown, credentialConfigurationId)
+        ?.cryptographic_binding_methods_supported ?? []
+    );
+  }
   const methods = new Set<string>();
   Object.values(configurations).forEach((configuration: any) => {
     (configuration?.cryptographic_binding_methods_supported ?? []).forEach(

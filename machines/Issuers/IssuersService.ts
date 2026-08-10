@@ -310,14 +310,19 @@ export const IssuersService = () => {
         context.selectedCredentialType?.cryptographic_binding_methods_supported;
       if (!bindingMethods?.length) {
         try {
-          const issuerMetadata =
-            await VciClient.getInstance().getIssuerMetadata(
-              context.credentialOfferCredentialIssuer,
-            );
-          bindingMethods = collectCryptographicBindingMethods(issuerMetadata);
+          const credentialIssuer = context.credentialOfferCredentialIssuer;
+          const wellknownResponse = await CACHED_API.fetchIssuerWellknownConfig(
+            credentialIssuer,
+            credentialIssuer,
+            true,
+          );
+          bindingMethods = collectCryptographicBindingMethods(
+            wellknownResponse,
+            context.credentialConfigurationId,
+          );
         } catch (error) {
           console.error(
-            'Error fetching issuer metadata for binding method selection:',
+            'Error fetching issuer wellknown for binding method selection:',
             error,
           );
         }

@@ -896,6 +896,76 @@ describe('openId4VCI Utils', () => {
         }),
       ).toEqual([]);
     });
+
+    it('should use only the matching credential configuration when an id is given', () => {
+      const wellknown = {
+        credential_configurations_supported: {
+          configA: {cryptographic_binding_methods_supported: ['jwk']},
+          configB: {cryptographic_binding_methods_supported: ['did:key']},
+        },
+      };
+      expect(collectCryptographicBindingMethods(wellknown, 'configA')).toEqual([
+        'jwk',
+      ]);
+      expect(
+        selectCryptographicBindingMethod(
+          collectCryptographicBindingMethods(wellknown, 'configA'),
+        ),
+      ).toBe('jwk');
+    });
+
+    it('should fall back to the union when the given id is not in the metadata', () => {
+      const wellknown = {
+        credential_configurations_supported: {
+          configA: {cryptographic_binding_methods_supported: ['jwk']},
+          configB: {cryptographic_binding_methods_supported: ['did:key']},
+        },
+      };
+      expect(
+        collectCryptographicBindingMethods(wellknown, 'unknownId').sort(),
+      ).toEqual(['did:key', 'jwk']);
+    });
+
+    it('should return an empty list when the matching configuration declares none', () => {
+      const wellknown = {
+        credential_configurations_supported: {
+          configA: {},
+          configB: {cryptographic_binding_methods_supported: ['did:key']},
+        },
+      };
+      expect(collectCryptographicBindingMethods(wellknown, 'configA')).toEqual(
+        [],
+      );
+    });
+
+    it('should fall back to did:jwk when the configuration needs a proof but declares no binding methods', () => {
+      const wellknown = {
+        credential_configurations_supported: {
+          configA: {proof_types_supported: {jwt: {}}},
+        },
+      };
+      expect(
+        selectCryptographicBindingMethod(
+          collectCryptographicBindingMethods(wellknown, 'configA'),
+        ),
+      ).toBe('did:jwk');
+    });
+
+    it('should fall back to did:jwk when the issuer only advertises unsupported binding methods', () => {
+      const wellknown = {
+        credential_configurations_supported: {
+          configA: {
+            proof_types_supported: {jwt: {}},
+            cryptographic_binding_methods_supported: ['cose_key', 'x509'],
+          },
+        },
+      };
+      expect(
+        selectCryptographicBindingMethod(
+          collectCryptographicBindingMethods(wellknown, 'configA'),
+        ),
+      ).toBe('did:jwk');
+    });
   });
 
   describe('constructDidKey', () => {
