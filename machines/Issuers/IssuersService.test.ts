@@ -33,6 +33,7 @@ jest.mock('../../shared/cryptoutil/cryptoUtil', () => ({
 jest.mock('../../shared/openId4VCI/Utils', () => ({
   constructProofJWT: jest.fn().mockResolvedValue('proof-jwt'),
   collectCryptographicBindingMethods: jest.fn(() => ['jwk']),
+  getCredentialConfigurationIdFromOffer: jest.fn(),
   hasKeyPair: jest.fn().mockResolvedValue(true),
   updateCredentialInformation: jest
     .fn()
@@ -83,6 +84,7 @@ import {CACHED_API} from '../../shared/api';
 import {
   collectCryptographicBindingMethods,
   constructProofJWT,
+  getCredentialConfigurationIdFromOffer,
 } from '../../shared/openId4VCI/Utils';
 
 describe('IssuersService', () => {
@@ -345,7 +347,10 @@ describe('IssuersService', () => {
     );
   });
 
-  it('constructProof prefers credential type binding methods over issuer metadata', async () => {
+  it('constructProof scopes to selectedCredentialType.id and never trusts its binding methods directly', async () => {
+    (collectCryptographicBindingMethods as jest.Mock).mockReturnValueOnce([
+      'jwk',
+    ]);
     const context = {
       publicKey: 'pk',
       privateKey: 'sk',
@@ -354,11 +359,20 @@ describe('IssuersService', () => {
       wellknownKeyTypes: ['ES256'],
       cNonce: 'nonce1',
       selectedCredentialType: {
-        cryptographic_binding_methods_supported: ['did:jwk'],
+        id: 'SelectedConfig',
+        cryptographic_binding_methods_supported: ['did:key'],
       },
     };
     await services.constructProof(context);
-    expect(collectCryptographicBindingMethods).not.toHaveBeenCalled();
+    expect(CACHED_API.fetchIssuerWellknownConfig).toHaveBeenCalledWith(
+      'issuer',
+      'issuer',
+      true,
+    );
+    expect(collectCryptographicBindingMethods).toHaveBeenCalledWith(
+      expect.anything(),
+      'SelectedConfig',
+    );
     expect(constructProofJWT).toHaveBeenCalledWith(
       'pk',
       'sk',
@@ -367,7 +381,58 @@ describe('IssuersService', () => {
       'ES256',
       ['ES256'],
       'nonce1',
-      ['did:jwk'],
+      ['jwk'],
+    );
+  });
+
+  it('constructProof scopes binding methods to the credential configuration being issued', async () => {
+    (collectCryptographicBindingMethods as jest.Mock).mockReturnValueOnce([
+      'jwk',
+    ]);
+    const context = {
+      publicKey: 'pk',
+      privateKey: 'sk',
+      credentialOfferCredentialIssuer: 'issuer',
+      keyType: 'ES256',
+      wellknownKeyTypes: ['ES256'],
+      cNonce: 'nonce1',
+      credentialConfigurationId: 'configA',
+    };
+    await services.constructProof(context);
+    expect(collectCryptographicBindingMethods).toHaveBeenCalledWith(
+      expect.anything(),
+      'configA',
+    );
+  });
+
+  it('constructProof scopes binding methods using the credential offer when the machine has no configuration id yet', async () => {
+    (getCredentialConfigurationIdFromOffer as jest.Mock).mockReturnValueOnce(
+      'configFromOffer',
+    );
+    (collectCryptographicBindingMethods as jest.Mock).mockReturnValueOnce([
+      'jwk',
+    ]);
+    const context = {
+      publicKey: 'pk',
+      privateKey: 'sk',
+      credentialOfferCredentialIssuer: 'issuer',
+      keyType: 'ES256',
+      wellknownKeyTypes: ['ES256'],
+      cNonce: 'nonce1',
+      credentialConfigurationId: '',
+      qrData: 'openid-credential-offer://?credential_offer=%7B%7D',
+      selectedCredentialType: {
+        id: 'StaleConfigFromEarlierFlow',
+        cryptographic_binding_methods_supported: ['did:key'],
+      },
+    };
+    await services.constructProof(context);
+    expect(getCredentialConfigurationIdFromOffer).toHaveBeenCalledWith(
+      'openid-credential-offer://?credential_offer=%7B%7D',
+    );
+    expect(collectCryptographicBindingMethods).toHaveBeenCalledWith(
+      expect.anything(),
+      'configFromOffer',
     );
   });
 

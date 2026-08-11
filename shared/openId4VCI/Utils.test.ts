@@ -22,6 +22,7 @@ import {
   selectCryptographicBindingMethod,
   collectCryptographicBindingMethods,
   constructDidKey,
+  getCredentialConfigurationIdFromOffer,
   getCredentialIssuersWellKnownConfig,
   getDetailedViewFields,
 } from './Utils';
@@ -951,6 +952,29 @@ describe('openId4VCI Utils', () => {
       ).toBe('did:jwk');
     });
 
+    it('should scope to the configuration named by the credential offer', () => {
+      const wellknown = {
+        credential_configurations_supported: {
+          configA: {cryptographic_binding_methods_supported: ['jwk']},
+          configB: {cryptographic_binding_methods_supported: ['did:key']},
+        },
+      };
+      const offer =
+        'openid-credential-offer://?credential_offer=' +
+        encodeURIComponent(
+          JSON.stringify({
+            credential_issuer: 'https://issuer.example',
+            credential_configuration_ids: ['configA'],
+          }),
+        );
+      expect(
+        collectCryptographicBindingMethods(
+          wellknown,
+          getCredentialConfigurationIdFromOffer(offer),
+        ),
+      ).toEqual(['jwk']);
+    });
+
     it('should fall back to did:jwk when the issuer only advertises unsupported binding methods', () => {
       const wellknown = {
         credential_configurations_supported: {
@@ -965,6 +989,64 @@ describe('openId4VCI Utils', () => {
           collectCryptographicBindingMethods(wellknown, 'configA'),
         ),
       ).toBe('did:jwk');
+    });
+  });
+
+  describe('getCredentialConfigurationIdFromOffer', () => {
+    const buildOffer = (offer: object) =>
+      'openid-credential-offer://?credential_offer=' +
+      encodeURIComponent(JSON.stringify(offer));
+
+    it('should return the configuration id when the offer names exactly one', () => {
+      const offer = buildOffer({
+        credential_issuer: 'https://issuer.example',
+        credential_configuration_ids: ['UniversityDegree'],
+      });
+      expect(getCredentialConfigurationIdFromOffer(offer)).toBe(
+        'UniversityDegree',
+      );
+    });
+
+    it('should return the configuration id for the authority form of the offer uri', () => {
+      const offer =
+        'openid-credential-offer://credential_offer?credential_offer=' +
+        encodeURIComponent(
+          JSON.stringify({
+            credential_issuer: 'https://issuer.example',
+            credential_configuration_ids: ['UniversityDegree'],
+          }),
+        );
+      expect(getCredentialConfigurationIdFromOffer(offer)).toBe(
+        'UniversityDegree',
+      );
+    });
+
+    it('should return undefined when the offer names multiple configurations', () => {
+      const offer = buildOffer({
+        credential_configuration_ids: ['configA', 'configB'],
+      });
+      expect(getCredentialConfigurationIdFromOffer(offer)).toBeUndefined();
+    });
+
+    it('should return undefined for an offer passed by reference', () => {
+      expect(
+        getCredentialConfigurationIdFromOffer(
+          'openid-credential-offer://?credential_offer_uri=https://issuer.example/offer/1',
+        ),
+      ).toBeUndefined();
+    });
+
+    it('should return undefined for missing, empty or malformed offers', () => {
+      expect(getCredentialConfigurationIdFromOffer(undefined)).toBeUndefined();
+      expect(getCredentialConfigurationIdFromOffer('')).toBeUndefined();
+      expect(
+        getCredentialConfigurationIdFromOffer('not-a-uri'),
+      ).toBeUndefined();
+      expect(
+        getCredentialConfigurationIdFromOffer(
+          'openid-credential-offer://?credential_offer=%7Bbroken',
+        ),
+      ).toBeUndefined();
     });
   });
 

@@ -558,6 +558,26 @@ export function collectCryptographicBindingMethods(
   return Array.from(methods);
 }
 
+export function getCredentialConfigurationIdFromOffer(
+  credentialOffer?: string,
+): string | undefined {
+  if (!credentialOffer) return undefined;
+  try {
+    const offer = new URL(credentialOffer).searchParams.get('credential_offer');
+    if (!offer) return undefined;
+    const configurationIds = JSON.parse(offer)?.credential_configuration_ids;
+    return Array.isArray(configurationIds) && configurationIds.length === 1
+      ? configurationIds[0]
+      : undefined;
+  } catch (error) {
+    console.error(
+      'Error reading credential configuration id from credential offer:',
+      error,
+    );
+    return undefined;
+  }
+}
+
 export function selectCryptographicBindingMethod(
   cryptographicBindingMethodsSupported?: string[],
 ): BindingMethod {

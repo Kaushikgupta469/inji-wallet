@@ -438,7 +438,7 @@ fileignoreconfig:
 - filename: shared/vcRenderer/VcRenderer.test.ts
   checksum: 9376788e007405923782381bd54488200c4d4953d1ced592be4243ed48d77252
 - filename: shared/openId4VCI/Utils.test.ts
-  checksum: 42dbaa8b3a3267dafbb8d761a6c188829b6296633d89d48eaf6b2f168cc1b491
+  checksum: e3996f5cd6013f5c16f36b2a053ac7818a43943628b506be03b8c2f2be0744a8
 - filename: screens/Home/ReceivedVcsTab.test.tsx
   checksum: 14a5afee28e55a5a1fdb3ea0b79512b84c4dca48f92e57037c221fc9f5ba60c3
 - filename: screens/AuthScreenController.test.ts
@@ -492,7 +492,7 @@ fileignoreconfig:
 - filename: components/VC/Views/__snapshots__/ShareableInfoModal.test.tsx.snap
   checksum: 844623e199557801c2e922771955db858bd119220062f79d60407a390c18756d
 - filename: machines/Issuers/IssuersService.test.ts
-  checksum: 5664b880cf4a2ff7ce2766304efd6869c1f56de81d0d7bec6d973f90e090daaf
+  checksum: 625b071dd8fed4f4f40d07e3f534afdf0f6c57b90c156abf37b0dccb6a220927
 - filename: machines/VerifiableCredential/VCItemMachine/VCItemGaurds.test.ts
   checksum: ccc360edfacaea11ddf0ff46f361301bcb102bb7982ed894e7bc37d37226ccc7
 - filename: screens/BiometricScreen.test.tsx
