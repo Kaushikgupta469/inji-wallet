@@ -25,6 +25,20 @@ import {
 import {createCacheObject} from '../../shared/Utils';
 import {VerificationResult} from '../../shared/vcjs/verifyCredential';
 
+export function resolveCryptographicBindingMethods(
+  issuerMetadata: any,
+  credentialConfigurationId?: string,
+  selectedConfigurationMethods?: string[],
+): string[] {
+  if (selectedConfigurationMethods?.length) return selectedConfigurationMethods;
+  if (!credentialConfigurationId) return [];
+
+  return collectCryptographicBindingMethods(
+    issuerMetadata,
+    credentialConfigurationId,
+  );
+}
+
 export const IssuersService = () => {
   return {
     isUserSignedAlready: () => async () => {
@@ -315,11 +329,13 @@ export const IssuersService = () => {
           credentialIssuer,
           true,
         );
-        bindingMethods = collectCryptographicBindingMethods(
+        bindingMethods = resolveCryptographicBindingMethods(
           wellknownResponse,
           context.credentialConfigurationId ||
             getCredentialConfigurationIdFromOffer(context.qrData) ||
             context.selectedCredentialType?.id,
+          context.selectedCredentialType
+            ?.cryptographic_binding_methods_supported,
         );
       } catch (error) {
         console.error(
@@ -341,7 +357,6 @@ export const IssuersService = () => {
       return proofJWT;
     },
     constructAndSendProofForTrustedIssuers: async (context: any) => {
-      const issuerMeta = context.selectedIssuer;
       const proofJWT = await constructProofJWT(
         context.publicKey,
         context.privateKey,
@@ -350,7 +365,12 @@ export const IssuersService = () => {
         context.keyType,
         context.wellknownKeyTypes,
         context.cNonce,
-        context.selectedCredentialType?.cryptographic_binding_methods_supported,
+        resolveCryptographicBindingMethods(
+          context.selectedIssuer,
+          context.selectedCredentialType?.id,
+          context.selectedCredentialType
+            ?.cryptographic_binding_methods_supported,
+        ),
       );
       await VciClient.getInstance().sendProof(proofJWT);
       return proofJWT;

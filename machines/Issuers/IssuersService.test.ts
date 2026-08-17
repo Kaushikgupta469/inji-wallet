@@ -304,6 +304,7 @@ describe('IssuersService', () => {
       keyType: 'ES256',
       wellknownKeyTypes: ['ES256'],
       cNonce: 'nonce1',
+      credentialConfigurationId: 'OfferedConfig',
     };
     const result = await services.constructProof(context);
     expect(result).toBe('proof-jwt');
@@ -333,6 +334,7 @@ describe('IssuersService', () => {
       keyType: 'ES256',
       wellknownKeyTypes: ['ES256'],
       cNonce: 'nonce1',
+      credentialConfigurationId: 'OfferedConfig',
     };
     await services.constructProof(context);
     expect(constructProofJWT).toHaveBeenCalledWith(
@@ -347,10 +349,7 @@ describe('IssuersService', () => {
     );
   });
 
-  it('constructProof scopes to selectedCredentialType.id and never trusts its binding methods directly', async () => {
-    (collectCryptographicBindingMethods as jest.Mock).mockReturnValueOnce([
-      'jwk',
-    ]);
+  it('constructProof uses the selected configuration methods before consulting the issuer metadata', async () => {
     const context = {
       publicKey: 'pk',
       privateKey: 'sk',
@@ -364,15 +363,7 @@ describe('IssuersService', () => {
       },
     };
     await services.constructProof(context);
-    expect(CACHED_API.fetchIssuerWellknownConfig).toHaveBeenCalledWith(
-      'issuer',
-      'issuer',
-      true,
-    );
-    expect(collectCryptographicBindingMethods).toHaveBeenCalledWith(
-      expect.anything(),
-      'SelectedConfig',
-    );
+    expect(collectCryptographicBindingMethods).not.toHaveBeenCalled();
     expect(constructProofJWT).toHaveBeenCalledWith(
       'pk',
       'sk',
@@ -381,7 +372,7 @@ describe('IssuersService', () => {
       'ES256',
       ['ES256'],
       'nonce1',
-      ['jwk'],
+      ['did:key'],
     );
   });
 
@@ -423,7 +414,6 @@ describe('IssuersService', () => {
       qrData: 'openid-credential-offer://?credential_offer=%7B%7D',
       selectedCredentialType: {
         id: 'StaleConfigFromEarlierFlow',
-        cryptographic_binding_methods_supported: ['did:key'],
       },
     };
     await services.constructProof(context);
@@ -488,6 +478,193 @@ describe('IssuersService', () => {
       'nonce2',
       ['did:key'],
     );
+  });
+
+  it('constructAndSendProofForTrustedIssuers falls back to the issuer metadata for the selected configuration', async () => {
+    (collectCryptographicBindingMethods as jest.Mock).mockReturnValueOnce([
+      'jwk',
+    ]);
+    const context = {
+      publicKey: 'pk',
+      privateKey: 'sk',
+      selectedIssuer: {
+        credential_issuer_host: 'host',
+        client_id: 'client',
+        credential_configurations_supported: {
+          SelectedConfig: {cryptographic_binding_methods_supported: ['jwk']},
+        },
+      },
+      keyType: 'ES256',
+      wellknownKeyTypes: ['ES256'],
+      cNonce: 'nonce2',
+      selectedCredentialType: {id: 'SelectedConfig'},
+    };
+
+    await services.constructAndSendProofForTrustedIssuers(context);
+
+    expect(collectCryptographicBindingMethods).toHaveBeenCalledWith(
+      context.selectedIssuer,
+      'SelectedConfig',
+    );
+    expect(constructProofJWT).toHaveBeenCalledWith(
+      'pk',
+      'sk',
+      'host',
+      'client',
+      'ES256',
+      ['ES256'],
+      'nonce2',
+      ['jwk'],
+    );
+  });
+
+  it('constructAndSendProofForTrustedIssuers never widens to other credential configurations', async () => {
+    const context = {
+      publicKey: 'pk',
+      privateKey: 'sk',
+      selectedIssuer: {
+        credential_issuer_host: 'host',
+        client_id: 'client',
+        credential_configurations_supported: {
+          Other: {cryptographic_binding_methods_supported: ['did:key']},
+        },
+      },
+      keyType: 'ES256',
+      wellknownKeyTypes: ['ES256'],
+      cNonce: 'nonce2',
+      selectedCredentialType: {},
+    };
+
+    await services.constructAndSendProofForTrustedIssuers(context);
+
+    expect(collectCryptographicBindingMethods).not.toHaveBeenCalled();
+    expect(constructProofJWT).toHaveBeenLastCalledWith(
+      'pk',
+      'sk',
+      'host',
+      'client',
+      'ES256',
+      ['ES256'],
+      'nonce2',
+      [],
+    );
+  });
+
+  it('constructAndSendProofForTrustedIssuers uses the selected configuration methods before consulting the issuer metadata', async () => {
+    const context = {
+      publicKey: 'pk',
+      privateKey: 'sk',
+      selectedIssuer: {
+        credential_issuer_host: 'host',
+        client_id: 'client',
+        credential_configurations_supported: {
+          SelectedConfig: {cryptographic_binding_methods_supported: ['jwk']},
+        },
+      },
+      keyType: 'ES256',
+      wellknownKeyTypes: ['ES256'],
+      cNonce: 'nonce2',
+      selectedCredentialType: {
+        id: 'SelectedConfig',
+        cryptographic_binding_methods_supported: ['did:key'],
+      },
+    };
+
+    await services.constructAndSendProofForTrustedIssuers(context);
+
+    expect(collectCryptographicBindingMethods).not.toHaveBeenCalled();
+    expect(constructProofJWT).toHaveBeenLastCalledWith(
+      'pk',
+      'sk',
+      'host',
+      'client',
+      'ES256',
+      ['ES256'],
+      'nonce2',
+      ['did:key'],
+    );
+  });
+
+  it('constructAndSendProofForTrustedIssuers treats empty selected configuration methods as absent', async () => {
+    (collectCryptographicBindingMethods as jest.Mock).mockReturnValueOnce([
+      'jwk',
+    ]);
+    const context = {
+      publicKey: 'pk',
+      privateKey: 'sk',
+      selectedIssuer: {
+        credential_issuer_host: 'host',
+        client_id: 'client',
+        credential_configurations_supported: {
+          SelectedConfig: {cryptographic_binding_methods_supported: ['jwk']},
+        },
+      },
+      keyType: 'ES256',
+      wellknownKeyTypes: ['ES256'],
+      cNonce: 'nonce2',
+      selectedCredentialType: {
+        id: 'SelectedConfig',
+        cryptographic_binding_methods_supported: [],
+      },
+    };
+
+    await services.constructAndSendProofForTrustedIssuers(context);
+
+    expect(collectCryptographicBindingMethods).toHaveBeenCalledWith(
+      context.selectedIssuer,
+      'SelectedConfig',
+    );
+    expect(constructProofJWT).toHaveBeenLastCalledWith(
+      'pk',
+      'sk',
+      'host',
+      'client',
+      'ES256',
+      ['ES256'],
+      'nonce2',
+      ['jwk'],
+    );
+  });
+
+  it('both issuance paths select the same binding methods for the same credential configuration', async () => {
+    const wellknown = {
+      credential_configurations_supported: {
+        SharedConfig: {cryptographic_binding_methods_supported: ['jwk']},
+      },
+    };
+    (collectCryptographicBindingMethods as jest.Mock).mockReturnValue(['jwk']);
+    const {CACHED_API} = require('../../shared/api');
+    CACHED_API.fetchIssuerWellknownConfig.mockResolvedValueOnce(wellknown);
+
+    await services.constructProof({
+      publicKey: 'pk',
+      privateKey: 'sk',
+      credentialOfferCredentialIssuer: 'issuer',
+      keyType: 'ES256',
+      wellknownKeyTypes: ['ES256'],
+      cNonce: 'nonce1',
+      credentialConfigurationId: 'SharedConfig',
+    });
+    const offerMethods = (constructProofJWT as jest.Mock).mock.calls.at(-1)[7];
+
+    await services.constructAndSendProofForTrustedIssuers({
+      publicKey: 'pk',
+      privateKey: 'sk',
+      selectedIssuer: {
+        credential_issuer_host: 'host',
+        client_id: 'client',
+        ...wellknown,
+      },
+      keyType: 'ES256',
+      wellknownKeyTypes: ['ES256'],
+      cNonce: 'nonce2',
+      selectedCredentialType: {id: 'SharedConfig'},
+    });
+    const trustedIssuerMethods = (constructProofJWT as jest.Mock).mock.calls.at(
+      -1,
+    )[7];
+
+    expect(trustedIssuerMethods).toEqual(offerMethods);
   });
 
   it('getKeyOrderList returns parsed key order', async () => {
