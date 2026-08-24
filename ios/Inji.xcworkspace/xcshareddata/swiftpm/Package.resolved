@@ -79,7 +79,7 @@
       "location" : "https://github.com/inji/inji-openid4vp-ios-swift",
       "state" : {
         "branch" : "develop",
-        "revision" : "fa49180a5805d1bfa823e9be92bb2b372dbbacc0"
+        "revision" : "ba7c2dd51042bc3b72824f50b7c52334e0a20be0"
       }
     },
     {
@@ -87,8 +87,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/mosip/inji-vc-renderer-ios-swift.git",
       "state" : {
-        "branch" : "release-1.0.x",
-        "revision" : "7c82f1bf0d99eccfbef09c613f1747a5a3207c4a"
+        "revision" : "335f132abfe78630a6c827adc443d3d8b6982431",
+        "version" : "1.0.0-alpha.1"
       }
     },
     {
@@ -97,7 +97,7 @@
       "location" : "https://github.com/inji/inji-vci-client-ios-swift",
       "state" : {
         "branch" : "develop",
-        "revision" : "db06c48528086fabc3ab05352759679cbfcee7dd"
+        "revision" : "0c36acbb954634c3354e4634da407b2d9539d15d"
       }
     },
     {
@@ -123,8 +123,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/mosip/pixelpass-ios-swift/",
       "state" : {
-        "branch" : "release-1.0.x",
-        "revision" : "3f26293cccc6f28a6cca053e6fd269e257dbda23"
+        "revision" : "0f6223ef65012260d93ec4a2273ca9f14be2a2a5",
+        "version" : "1.0.0-alpha.1"
       }
     },
     {
@@ -141,8 +141,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/mosip/secure-keystore-ios-swift",
       "state" : {
-        "branch" : "develop",
-        "revision" : "2d1fea9966b88d275619e30f8450b31762c46780"
+        "revision" : "19defe6f77dcc1ed5daa65ddf38be8370027f8d5",
+        "version" : "1.0.0-alpha.1"
       }
     },
     {
@@ -177,7 +177,7 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/abhip2565/SwiftCBOR",
       "state" : {
-        "revision" : "cc4e195a0ea2dce88f2fd6c6d73b2504e3c884fd",
+        "revision" : "04ccff117f6549121d5721ec84fdf0162122b90e",
         "version" : "0.5.0"
       }
     },
@@ -186,8 +186,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/mosip/tuvali-ios-swift/",
       "state" : {
-        "branch" : "release-1.0.x",
-        "revision" : "775e8358d4a1a84cbb841d164c2a0ba4cb6a3433"
+        "revision" : "6d9d9e8b74086f03bbec76671c684c2830cbb0e3",
+        "version" : "1.0.0-alpha.1"
       }
     },
     {
