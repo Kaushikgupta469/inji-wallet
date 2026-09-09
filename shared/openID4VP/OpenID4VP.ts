@@ -31,6 +31,33 @@ import {
 
 const emitter = new NativeEventEmitter(NativeModules.InjiOpenID4VP);
 
+/**
+ * Re-encodes every literal '+' in the query component as '%2B' before the authorization
+ * request is handed to the inji-openid4vp library.
+ *
+ * An OpenID4VP authorization request URI is percent-encoded per RFC 3986, where '+' is a
+ * legal literal character. The library decodes query values with URLDecoder.decode(), which
+ * is application/x-www-form-urlencoded decoding and there '+' means space. The SD-JWT VC
+ * format identifier 'dc+sd-jwt' therefore arrives as 'dc sd-jwt', which is not a known
+ * format, so client_metadata.vp_formats_supported and dcql_query.format parse to empty
+ * ("Invalid Input: client_metadata->vp_formats_supported value cannot be empty or null").
+ *
+ * Only the query is rewritten; the scheme and path are left untouched.
+ */
+export function preserveLiteralPlusInQuery(
+  urlEncodedAuthorizationRequest: string,
+): string {
+  const queryStart = urlEncodedAuthorizationRequest.indexOf('?');
+  if (queryStart === -1) {
+    return urlEncodedAuthorizationRequest;
+  }
+
+  const uptoQuery = urlEncodedAuthorizationRequest.slice(0, queryStart + 1);
+  const query = urlEncodedAuthorizationRequest.slice(queryStart + 1);
+
+  return uptoQuery + query.replace(/\+/g, '%2B');
+}
+
 class OpenID4VP {
   private static instance: OpenID4VP;
   private InjiOpenID4VP = NativeModules.InjiOpenID4VP;
@@ -91,7 +118,7 @@ class OpenID4VP {
 
     const authenticationResponse =
       await openID4VP.InjiOpenID4VP.authenticateVerifier(
-        urlEncodedAuthorizationRequest,
+        preserveLiteralPlusInQuery(urlEncodedAuthorizationRequest),
       );
     return JSON.parse(authenticationResponse);
   }

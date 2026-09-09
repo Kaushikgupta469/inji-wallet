@@ -2,7 +2,7 @@ import type {VC} from '../../machines/VerifiableCredential/VCMetaMachine/vc';
 import {NativeModules, Platform} from 'react-native';
 import {isIOS} from '../constants';
 // Import OpenID4VP here to ensure jest.mocks are applied before module loading
-import OpenID4VPModule from './OpenID4VP';
+import OpenID4VPModule, {preserveLiteralPlusInQuery} from './OpenID4VP';
 import {MatchingVCsResultForDcql, VCInfo} from './openid4vp.types';
 import {
   claimPathPointersToJsonPath,
@@ -304,6 +304,39 @@ describe('OpenID4VP', () => {
         'encoded-request',
       );
       expect(result).toEqual({status: 'success'});
+    });
+
+    it("preserves a literal '+' in the query before handing the request to the library", async () => {
+      const nativeModule = getOpenID4VPNativeModule();
+      nativeModule.authenticateVerifier.mockResolvedValue('{}');
+
+      await OpenID4VP.authenticateVerifier(
+        'openid4vp://authorize?client_metadata=%7B%22dc+sd-jwt%22%7D',
+      );
+
+      expect(nativeModule.authenticateVerifier).toHaveBeenCalledWith(
+        'openid4vp://authorize?client_metadata=%7B%22dc%2Bsd-jwt%22%7D',
+      );
+    });
+  });
+
+  describe('preserveLiteralPlusInQuery', () => {
+    it("encodes '+' only inside the query", () => {
+      expect(
+        preserveLiteralPlusInQuery('openid4vp://authorize?a=dc+sd-jwt&b=x+y'),
+      ).toBe('openid4vp://authorize?a=dc%2Bsd-jwt&b=x%2By');
+    });
+
+    it('leaves a request with no query untouched', () => {
+      expect(preserveLiteralPlusInQuery('encoded-request')).toBe(
+        'encoded-request',
+      );
+    });
+
+    it('leaves already percent-encoded requests unchanged', () => {
+      expect(
+        preserveLiteralPlusInQuery('openid4vp://authorize?a=dc%2Bsd-jwt'),
+      ).toBe('openid4vp://authorize?a=dc%2Bsd-jwt');
     });
   });
 
