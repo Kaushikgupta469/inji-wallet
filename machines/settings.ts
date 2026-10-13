@@ -1,4 +1,11 @@
-import {assign, ContextFrom, EventFrom, send, StateFrom, sendUpdate} from 'xstate';
+import {
+  assign,
+  ContextFrom,
+  EventFrom,
+  send,
+  StateFrom,
+  sendUpdate,
+} from 'xstate';
 import {createModel} from 'xstate/lib/model';
 import {AppServices} from '../shared/GlobalContext';
 import {
@@ -16,7 +23,10 @@ import getAllConfigurations from '../shared/api';
 import Storage from '../shared/storage';
 import ShortUniqueId from 'short-unique-id';
 import {__AppId} from '../shared/GlobalVariables';
-import {isHardwareKeystoreExists} from '../shared/cryptoutil/cryptoUtil';
+import {
+  isHardwareKeystoreExists,
+  storeKeyPriorityOrder,
+} from '../shared/cryptoutil/cryptoUtil';
 
 const model = createModel(
   {
@@ -106,17 +116,17 @@ export const settingsMachine = model.createMachine(
             {target: 'storingDefaults'},
           ],
           BIOMETRIC_CANCELLED: {
-              actions: [
-                send(
-                  (_, event) => model.events.BIOMETRIC_CANCELLED(event.requester),
-                  {
-                    to: (_, event) => event.requester,
-                  },
-                ),
-                sendUpdate(),
-              ],
-              target: 'init',
-            },
+            actions: [
+              send(
+                (_, event) => model.events.BIOMETRIC_CANCELLED(event.requester),
+                {
+                  to: (_, event) => event.requester,
+                },
+              ),
+              sendUpdate(),
+            ],
+            target: 'init',
+          },
         },
       },
       storingDefaults: {
@@ -326,8 +336,24 @@ export const settingsMachine = model.createMachine(
     services: {
       resetInjiProps: async (context, event) => {
         try {
+          const isEnvironmentChanged =
+            !!event.credentialRegistry &&
+            event.credentialRegistry !== MIMOTO_BASE_URL;
           await Storage.removeItem(COMMON_PROPS_KEY);
-          return await getAllConfigurations(event.credentialRegistry, false);
+          const response = await getAllConfigurations(
+            event.credentialRegistry,
+            false,
+          );
+          if (isEnvironmentChanged) {
+            await storeKeyPriorityOrder(response?.keyPriorityOrder).catch(
+              error =>
+                console.warn(
+                  'Failed to store keyPriorityOrder of the new environment',
+                  error,
+                ),
+            );
+          }
+          return response;
         } catch (error) {
           console.error('Error from resetInjiProps ', error);
           throw error;
@@ -374,7 +400,6 @@ export function selectName(state: State) {
 export function selectAppId(state: State) {
   return state?.context?.appId;
 }
-
 
 /** Alerting the user when the hardware keystore not supported by device and
  * not shown to user atlease once */

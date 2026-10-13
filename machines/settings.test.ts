@@ -131,6 +131,7 @@ jest.mock('../shared/cryptoutil/cryptoUtil', () => ({
   encryptJson: jest.fn(),
   hmacSHA: jest.fn(),
   generateKeys: jest.fn(),
+  storeKeyPriorityOrder: jest.fn().mockResolvedValue(undefined),
 }));
 
 const mockState = (ctx: any = {}, matchVal?: string) => ({
@@ -880,5 +881,67 @@ describe('settingsMachine guards', () => {
     } as any);
     // hasPartialData: response != null && appId == null → true → idle with setContext + updatePartialDefaults
     expect(next.value).toBe('idle');
+  });
+});
+
+describe('settingsMachine resetInjiProps service', () => {
+  const resetInjiProps = (settingsMachine.options.services as any)
+    .resetInjiProps;
+  const getAllConfigurations = jest.requireMock('../shared/api');
+  const {storeKeyPriorityOrder} = jest.requireMock(
+    '../shared/cryptoutil/cryptoUtil',
+  );
+  const updateHostEvent = (credentialRegistry: string) => ({
+    type: 'UPDATE_HOST',
+    credentialRegistry,
+    esignetHostUrl: 'https://esignet.default',
+  });
+
+  beforeEach(() => {
+    storeKeyPriorityOrder.mockClear();
+    getAllConfigurations.mockResolvedValueOnce({
+      warningDomainName: 'test.registry',
+      keyPriorityOrder: 'RS256,ES256,ES256K,Ed25519',
+    });
+  });
+
+  it('stores the key order of the new environment when the environment changes', async () => {
+    const response = await resetInjiProps(
+      {},
+      updateHostEvent('https://mimoto.new'),
+    );
+    expect(getAllConfigurations).toHaveBeenCalledWith(
+      'https://mimoto.new',
+      false,
+    );
+    expect(storeKeyPriorityOrder).toHaveBeenCalledWith(
+      'RS256,ES256,ES256K,Ed25519',
+    );
+    expect(response.warningDomainName).toBe('test.registry');
+  });
+
+  it('keeps the stored key order when the environment is not changed', async () => {
+    await resetInjiProps({}, updateHostEvent('https://mimoto.default'));
+    expect(storeKeyPriorityOrder).not.toHaveBeenCalled();
+  });
+
+  it('keeps the stored key order when no host is provided', async () => {
+    await resetInjiProps({}, updateHostEvent(''));
+    expect(storeKeyPriorityOrder).not.toHaveBeenCalled();
+  });
+
+  it('completes the environment change even if storing the key order fails', async () => {
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
+    storeKeyPriorityOrder.mockRejectedValueOnce(new Error('keystore error'));
+    const response = await resetInjiProps(
+      {},
+      updateHostEvent('https://mimoto.new'),
+    );
+    expect(response.warningDomainName).toBe('test.registry');
+    expect(warnSpy).toHaveBeenCalledWith(
+      'Failed to store keyPriorityOrder of the new environment',
+      expect.any(Error),
+    );
+    warnSpy.mockRestore();
   });
 });

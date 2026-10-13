@@ -33,7 +33,7 @@ fileignoreconfig:
 - filename: shared/openId4VCI/Utils.ts
   checksum: 5a93d5de806ce5bda0aab2b9f6db8e81c7ebb62e28e28e2dc66be0a27ad9c336
 - filename: shared/cryptoutil/cryptoUtil.ts
-  checksum: 281f061ae6eb722c75c2caf2bdfb5b1bf72f292b471318d972c898c5a972c65f
+  checksum: 86ac11d0d55b8f1a54d20d6471a94cfb31b130a8514173ebf9edbb9c26e8082d
 - filename: shared/telemetry/TelemetryConstants.js
   checksum: fd8dc3a69cdef68855dc5f0531d8e634bfa2621bb4dc22f85b8247512a349c4c
 - filename: shared/telemetry/TelemetryUtils.js
@@ -318,7 +318,7 @@ fileignoreconfig:
 - filename: machines/VerifiableCredential/VCItemMachine/VCItemActions.ts
   checksum: 511f6f95c0491ad16b03236cd7cc3ef5f4a89d336be1a0202f3f0aaf9e29497d
 - filename: machines/app.ts
-  checksum: 5da59bb384d04e29c7745d773108903fa144275c57edc1aca1898fcae7baea84
+  checksum: 9d6d9408530109a8105cb13b519389c1f1202b70c65209cac8a055bd894befc4
 - filename: shared/cryptoutil/signFormatConverter.ts
   checksum: 3a0a03f4e719194858a61810d12180cdc407c53f04ce1455360d5d535556b7ac
 - filename: shared/CloudBackupAndRestoreUtils.ts
@@ -426,7 +426,7 @@ fileignoreconfig:
 - filename: __mocks__/@noble/mock-secp256k1.js
   checksum: 6e933c6c1862ab9a1e8be444938917660e5ab9ae2369093a5d861fb6964362d2
 - filename: shared/cryptoutil/cryptoUtil.test.ts
-  checksum: 535dc824bef7848e76fdc7ebd1d8567c51a92767b7f85123f0609f8090d5d3a2
+  checksum: bbea7690c9f43269cab85ceccd71a4b46e8a28d816334e84dfb7d53c10af7783
 - filename: shared/telemetry/TelemetryUtils.test.js
   checksum: 9b1fc611937e6916cdd6fd87302013b2988d46bdbe63bf6f8d4825289344dbd3
 - filename: screens/Settings/SettingScreen.test.tsx
@@ -536,7 +536,7 @@ fileignoreconfig:
 - filename: screens/Scan/SendVPScreenController.test.ts
   checksum: f4ddd64fb6516512ab8908e127569893dcd3345b2261d3fbf0c16f562b961825
 - filename: machines/settings.test.ts
-  checksum: e451d47acdbf4ed0d81cf5eca066406399df7ec3ef9355f505bb3507670fda24
+  checksum: cc02dfd4440e4395d80de5cd0de98f9bfff315933f5da0b4cccd09efedd8b0ea
 - filename: lib/jsonld-signatures/suites/ed255192018/Ed25519Signature2018.test.ts
   checksum: 472c881176622dc1843d60d89710ce4f7c324b268f79a7aa03ab529964a9c16a
 - filename: shared/vcjs/verifyCredential.test.ts
@@ -562,7 +562,7 @@ fileignoreconfig:
 - filename: components/TrustModalVerifier.test.tsx
   checksum: 8feb875eb0653dfae154c9e82b985f1964755f68da6acc136e302631c94ac84d
 - filename: machines/app.test.ts
-  checksum: 7e3ed4af0d41f794ba51335cf2416f05b2a4c79796b865b6b30dfbe72bf73da7
+  checksum: 3826951702441793eb4c2b24699ca4ea20064f8453115cf7cc58cb070c5d785c
 - filename: screens/Scan/ScanLayoutController.test.ts
   checksum: a9be2f0ce562e7329449bba8ba4656dc1c2cf9fe03c110c6a902221328fb7784
 - filename: screens/Scan/ScanScreenController.test.ts
@@ -651,4 +651,6 @@ fileignoreconfig:
 - filename: screens/Issuers/__snapshots__/TransactionCodeScreen.test.tsx.snap
   allowed_patterns:
   - keyboardShouldPersistTaps
+- filename: docs/key-management-support.md
+  checksum: 1db21bb96c1f9dc49a778a9c27fcc4cc2db3a3f6fa57f9e99793667385966a4a
 version: "1.0"
