@@ -1,5 +1,6 @@
 package inji.pages;
 
+import inji.utils.InjiWalletConfigManager;
 import io.appium.java_client.AppiumDriver;
 import io.appium.java_client.pagefactory.AndroidFindBy;
 import io.appium.java_client.pagefactory.iOSXCUITFindBy;
@@ -55,7 +56,7 @@ public class SharePage extends BasePage {
     @iOSXCUITFindBy(accessibility = "OK")
     private WebElement okButtonIos;
 
-    @iOSXCUITFindBy(xpath = "//*[@name=\"Allow\"]")
+    @iOSXCUITFindBy(xpath = "//XCUIElementTypeButton[@name=\"Allow\"]")
     private WebElement AllowButtonIos;
 
     @iOSXCUITFindBy(accessibility = "Don’t Allow")
@@ -121,9 +122,11 @@ public class SharePage extends BasePage {
     }
 
     public void acceptPermissionPopupCameraIos() {
-        click(continuePopupButton, "Click on Continue Popup Button (iOS)");
-        click(okButtonIos, "Click on OK Button (iOS)");
-        click(AllowButtonIos, "Click on Allow Button (iOS)");
+         if (isIosCameraPermissionAllowFlow()) {
+              click(AllowButtonIos, "Click on Allow Button (iOS)");
+         } else {
+              click(okButtonIos, "Click on OK Button (iOS)");
+         }
     }
 
     public void denyPermissionPopupBluetooth() {
@@ -201,5 +204,18 @@ public class SharePage extends BasePage {
 
     public boolean isCameraAccessLostPageLoaded() {
         return isElementVisible(cameraAccessLostPage, "Check if Camera Access Lost Page is Loaded");
+    }
+
+    private boolean isIosCameraPermissionAllowFlow() {
+        Object cap = driver.getCapabilities().getCapability("platformVersion");
+        String version = cap != null ? cap.toString() : InjiWalletConfigManager.getPlatformVersion();
+        if (version == null || version.isBlank()) {
+            return false;
+        }
+        try {
+            return Integer.parseInt(version.trim().split("\\.")[0]) > 16;
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Invalid iOS platformVersion: " + version, e);
+        }
     }
 }
