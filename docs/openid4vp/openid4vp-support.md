@@ -71,6 +71,8 @@ The implementation of this feature involves the following steps:
 
   - **decentralized_identifier** (OR) **did** : The request must be signed with a private key linked to the DID, and the corresponding public key must be retrieved from the DID Document via DID Resolution. The specific key used must be identified using the kid in the JOSE header. All other Verifier metadata must be provided through the client_metadata parameter.
 
+  - **x509_hash** : The client ID is `x509_hash:` followed by the base64url-encoded SHA-256 hash of the DER-encoded leaf certificate of the Verifier. The request must be signed with the private key of that certificate, which is sent first in the `x5c` JOSE header, and the certificate must not be self-signed. Its certificate chain must validate to one of the CA certificates bundled with the wallet ([details](#4-verifier-trust-anchors-x509_hash)). All other Verifier metadata must be provided through the client_metadata parameter.
+
 ## Verifiable Credential Format Supported for Sharing:
 
 - ldp_vc
@@ -120,7 +122,6 @@ The Inji Wallet integrates the Inji OpenID4VP library to manage all OpenID4VP-re
 - Constructs the unsigned verifiable presentation token data and sends it to the Wallet for generating the signature.
 - Wallet signs on the unsigned verifiable presentation token data and sends the signature along with other details to the library.
 - The library receives the signature, generates the VP response, and submits it to the Verifier's `response_uri` endpoint via an HTTP POST request. The VP response is sent in either encrypted or unencrypted form, depending on the `response_mode`.
-
 
 ```mermaid
 sequenceDiagram
@@ -272,3 +273,11 @@ The configuration includes:
   }
 }
 ```
+
+### 4. Verifier Trust Anchors (`x509_hash`)
+
+The OpenID4VP library accepts a request from an `x509_hash` verifier only when the certificate chain in its `x5c` header validates to one of the CA certificates the wallet trusts (the trust anchors), and rejects it otherwise.
+
+The trust anchors are listed by URL in [verifierTrustAnchorUrls.json](../../shared/openID4VP/walletConfig/verifierTrustAnchorUrls.json), each with the `sha256` fingerprint of the certificate (`openssl x509 -in ca.pem -outform DER | openssl dgst -sha256`). When the URL returns JSON, `jsonField` names the field that holds the PEM certificate. The list has the CAs of the EUDI and Animo playground verifiers and of the Inji mock verifier, for testing; before a production release, keep only the CAs of the verifiers the wallet must trust.
+
+The Android build (`bundleVerifierTrustAnchors`) and the iOS build (`Bundle Verifier Trust Anchors` phase) run [bundle-verifier-trust-anchors.js](../../tools/verifier-trust-anchors/bundle-verifier-trust-anchors.js), which downloads each certificate and bundles it with the app only if its fingerprint matches. A certificate that cannot be downloaded or does not match is left out with a warning in the build log. As the trust anchors are bundled with the app, the Mimoto configuration cannot change them.
