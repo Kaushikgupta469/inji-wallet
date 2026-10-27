@@ -654,5 +654,5 @@ fileignoreconfig:
 - filename: shared/openID4VP/walletConfig/verifierTrustAnchorUrls.json
   checksum: 1778a640054e163b8dbd0de1968c14cb490b61585fa7958abed86400324b6f55
 - filename: docs/openid4vp/openid4vp-support.md
-  checksum: e95e6693364fc39c55d551d06413bfde0f8899f84897d9f4df049d7d2a11fdbc
+  checksum: 682c7ef63f7774b606dea7a053fb3ed9822b12914a636f1bae794ba48f8839af
 version: "1.0"

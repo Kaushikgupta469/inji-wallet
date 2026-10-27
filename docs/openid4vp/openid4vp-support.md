@@ -249,7 +249,7 @@ The wallet retrieves its OpenID4VP configuration from the Mimoto backend.
 - **API:** `/v1/mimoto/allProperties`
 - **Property:** `openid4vpWalletConfig`
 
-This property defines the wallet capabilities supported by the OpenID4VP library. If the property is not available, the [default configuration](../../shared/openID4VP/walletConfig/WalletConfig.ts) is used.
+This property defines the wallet capabilities supported by the OpenID4VP library. If the property is not available, the [default configuration](../../shared/openID4VP/walletConfig/WalletConfig.ts) is used. The property replaces the default configuration as a whole, so it must list `x509_hash` and `ES256` for the wallet to accept `x509_hash` verifiers.
 
 #### Configuration Parameters
 
@@ -269,7 +269,7 @@ The configuration includes:
 {
   "response": {
     "openid4vpClientValidation": "true",
-    "openid4vpWalletConfig": "{\"response_types_supported\":[\"vp_token\"],\"vp_formats_supported\":{\"mso_mdoc\":{\"issuerauth_alg_values\":[-7],\"deviceauth_alg_values\":[-7]},\"ldp_vc\":{\"proof_type_values\":[\"Ed25519Signature2020\",\"JsonWebSignature2020\"]},\"dc+sd-jwt\":{\"sd-jwt_alg_values\":[\"EdDSA\",\"ES256\"],\"kb-jwt_alg_values\":[\"ES256\",\"EdDSA\"]},\"vc+sd-jwt\":{\"sd-jwt_alg_values\":[\"EdDSA\",\"ES256\"],\"kb-jwt_alg_values\":[\"ES256\",\"EdDSA\"]}},\"client_id_prefixes_supported\":[\"redirect_uri\",\"decentralized_identifier\",\"pre-registered\"],\"request_object_signing_alg_values_supported\":[\"EdDSA\"],\"authorization_encryption_alg_values_supported\":[\"ECDH-ES\"],\"authorization_encryption_enc_values_supported\":[\"A256GCM\"],\"presentation_definition_uri_supported\":true}"
+    "openid4vpWalletConfig": "{\"response_types_supported\":[\"vp_token\"],\"vp_formats_supported\":{\"mso_mdoc\":{\"issuerauth_alg_values\":[-7],\"deviceauth_alg_values\":[-7]},\"ldp_vc\":{\"proof_type_values\":[\"Ed25519Signature2020\",\"JsonWebSignature2020\"]},\"dc+sd-jwt\":{\"sd-jwt_alg_values\":[\"EdDSA\",\"ES256\"],\"kb-jwt_alg_values\":[\"ES256\",\"EdDSA\"]},\"vc+sd-jwt\":{\"sd-jwt_alg_values\":[\"EdDSA\",\"ES256\"],\"kb-jwt_alg_values\":[\"ES256\",\"EdDSA\"]}},\"client_id_prefixes_supported\":[\"redirect_uri\",\"decentralized_identifier\",\"pre-registered\",\"x509_hash\"],\"request_object_signing_alg_values_supported\":[\"EdDSA\",\"ES256\"],\"authorization_encryption_alg_values_supported\":[\"ECDH-ES\"],\"authorization_encryption_enc_values_supported\":[\"A256GCM\"],\"presentation_definition_uri_supported\":true}"
   }
 }
 ```
@@ -280,4 +280,4 @@ The OpenID4VP library accepts a request from an `x509_hash` verifier only when t
 
 The trust anchors are listed by URL in [verifierTrustAnchorUrls.json](../../shared/openID4VP/walletConfig/verifierTrustAnchorUrls.json), each with the `sha256` fingerprint of the certificate (`openssl x509 -in ca.pem -outform DER | openssl dgst -sha256`). When the URL returns JSON, `jsonField` names the field that holds the PEM certificate. The list has the CAs of the EUDI and Animo playground verifiers and of the Inji mock verifier, for testing; before a production release, keep only the CAs of the verifiers the wallet must trust.
 
-The Android build (`bundleVerifierTrustAnchors`) and the iOS build (`Bundle Verifier Trust Anchors` phase) run [bundle-verifier-trust-anchors.js](../../tools/verifier-trust-anchors/bundle-verifier-trust-anchors.js), which downloads each certificate and bundles it with the app only if its fingerprint matches. A certificate that cannot be downloaded or does not match is left out with a warning in the build log. As the trust anchors are bundled with the app, the Mimoto configuration cannot change them.
+The Android build (`bundleVerifierTrustAnchors`) and the iOS build (`pod install` and the `Bundle Verifier Trust Anchors` phase) run [bundle-verifier-trust-anchors.js](../../tools/verifier-trust-anchors/bundle-verifier-trust-anchors.js), which downloads each certificate and bundles it with the app only if its fingerprint matches. A certificate that cannot be downloaded or does not match is left out with a warning in the build log. As the trust anchors are bundled with the app, the Mimoto configuration cannot change them.

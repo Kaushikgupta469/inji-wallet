@@ -23,6 +23,7 @@ function download(url) {
       const chunks = [];
       response.on('data', chunk => chunks.push(chunk));
       response.on('end', () => resolve(Buffer.concat(chunks)));
+      response.on('error', reject);
     });
     request.on('timeout', () => request.destroy(new Error('timed out')));
     request.on('error', reject);
