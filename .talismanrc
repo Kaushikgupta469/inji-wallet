@@ -77,7 +77,7 @@ fileignoreconfig:
 - filename: screens/Settings/BackupController.tsx
   checksum: 4a031b46646aa982c8f40e4c7fe0bd3e05a76a6af1ff1c2de7350ba6ebf9a839
 - filename: machines/settings.typegen.ts
-  checksum: c10bead6d0cc0cd8f7539d12cfecd6cd24770ed9b55a9a7c55fda8883a677d52
+  checksum: 3dbf494def4a6a79910d6ffbb3215f8db6305a38fcb2d398acf0638b45eac975
 - filename: injitest/src/test/java/androidTestCases/PinVcTest.java
   checksum: 80db93dd724c281a457c074910f02bb887cb34575792b2dd9f20d77a43a6cfad
 - filename: injitest/src/test/java/androidTestCases/NoNetworkAndroidTest.java
@@ -404,7 +404,7 @@ fileignoreconfig:
 - filename: screens/WelcomeScreenController.test.ts
   checksum: 2ddc812f1f84b580548f075717e86eb57b721379cd12fc73b1eacb3d3d2b75fe
 - filename: shared/api.test.ts
-  checksum: 71656d6c1e0136287637c95913ebc18d5c47768eebc2c2973ac24039b741017c
+  checksum: e7d8fe5f52eb72c4810695297bee65c114e6182d4c68974298296a938751518a
 - filename: shared/keystore/SecureKeystore.test.ts
   checksum: 2d7ed666e030d000533d5d587dc87b2f57f0808891573c468733a62ea7c50ef2
 - filename: screens/Settings/KeyManagementScreen.test.tsx
@@ -536,7 +536,7 @@ fileignoreconfig:
 - filename: screens/Scan/SendVPScreenController.test.ts
   checksum: f4ddd64fb6516512ab8908e127569893dcd3345b2261d3fbf0c16f562b961825
 - filename: machines/settings.test.ts
-  checksum: cc02dfd4440e4395d80de5cd0de98f9bfff315933f5da0b4cccd09efedd8b0ea
+  checksum: 1e7fc1b057fea895fead6054058d111d0ed47448326c1d4cf66ed48eecd831fd
 - filename: lib/jsonld-signatures/suites/ed255192018/Ed25519Signature2018.test.ts
   checksum: 472c881176622dc1843d60d89710ce4f7c324b268f79a7aa03ab529964a9c16a
 - filename: shared/vcjs/verifyCredential.test.ts
@@ -652,5 +652,7 @@ fileignoreconfig:
   allowed_patterns:
   - keyboardShouldPersistTaps
 - filename: docs/key-management-support.md
-  checksum: 1db21bb96c1f9dc49a778a9c27fcc4cc2db3a3f6fa57f9e99793667385966a4a
+  checksum: 4458be4a0cba63068c47be6cd1d19cb3e7c206a1edd93cd22e8d1d647f615dbe
+- filename: machines/settings.ts
+  checksum: b357b68c698c6f924868c4072ecfa86406e5e579f0d54a78a204c7543fdee55b
 version: "1.0"

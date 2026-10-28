@@ -15,8 +15,6 @@ The Inji Wallet supports **RSA, EC R1, EC K1, and ED** keys for signing operatio
 
 ## Key Priority Order
 
-When downloading a credential via OpenID4VCI, the wallet picks the first key type in the priority order whose algorithm is listed in the issuer's `proof_types_supported.jwt.proof_signing_alg_values_supported`. If no key type matches, or the issuer does not list any algorithms, the first key type in the order is used.
-
 The default priority order is:
 
 1. ED25519 (`Ed25519`)
@@ -34,7 +32,8 @@ mosip.inji.keyPriorityOrder=RS256,ES256,ES256K,Ed25519
 - When overriding, the wallet provider is responsible for configuring all the key types with the exact names `Ed25519`, `ES256K`, `ES256` and `RS256`, in the required order. The wallet uses the order as it is.
 - The configured order is applied only on a fresh install and when the environment (Mimoto host) is changed from **Settings**. It is not applied again when the cached configuration expires and is fetched again.
 - The user can change the order at any time from **Settings → Key Management**. That order is kept until the environment is changed or the wallet is installed afresh.
-- If the configuration cannot be fetched (e.g. no network), the default order is used.
+- On a fresh install, if the configuration cannot be fetched (e.g. no network), the default order is used.
+- On an environment change, the order is updated only when the change completes. If the change is cancelled, or the configuration of the new environment cannot be fetched, the current order is kept.
 
 ---
 

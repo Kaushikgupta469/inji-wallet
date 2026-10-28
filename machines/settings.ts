@@ -27,6 +27,7 @@ import {
   isHardwareKeystoreExists,
   storeKeyPriorityOrder,
 } from '../shared/cryptoutil/cryptoUtil';
+import {INITIAL_CONFIG} from '../shared/InitialConfig';
 
 const model = createModel(
   {
@@ -47,6 +48,7 @@ const model = createModel(
     isAccountSelectionConfirmationShown: false,
     credentialRegistryResponse: '' as string,
     isBiometricToggled: false,
+    isEnvironmentChanged: false,
   },
   {
     events: {
@@ -165,6 +167,7 @@ export const settingsMachine = model.createMachine(
           UPDATE_HOST: {
             actions: [
               'resetCredentialRegistryResponse',
+              'setIsEnvironmentChanged',
               'updateEsignetHostUrl',
               'storeContext',
             ],
@@ -202,6 +205,7 @@ export const settingsMachine = model.createMachine(
           onDone: {
             actions: [
               'updateCredentialRegistrySuccess',
+              'storeKeyPriorityOrderOfEnvironment',
               'updateCredentialRegistry',
               'storeContext',
             ],
@@ -263,7 +267,12 @@ export const settingsMachine = model.createMachine(
 
       storeContext: send(
         context => {
-          const {serviceRefs, isBiometricToggled, ...data} = context;
+          const {
+            serviceRefs,
+            isBiometricToggled,
+            isEnvironmentChanged,
+            ...data
+          } = context;
           return StoreEvents.SET(SETTINGS_STORE_KEY, data);
         },
         {to: context => context.serviceRefs.store},
@@ -316,6 +325,26 @@ export const settingsMachine = model.createMachine(
         credentialRegistryResponse: () => 'success',
       }),
 
+      setIsEnvironmentChanged: model.assign({
+        isEnvironmentChanged: (context, event) =>
+          !!event.credentialRegistry &&
+          event.credentialRegistry !== context.credentialRegistry,
+      }),
+
+      storeKeyPriorityOrderOfEnvironment: (context, event: any) => {
+        if (
+          context.isEnvironmentChanged &&
+          event.data !== INITIAL_CONFIG.allProperties
+        ) {
+          storeKeyPriorityOrder(event.data?.keyPriorityOrder).catch(error =>
+            console.warn(
+              'Failed to store keyPriorityOrder of the new environment',
+              error,
+            ),
+          );
+        }
+      },
+
       resetCredentialRegistryResponse: model.assign({
         credentialRegistryResponse: () => '',
       }),
@@ -336,24 +365,8 @@ export const settingsMachine = model.createMachine(
     services: {
       resetInjiProps: async (context, event) => {
         try {
-          const isEnvironmentChanged =
-            !!event.credentialRegistry &&
-            event.credentialRegistry !== MIMOTO_BASE_URL;
           await Storage.removeItem(COMMON_PROPS_KEY);
-          const response = await getAllConfigurations(
-            event.credentialRegistry,
-            false,
-          );
-          if (isEnvironmentChanged) {
-            await storeKeyPriorityOrder(response?.keyPriorityOrder).catch(
-              error =>
-                console.warn(
-                  'Failed to store keyPriorityOrder of the new environment',
-                  error,
-                ),
-            );
-          }
-          return response;
+          return await getAllConfigurations(event.credentialRegistry, false);
         } catch (error) {
           console.error('Error from resetInjiProps ', error);
           throw error;
