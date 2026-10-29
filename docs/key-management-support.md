@@ -33,7 +33,7 @@ mosip.inji.keyPriorityOrder=RS256,ES256,ES256K,Ed25519
 - At startup, the wallet fetches the configuration only if key pairs are missing, then generates the keys and stores the configured order. If the keys are present on restart, it skips the fetch. The order is also updated when the environment (Mimoto host) is changed from **Settings**.
 - The user can change the order at any time from **Settings → Key Management**. That order is kept until the environment is updated or missing key pairs are regenerated at startup.
 - If key pairs are missing and the network request fails, the wallet uses a valid cached configuration when available offline, or the built-in configuration. If no `keyPriorityOrder` is available, the default order is stored. The default order is also used if the config fetch rejects.
-- On an environment update, the wallet attempts to store the new order after the configuration request completes. Cancelling the update or receiving the built-in fallback configuration keeps the current order. A storage failure is logged, so completion does not guarantee that the new order was saved.
+- On an environment update, the wallet stores the new order before reporting success. Cancelling before the configuration fetch completes or receiving the built-in fallback configuration keeps the current order. A storage failure reports an error.
 
 ---
 

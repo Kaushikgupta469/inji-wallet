@@ -860,9 +860,6 @@ describe('appMachine service implementations', () => {
   });
 
   it('generateKeyPairsAndStoreOrder calls the function', async () => {
-    const {
-      generateKeyPairsAndStoreOrder,
-    } = require('../shared/cryptoutil/cryptoUtil');
     generateKeyPairsAndStoreOrder.mockResolvedValue(true);
     await services.generateKeyPairsAndStoreOrder(
       {},
@@ -876,14 +873,12 @@ describe('appMachine service implementations', () => {
   });
 
   it('fetchAndUpdateCacheTTLFromConfig calls updateCacheTTLFromConfig', async () => {
-    const getAllConfigurations = require('../shared/api');
     getAllConfigurations.mockResolvedValue({cacheTTLInMilliSeconds: 5000});
     await services.fetchAndUpdateCacheTTLFromConfig();
     expect(getAllConfigurations).toHaveBeenCalled();
   });
 
   it('fetchAndUpdateCacheTTLFromConfig returns the config for key generation', async () => {
-    const getAllConfigurations = require('../shared/api');
     getAllConfigurations.mockClear();
     const config = {
       keyPriorityOrder: 'RS256,ES256,ES256K,Ed25519',
@@ -897,9 +892,6 @@ describe('appMachine service implementations', () => {
   });
 
   it('generateKeyPairsAndStoreOrder uses the default order after a config fetch error', async () => {
-    const {
-      generateKeyPairsAndStoreOrder,
-    } = require('../shared/cryptoutil/cryptoUtil');
     await services.generateKeyPairsAndStoreOrder(
       {},
       {data: new Error('network error')},

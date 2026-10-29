@@ -77,7 +77,11 @@ fileignoreconfig:
 - filename: screens/Settings/BackupController.tsx
   checksum: 4a031b46646aa982c8f40e4c7fe0bd3e05a76a6af1ff1c2de7350ba6ebf9a839
 - filename: machines/settings.typegen.ts
-  checksum: 3b8d8f27bc364d9da27878f5244f535bfcddea2cec83d6f28799d2f6165fe300
+  checksum: 1a1cced61266c9e0112f44949381e95095a379e38d4a63d928a84aa09dc78934
+- filename: machines/settings.ts
+  checksum: a406e58bc404a2d2f8d062837b8e4835c4be17e15d3a9aa8c1a96fd99fc7785c
+- filename: machines/settings.test.ts
+  checksum: e04362a94714825b3721d94f5e9f426e1981519ebef6b17263c6cb8666041412
 - filename: injitest/src/test/java/androidTestCases/PinVcTest.java
   checksum: 80db93dd724c281a457c074910f02bb887cb34575792b2dd9f20d77a43a6cfad
 - filename: injitest/src/test/java/androidTestCases/NoNetworkAndroidTest.java

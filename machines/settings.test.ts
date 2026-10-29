@@ -201,6 +201,9 @@ describe('settings selectors', () => {
     expect(selectIsResetInjiProps(mockState({}, 'resetInjiProps') as any)).toBe(
       true,
     );
+    expect(selectIsResetInjiProps(mockState({}, 'storeKeyOrder') as any)).toBe(
+      true,
+    );
     expect(selectIsResetInjiProps(mockState({}, 'idle') as any)).toBe(false);
   });
   it('selectIsBiometricUnlock', () =>
@@ -489,12 +492,13 @@ describe('settingsMachine definition', () => {
     expect(settingsMachine.initialState.value).toBe('init');
   });
 
-  it('should have states: init, storingDefaults, idle, resetInjiProps, showInjiTourGuide', () => {
+  it('should have the host reset and key order storage states', () => {
     const states = settingsMachine.config.states;
     expect(states).toHaveProperty('init');
     expect(states).toHaveProperty('storingDefaults');
     expect(states).toHaveProperty('idle');
     expect(states).toHaveProperty('resetInjiProps');
+    expect(states).toHaveProperty('storeKeyOrder');
     expect(states).toHaveProperty('showInjiTourGuide');
   });
 });
@@ -889,9 +893,10 @@ describe('settingsMachine key priority order on environment change', () => {
     '../shared/cryptoutil/cryptoUtil',
   );
   const {INITIAL_CONFIG} = jest.requireActual('../shared/InitialConfig');
-  const actions = settingsMachine.options.actions as any;
+  const services = settingsMachine.options.services as any;
   const resetInjiPropsDone =
     'done.invoke.settings.resetInjiProps:invocation[0]';
+  const storeKeyOrderDone = 'done.invoke.settings.storeKeyOrder:invocation[0]';
   const configResponse = {
     warningDomainName: 'https://mimoto.new',
     keyPriorityOrder: 'RS256,ES256,ES256K,Ed25519',
@@ -906,16 +911,28 @@ describe('settingsMachine key priority order on environment change', () => {
     storeKeyPriorityOrder.mockClear();
   });
 
-  it('stores the key order only when the host change completes', () => {
+  it('waits for key order storage before marking a host change successful', () => {
     const machine = getMachine();
-    const completed = machine.transition('resetInjiProps', {
+    const fetched = machine.transition('resetInjiProps', {
       type: resetInjiPropsDone,
       data: configResponse,
     } as any);
-    expect(completed.actions.map(action => action.type)).toContain(
-      'storeKeyPriorityOrderOfEnvironment',
+    expect(fetched.value).toBe('storeKeyOrder');
+    expect(fetched.actions.map(action => action.type)).not.toContain(
+      'updateCredentialRegistrySuccess',
     );
 
+    const stored = machine.transition('storeKeyOrder', {
+      type: storeKeyOrderDone,
+      data: configResponse,
+    } as any);
+    expect(stored.value).toBe('idle');
+    expect(stored.context.credentialRegistryResponse).toBe('success');
+    expect(stored.context.credentialRegistry).toBe('https://mimoto.new');
+  });
+
+  it('does not store a canceled host change', () => {
+    const machine = getMachine();
     const canceled = machine.transition('resetInjiProps', {
       type: 'CANCEL',
     } as any);
@@ -923,35 +940,51 @@ describe('settingsMachine key priority order on environment change', () => {
       type: resetInjiPropsDone,
       data: configResponse,
     } as any);
-    expect(lateResponse.actions.map(action => action.type)).not.toContain(
-      'storeKeyPriorityOrderOfEnvironment',
-    );
-  });
-
-  it('stores the key order of the new environment from the config response', () => {
-    actions.storeKeyPriorityOrderOfEnvironment({}, {data: configResponse});
-    expect(storeKeyPriorityOrder).toHaveBeenCalledWith(
-      'RS256,ES256,ES256K,Ed25519',
-    );
-  });
-
-  it('keeps the stored key order when the config of the new environment could not be fetched', () => {
-    actions.storeKeyPriorityOrderOfEnvironment(
-      {},
-      {data: INITIAL_CONFIG.allProperties},
-    );
+    expect(lateResponse.value).toBe('idle');
     expect(storeKeyPriorityOrder).not.toHaveBeenCalled();
   });
 
-  it('logs a warning when storing the key order fails', async () => {
-    const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
-    storeKeyPriorityOrder.mockRejectedValueOnce(new Error('keystore error'));
-    actions.storeKeyPriorityOrderOfEnvironment({}, {data: configResponse});
-    await new Promise(process.nextTick);
-    expect(warnSpy).toHaveBeenCalledWith(
-      'Failed to store keyPriorityOrder of the new environment',
-      expect.any(Error),
+  it('awaits storage of the new environment key order', async () => {
+    let finishWrite!: () => void;
+    storeKeyPriorityOrder.mockImplementationOnce(
+      () => new Promise<void>(resolve => (finishWrite = resolve)),
     );
-    warnSpy.mockRestore();
+    const pending = services.storeKeyPriorityOrderOfEnvironment(
+      {},
+      {data: configResponse},
+    );
+    let completed = false;
+    pending.then(() => (completed = true));
+    await Promise.resolve();
+    expect(completed).toBe(false);
+    expect(storeKeyPriorityOrder).toHaveBeenCalledWith(
+      'RS256,ES256,ES256K,Ed25519',
+    );
+    finishWrite();
+    await expect(pending).resolves.toEqual(configResponse);
+  });
+
+  it('keeps the stored key order when the config fetch uses built-in fallback', async () => {
+    await expect(
+      services.storeKeyPriorityOrderOfEnvironment(
+        {},
+        {data: INITIAL_CONFIG.allProperties},
+      ),
+    ).resolves.toBe(INITIAL_CONFIG.allProperties);
+    expect(storeKeyPriorityOrder).not.toHaveBeenCalled();
+  });
+
+  it('reports an error when storing the key order fails', async () => {
+    storeKeyPriorityOrder.mockRejectedValueOnce(new Error('keystore error'));
+    await expect(
+      services.storeKeyPriorityOrderOfEnvironment({}, {data: configResponse}),
+    ).rejects.toThrow('keystore error');
+    const machine = getMachine();
+    const failed = machine.transition('storeKeyOrder', {
+      type: 'error.platform.settings.storeKeyOrder:invocation[0]',
+      data: new Error('keystore error'),
+    } as any);
+    expect(failed.value).toBe('idle');
+    expect(failed.context.credentialRegistryResponse).toBe('error');
   });
 });

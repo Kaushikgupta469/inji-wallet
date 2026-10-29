@@ -3,6 +3,11 @@
 export interface Typegen0 {
   '@@xstate/typegen': true;
   internalEvents: {
+    'done.invoke.settings.storeKeyOrder:invocation[0]': {
+      type: 'done.invoke.settings.storeKeyOrder:invocation[0]';
+      data: unknown;
+      __tip: 'See the XState TS docs to learn how to strongly type this.';
+    };
     'done.invoke.settings.resetInjiProps:invocation[0]': {
       type: 'done.invoke.settings.resetInjiProps:invocation[0]';
       data: unknown;
@@ -12,10 +17,15 @@ export interface Typegen0 {
       type: 'error.platform.settings.resetInjiProps:invocation[0]';
       data: unknown;
     };
+    'error.platform.settings.storeKeyOrder:invocation[0]': {
+      type: 'error.platform.settings.storeKeyOrder:invocation[0]';
+      data: unknown;
+    };
     'xstate.init': {type: 'xstate.init'};
   };
   invokeSrcNameMap: {
     resetInjiProps: 'done.invoke.settings.resetInjiProps:invocation[0]';
+    storeKeyPriorityOrderOfEnvironment: 'done.invoke.settings.storeKeyOrder:invocation[0]';
   };
   missingImplementations: {
     actions: 'setKeyManagementExplored';
@@ -42,12 +52,13 @@ export interface Typegen0 {
       | 'UPDATE_HOST'
       | 'UPDATE_NAME'
       | 'UPDATE_VC_LABEL'
-      | 'done.invoke.settings.resetInjiProps:invocation[0]';
-    storeKeyPriorityOrderOfEnvironment: 'done.invoke.settings.resetInjiProps:invocation[0]';
+      | 'done.invoke.settings.storeKeyOrder:invocation[0]';
     toggleBiometricUnlock: 'TOGGLE_BIOMETRIC_UNLOCK';
-    updateCredentialRegistry: 'done.invoke.settings.resetInjiProps:invocation[0]';
-    updateCredentialRegistryResponse: 'error.platform.settings.resetInjiProps:invocation[0]';
-    updateCredentialRegistrySuccess: 'done.invoke.settings.resetInjiProps:invocation[0]';
+    updateCredentialRegistry: 'done.invoke.settings.storeKeyOrder:invocation[0]';
+    updateCredentialRegistryResponse:
+      | 'error.platform.settings.resetInjiProps:invocation[0]'
+      | 'error.platform.settings.storeKeyOrder:invocation[0]';
+    updateCredentialRegistrySuccess: 'done.invoke.settings.storeKeyOrder:invocation[0]';
     updateDefaults: 'STORE_RESPONSE';
     updateEsignetHostUrl: 'UPDATE_HOST';
     updateIsAccountSelectionConfirmationShown: 'SHOWN_ACCOUNT_SELECTION_CONFIRMATION';
@@ -63,11 +74,13 @@ export interface Typegen0 {
   };
   eventsCausingServices: {
     resetInjiProps: 'UPDATE_HOST';
+    storeKeyPriorityOrderOfEnvironment: 'done.invoke.settings.resetInjiProps:invocation[0]';
   };
   matchesStates:
     | 'idle'
     | 'init'
     | 'resetInjiProps'
+    | 'storeKeyOrder'
     | 'showInjiTourGuide'
     | 'storingDefaults';
   tags: never;

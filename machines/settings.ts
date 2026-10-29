@@ -201,13 +201,7 @@ export const settingsMachine = model.createMachine(
         invoke: {
           src: 'resetInjiProps',
           onDone: {
-            actions: [
-              'updateCredentialRegistrySuccess',
-              'storeKeyPriorityOrderOfEnvironment',
-              'updateCredentialRegistry',
-              'storeContext',
-            ],
-            target: 'idle',
+            target: 'storeKeyOrder',
           },
           onError: {
             actions: ['updateCredentialRegistryResponse'],
@@ -217,6 +211,23 @@ export const settingsMachine = model.createMachine(
         on: {
           CANCEL: {
             actions: ['resetCredentialRegistryResponse'],
+            target: 'idle',
+          },
+        },
+      },
+      storeKeyOrder: {
+        invoke: {
+          src: 'storeKeyPriorityOrderOfEnvironment',
+          onDone: {
+            actions: [
+              'updateCredentialRegistrySuccess',
+              'updateCredentialRegistry',
+              'storeContext',
+            ],
+            target: 'idle',
+          },
+          onError: {
+            actions: ['updateCredentialRegistryResponse'],
             target: 'idle',
           },
         },
@@ -318,17 +329,6 @@ export const settingsMachine = model.createMachine(
         credentialRegistryResponse: () => 'success',
       }),
 
-      storeKeyPriorityOrderOfEnvironment: (_context, event: any) => {
-        if (event.data !== INITIAL_CONFIG.allProperties) {
-          storeKeyPriorityOrder(event.data?.keyPriorityOrder).catch(error =>
-            console.warn(
-              'Failed to store keyPriorityOrder of the new environment',
-              error,
-            ),
-          );
-        }
-      },
-
       resetCredentialRegistryResponse: model.assign({
         credentialRegistryResponse: () => '',
       }),
@@ -355,6 +355,13 @@ export const settingsMachine = model.createMachine(
           console.error('Error from resetInjiProps ', error);
           throw error;
         }
+      },
+      storeKeyPriorityOrderOfEnvironment: async (_context, event: any) => {
+        const config = event.data;
+        if (config !== INITIAL_CONFIG.allProperties) {
+          await storeKeyPriorityOrder(config?.keyPriorityOrder);
+        }
+        return config;
       },
     },
 
@@ -432,7 +439,7 @@ export function selectBiometricUnlockEnabled(state: State) {
 }
 
 export function selectIsResetInjiProps(state: State) {
-  return state?.matches('resetInjiProps');
+  return state?.matches('resetInjiProps') || state?.matches('storeKeyOrder');
 }
 
 export function selectIsBiometricUnlock(state: State) {
