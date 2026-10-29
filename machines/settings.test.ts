@@ -896,58 +896,18 @@ describe('settingsMachine key priority order on environment change', () => {
     warningDomainName: 'https://mimoto.new',
     keyPriorityOrder: 'RS256,ES256,ES256K,Ed25519',
   };
-  const getMachine = (ctxOverrides: any = {}) =>
+  const getMachine = () =>
     settingsMachine.withContext({
       ...settingsMachine.context,
       serviceRefs: {store: {}} as any,
-      credentialRegistry: 'https://mimoto.current',
-      ...ctxOverrides,
     });
-  const updateHostEvent = (credentialRegistry: string) =>
-    ({
-      type: 'UPDATE_HOST',
-      credentialRegistry,
-      esignetHostUrl: 'https://esignet.default',
-    } as any);
 
   beforeEach(() => {
     storeKeyPriorityOrder.mockClear();
   });
 
-  it('marks the environment as changed when a different host is saved', () => {
-    const next = getMachine().transition(
-      'idle',
-      updateHostEvent('https://mimoto.new'),
-    );
-    expect(next.context.isEnvironmentChanged).toBe(true);
-  });
-
-  it('does not mark the environment as changed for the same or an empty host', () => {
-    expect(
-      getMachine().transition('idle', updateHostEvent('https://mimoto.current'))
-        .context.isEnvironmentChanged,
-    ).toBe(false);
-    expect(
-      getMachine().transition('idle', updateHostEvent('')).context
-        .isEnvironmentChanged,
-    ).toBe(false);
-  });
-
-  it('does not persist isEnvironmentChanged with the settings', () => {
-    const next = getMachine().transition(
-      'idle',
-      updateHostEvent('https://mimoto.new'),
-    );
-    const storedSettings = next.actions.find(
-      action => (action as any).event?.type === 'SET',
-    ) as any;
-    expect(storedSettings.event.value).not.toHaveProperty(
-      'isEnvironmentChanged',
-    );
-  });
-
   it('stores the key order only when the host change completes', () => {
-    const machine = getMachine({isEnvironmentChanged: true});
+    const machine = getMachine();
     const completed = machine.transition('resetInjiProps', {
       type: resetInjiPropsDone,
       data: configResponse,
@@ -968,27 +928,16 @@ describe('settingsMachine key priority order on environment change', () => {
     );
   });
 
-  it('stores the key order of the new environment when the environment is changed', () => {
-    actions.storeKeyPriorityOrderOfEnvironment(
-      {isEnvironmentChanged: true},
-      {data: configResponse},
-    );
+  it('stores the key order of the new environment from the config response', () => {
+    actions.storeKeyPriorityOrderOfEnvironment({}, {data: configResponse});
     expect(storeKeyPriorityOrder).toHaveBeenCalledWith(
       'RS256,ES256,ES256K,Ed25519',
     );
   });
 
-  it('keeps the stored key order when the environment is not changed', () => {
-    actions.storeKeyPriorityOrderOfEnvironment(
-      {isEnvironmentChanged: false},
-      {data: configResponse},
-    );
-    expect(storeKeyPriorityOrder).not.toHaveBeenCalled();
-  });
-
   it('keeps the stored key order when the config of the new environment could not be fetched', () => {
     actions.storeKeyPriorityOrderOfEnvironment(
-      {isEnvironmentChanged: true},
+      {},
       {data: INITIAL_CONFIG.allProperties},
     );
     expect(storeKeyPriorityOrder).not.toHaveBeenCalled();
@@ -997,10 +946,7 @@ describe('settingsMachine key priority order on environment change', () => {
   it('logs a warning when storing the key order fails', async () => {
     const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
     storeKeyPriorityOrder.mockRejectedValueOnce(new Error('keystore error'));
-    actions.storeKeyPriorityOrderOfEnvironment(
-      {isEnvironmentChanged: true},
-      {data: configResponse},
-    );
+    actions.storeKeyPriorityOrderOfEnvironment({}, {data: configResponse});
     await new Promise(process.nextTick);
     expect(warnSpy).toHaveBeenCalledWith(
       'Failed to store keyPriorityOrder of the new environment',

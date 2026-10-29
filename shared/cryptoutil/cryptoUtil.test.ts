@@ -283,16 +283,6 @@ describe('cryptoUtil', () => {
       );
       spy.mockRestore();
     });
-
-    it('stores the configured keyPriorityOrder', async () => {
-      const spy = jest.spyOn(console, 'warn').mockImplementation();
-      await generateKeyPairsAndStoreOrder('RS256,ES256,ES256K,Ed25519');
-      expect(RNSecureKeystoreModule.storeData).toHaveBeenCalledWith(
-        'keyPreference',
-        JSON.stringify({0: 'RS256', 1: 'ES256', 2: 'ES256K', 3: 'Ed25519'}),
-      );
-      spy.mockRestore();
-    });
   });
 
   describe('getKeyPriorityOrder', () => {

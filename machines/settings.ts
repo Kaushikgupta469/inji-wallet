@@ -48,7 +48,6 @@ const model = createModel(
     isAccountSelectionConfirmationShown: false,
     credentialRegistryResponse: '' as string,
     isBiometricToggled: false,
-    isEnvironmentChanged: false,
   },
   {
     events: {
@@ -167,7 +166,6 @@ export const settingsMachine = model.createMachine(
           UPDATE_HOST: {
             actions: [
               'resetCredentialRegistryResponse',
-              'setIsEnvironmentChanged',
               'updateEsignetHostUrl',
               'storeContext',
             ],
@@ -267,12 +265,7 @@ export const settingsMachine = model.createMachine(
 
       storeContext: send(
         context => {
-          const {
-            serviceRefs,
-            isBiometricToggled,
-            isEnvironmentChanged,
-            ...data
-          } = context;
+          const {serviceRefs, isBiometricToggled, ...data} = context;
           return StoreEvents.SET(SETTINGS_STORE_KEY, data);
         },
         {to: context => context.serviceRefs.store},
@@ -325,17 +318,8 @@ export const settingsMachine = model.createMachine(
         credentialRegistryResponse: () => 'success',
       }),
 
-      setIsEnvironmentChanged: model.assign({
-        isEnvironmentChanged: (context, event) =>
-          !!event.credentialRegistry &&
-          event.credentialRegistry !== context.credentialRegistry,
-      }),
-
-      storeKeyPriorityOrderOfEnvironment: (context, event: any) => {
-        if (
-          context.isEnvironmentChanged &&
-          event.data !== INITIAL_CONFIG.allProperties
-        ) {
+      storeKeyPriorityOrderOfEnvironment: (_context, event: any) => {
+        if (event.data !== INITIAL_CONFIG.allProperties) {
           storeKeyPriorityOrder(event.data?.keyPriorityOrder).catch(error =>
             console.warn(
               'Failed to store keyPriorityOrder of the new environment',

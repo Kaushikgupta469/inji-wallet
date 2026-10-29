@@ -143,13 +143,13 @@ export async function storeKeyPriorityOrder(keyPriorityOrder?: string) {
   );
 }
 
-export async function generateKeyPairsAndStoreOrder(keyPriorityOrder?: string) {
+export async function generateKeyPairsAndStoreOrder() {
   const {RNSecureKeystoreModule} = NativeModules;
   const RSAKeyPair = await generateKeyPair(KeyTypes.RS256);
   const ECR1KeyPair = await generateKeyPair(KeyTypes.ES256);
   const ECK1KeyPair = await generateKeyPair(KeyTypes.ES256K);
   const EDKeyPair = await generateKeyPair(KeyTypes.ED25519);
-  await storeKeyPriorityOrder(keyPriorityOrder);
+  await storeKeyPriorityOrder();
   await RNSecureKeystoreModule.storeGenericKey(
     ECK1KeyPair.publicKey,
     ECK1KeyPair.privateKey,

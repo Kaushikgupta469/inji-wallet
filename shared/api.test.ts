@@ -456,6 +456,10 @@ describe('CACHED_API', () => {
       mockRequest.mockRejectedValueOnce(new Error('Network error'));
 
       const result = await CACHED_API.getAllProperties(false);
+      expect(mockRequest).toHaveBeenCalledWith(
+        'GET',
+        '/v1/mimoto/allProperties',
+      );
       expect(result).toBe(INITIAL_CONFIG.allProperties);
     });
   });

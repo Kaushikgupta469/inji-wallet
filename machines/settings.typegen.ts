@@ -30,7 +30,6 @@ export interface Typegen0 {
     resetKeyOrderingResponse: 'RESET_KEY_ORDER_RESPONSE';
     setContext: 'STORE_RESPONSE';
     setIsBiometricToggled: 'TOGGLE_BIOMETRIC_UNLOCK';
-    setIsEnvironmentChanged: 'UPDATE_HOST';
     setKeyManagementExplored: 'SET_KEY_MANAGEMENT_EXPLORED';
     setKeyManagementTourGuideExplored: 'SET_KEY_MANAGEMENT_TOUR_GUIDE_EXPLORED';
     setKeyOrderingResponse: 'SET_KEY_ORDER_RESPONSE';

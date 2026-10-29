@@ -39,6 +39,7 @@ import {
 import {
   checkAllKeyPairs,
   generateKeyPairsAndStoreOrder,
+  storeKeyPriorityOrder,
 } from '../shared/cryptoutil/cryptoUtil';
 import getAllConfigurations from '../shared/api';
 
@@ -564,12 +565,12 @@ export const appMachine = model.createMachine(
       },
 
       generateKeyPairsAndStoreOrder: async () => {
-        const keyPriorityOrder = await getKeyPriorityOrderFromConfig();
-        return await generateKeyPairsAndStoreOrder(keyPriorityOrder);
+        return await generateKeyPairsAndStoreOrder();
       },
 
       fetchAndUpdateCacheTTLFromConfig: async () => {
-        return await updateCacheTTLFromConfig();
+        const response = await updateCacheTTLFromConfig();
+        return await storeKeyPriorityOrder(response?.keyPriorityOrder);
       },
 
       checkNetworkState: () => callback => {
@@ -599,19 +600,7 @@ const updateCacheTTLFromConfig = async () => {
       'All Properties API is called and updated the cacheTTL based on config/OnErrorHardCodedValue',
     );
   }
-};
-
-const getKeyPriorityOrderFromConfig = async (): Promise<string | undefined> => {
-  try {
-    const response = await getAllConfigurations(undefined, false);
-    return response?.keyPriorityOrder;
-  } catch (error) {
-    console.warn(
-      'Failed to fetch keyPriorityOrder from config, using default key order',
-      error,
-    );
-    return undefined;
-  }
+  return response;
 };
 
 export function selectAppInfo(state: State) {

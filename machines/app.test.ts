@@ -64,6 +64,7 @@ jest.mock('./VerifiableCredential/VCMetaMachine/VCMetaMachine', () => ({
 jest.mock('../shared/cryptoutil/cryptoUtil', () => ({
   checkAllKeyPairs: jest.fn(),
   generateKeyPairsAndStoreOrder: jest.fn(),
+  storeKeyPriorityOrder: jest.fn(),
 }));
 jest.mock('../shared/api', () => jest.fn().mockResolvedValue({}));
 jest.mock('../shared/GlobalContext', () => ({AppServices: {}}));
@@ -800,38 +801,33 @@ describe('appMachine service implementations', () => {
     expect(generateKeyPairsAndStoreOrder).toHaveBeenCalled();
   });
 
-  it('generateKeyPairsAndStoreOrder passes keyPriorityOrder from config', async () => {
-    const {
-      generateKeyPairsAndStoreOrder,
-    } = require('../shared/cryptoutil/cryptoUtil');
-    const getAllConfigurations = require('../shared/api');
-    getAllConfigurations.mockResolvedValueOnce({
-      keyPriorityOrder: 'RS256,ES256,ES256K,Ed25519',
-    });
-    await services.generateKeyPairsAndStoreOrder();
-    expect(getAllConfigurations).toHaveBeenCalledWith(undefined, false);
-    expect(generateKeyPairsAndStoreOrder).toHaveBeenCalledWith(
-      'RS256,ES256,ES256K,Ed25519',
-    );
-  });
-
-  it('generateKeyPairsAndStoreOrder falls back to default order when config fetch fails', async () => {
-    const {
-      generateKeyPairsAndStoreOrder,
-    } = require('../shared/cryptoutil/cryptoUtil');
-    const getAllConfigurations = require('../shared/api');
-    getAllConfigurations.mockRejectedValueOnce(new Error('network error'));
-    const spy = jest.spyOn(console, 'warn').mockImplementation();
-    await services.generateKeyPairsAndStoreOrder();
-    expect(generateKeyPairsAndStoreOrder).toHaveBeenCalledWith(undefined);
-    spy.mockRestore();
-  });
-
   it('fetchAndUpdateCacheTTLFromConfig calls updateCacheTTLFromConfig', async () => {
     const getAllConfigurations = require('../shared/api');
     getAllConfigurations.mockResolvedValue({cacheTTLInMilliSeconds: 5000});
     await services.fetchAndUpdateCacheTTLFromConfig();
     expect(getAllConfigurations).toHaveBeenCalled();
+  });
+
+  it('fetchAndUpdateCacheTTLFromConfig stores keyPriorityOrder from the same config call', async () => {
+    const {storeKeyPriorityOrder} = require('../shared/cryptoutil/cryptoUtil');
+    const getAllConfigurations = require('../shared/api');
+    getAllConfigurations.mockClear();
+    getAllConfigurations.mockResolvedValueOnce({
+      keyPriorityOrder: 'RS256,ES256,ES256K,Ed25519',
+    });
+    await services.fetchAndUpdateCacheTTLFromConfig();
+    expect(getAllConfigurations).toHaveBeenCalledTimes(1);
+    expect(storeKeyPriorityOrder).toHaveBeenCalledWith(
+      'RS256,ES256,ES256K,Ed25519',
+    );
+  });
+
+  it('fetchAndUpdateCacheTTLFromConfig stores default order when keyPriorityOrder is not configured', async () => {
+    const {storeKeyPriorityOrder} = require('../shared/cryptoutil/cryptoUtil');
+    const getAllConfigurations = require('../shared/api');
+    getAllConfigurations.mockResolvedValueOnce({});
+    await services.fetchAndUpdateCacheTTLFromConfig();
+    expect(storeKeyPriorityOrder).toHaveBeenCalledWith(undefined);
   });
 
   it('checkNetworkState subscribes to NetInfo', () => {

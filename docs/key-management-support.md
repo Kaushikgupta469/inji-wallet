@@ -22,18 +22,18 @@ The default priority order is:
 3. EC R1 (`ES256`)
 4. RSA (`RS256`)
 
-Mimoto sends the key priority order to the wallet as `keyPriorityOrder` in the `/allProperties` response. By default it sends the order above, from its own configuration. To use a different order, override the optional `mosip.inji.keyPriorityOrder` property in `inji-default.properties`:
+To use a different order, configure the optional `mosip.inji.keyPriorityOrder` property in `inji-default.properties`. Mimoto sends it to the wallet as `keyPriorityOrder` in the `/allProperties` response:
 
 ```properties
 mosip.inji.keyPriorityOrder=RS256,ES256,ES256K,Ed25519
 ```
 
-- Overriding is optional. If it is not overridden, Mimoto sends the default order.
-- When overriding, the wallet provider is responsible for configuring all the key types with the exact names `Ed25519`, `ES256K`, `ES256` and `RS256`, in the required order. The wallet uses the order as it is.
-- The configured order is applied only on a fresh install and when the environment (Mimoto host) is changed from **Settings**. It is not applied again when the cached configuration expires and is fetched again.
-- The user can change the order at any time from **Settings → Key Management**. That order is kept until the environment is changed or the wallet is installed afresh.
+- The property is optional. If it is not configured, Mimoto does not send it and the wallet uses the default order above.
+- When configuring it, the wallet provider is responsible for configuring all the key types with the exact names `Ed25519`, `ES256K`, `ES256` and `RS256`, in the required order. The wallet uses the order as it is.
+- The configured order is applied only on a fresh install and when the environment (Mimoto host) is updated from **Settings**. It is not applied again when the cached configuration expires and is fetched again.
+- The user can change the order at any time from **Settings → Key Management**. That order is kept until the environment is updated or the wallet is installed afresh.
 - On a fresh install, if the configuration cannot be fetched (e.g. no network), the default order is used.
-- On an environment change, the order is updated only when the change completes. If the change is cancelled, or the configuration of the new environment cannot be fetched, the current order is kept.
+- On an environment update, the order is updated only when the update completes. If the update is cancelled, or the configuration of the new environment cannot be fetched, the current order is kept.
 
 ---
 
