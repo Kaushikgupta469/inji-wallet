@@ -30,10 +30,10 @@ mosip.inji.keyPriorityOrder=RS256,ES256,ES256K,Ed25519
 
 - The property is optional. If it is not configured, Mimoto does not send it and the wallet uses the default order above.
 - When configuring it, the wallet provider is responsible for configuring all the key types with the exact names `Ed25519`, `ES256K`, `ES256` and `RS256`, in the required order. The wallet uses the order as it is.
-- The configured order is applied only on a fresh install and when the environment (Mimoto host) is updated from **Settings**. It is not applied again when the cached configuration expires and is fetched again.
-- The user can change the order at any time from **Settings → Key Management**. That order is kept until the environment is updated or the wallet is installed afresh.
-- On a fresh install, if the configuration cannot be fetched (e.g. no network), the default order is used.
-- On an environment update, the order is updated only when the update completes. If the update is cancelled, or the configuration of the new environment cannot be fetched, the current order is kept.
+- At startup, the wallet fetches the configuration only if key pairs are missing, then generates the keys and stores the configured order. If the keys are present on restart, it skips the fetch. The order is also updated when the environment (Mimoto host) is changed from **Settings**.
+- The user can change the order at any time from **Settings → Key Management**. That order is kept until the environment is updated or missing key pairs are regenerated at startup.
+- If key pairs are missing and the network request fails, the wallet uses a valid cached configuration when available offline, or the built-in configuration. If no `keyPriorityOrder` is available, the default order is stored. The default order is also used if the config fetch rejects.
+- On an environment update, the wallet attempts to store the new order after the configuration request completes. Cancelling the update or receiving the built-in fallback configuration keeps the current order. A storage failure is logged, so completion does not guarantee that the new order was saved.
 
 ---
 

@@ -126,16 +126,12 @@ export async function checkAllKeyPairs() {
   if (!(RSAKey && ECR1Key && ECK1Key && EDKey)) throw Error('Keys not present');
 }
 
-export function getKeyPriorityOrder(configuredKeyOrder?: string): string[] {
-  if (!configuredKeyOrder) {
-    return Object.values(SUPPORTED_KEY_TYPES);
-  }
-  return configuredKeyOrder.split(',').map(keyType => keyType.trim());
-}
-
 export async function storeKeyPriorityOrder(keyPriorityOrder?: string) {
   const {RNSecureKeystoreModule} = NativeModules;
-  const keys = getKeyPriorityOrder(keyPriorityOrder).map(value => ({value}));
+  const keyOrder = keyPriorityOrder
+    ? keyPriorityOrder.split(',').map(keyType => keyType.trim())
+    : Object.values(SUPPORTED_KEY_TYPES);
+  const keys = keyOrder.map(value => ({value}));
   const keyOrderMap = convertToKeyValue(keys);
   await RNSecureKeystoreModule.storeData(
     'keyPreference',
@@ -143,13 +139,13 @@ export async function storeKeyPriorityOrder(keyPriorityOrder?: string) {
   );
 }
 
-export async function generateKeyPairsAndStoreOrder() {
+export async function generateKeyPairsAndStoreOrder(keyPriorityOrder?: string) {
   const {RNSecureKeystoreModule} = NativeModules;
   const RSAKeyPair = await generateKeyPair(KeyTypes.RS256);
   const ECR1KeyPair = await generateKeyPair(KeyTypes.ES256);
   const ECK1KeyPair = await generateKeyPair(KeyTypes.ES256K);
   const EDKeyPair = await generateKeyPair(KeyTypes.ED25519);
-  await storeKeyPriorityOrder();
+  await storeKeyPriorityOrder(keyPriorityOrder);
   await RNSecureKeystoreModule.storeGenericKey(
     ECK1KeyPair.publicKey,
     ECK1KeyPair.privateKey,

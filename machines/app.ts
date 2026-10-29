@@ -39,7 +39,6 @@ import {
 import {
   checkAllKeyPairs,
   generateKeyPairsAndStoreOrder,
-  storeKeyPriorityOrder,
 } from '../shared/cryptoutil/cryptoUtil';
 import getAllConfigurations from '../shared/api';
 
@@ -151,7 +150,7 @@ export const appMachine = model.createMachine(
               ],
               onError: [
                 {
-                  target: 'generateKeyPairs',
+                  target: 'fetchConfig',
                 },
               ],
             },
@@ -161,7 +160,7 @@ export const appMachine = model.createMachine(
               src: 'generateKeyPairsAndStoreOrder',
               onDone: [
                 {
-                  target: 'fetchConfig',
+                  target: 'services',
                 },
               ],
             },
@@ -171,12 +170,12 @@ export const appMachine = model.createMachine(
               src: 'fetchAndUpdateCacheTTLFromConfig',
               onDone: [
                 {
-                  target: 'checkKeyPairs',
+                  target: 'generateKeyPairs',
                 },
               ],
               onError: [
                 {
-                  target: 'checkKeyPairs',
+                  target: 'generateKeyPairs',
                 },
               ],
             },
@@ -564,13 +563,14 @@ export const appMachine = model.createMachine(
         return await checkAllKeyPairs();
       },
 
-      generateKeyPairsAndStoreOrder: async () => {
-        return await generateKeyPairsAndStoreOrder();
+      generateKeyPairsAndStoreOrder: async (_context, event: any) => {
+        return await generateKeyPairsAndStoreOrder(
+          event.data?.keyPriorityOrder,
+        );
       },
 
       fetchAndUpdateCacheTTLFromConfig: async () => {
-        const response = await updateCacheTTLFromConfig();
-        return await storeKeyPriorityOrder(response?.keyPriorityOrder);
+        return await updateCacheTTLFromConfig();
       },
 
       checkNetworkState: () => callback => {
