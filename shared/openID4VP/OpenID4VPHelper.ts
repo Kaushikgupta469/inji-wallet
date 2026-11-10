@@ -27,10 +27,12 @@ export async function getWalletConfig() {
 
   walletConfig['validate_trusted_verifier'] =
     config.openid4vpClientValidation === 'true';
-  // Bundled with the app at build time, so the server configuration cannot change them
-  walletConfig[
-    'verifier_trust_anchors'
-  ] = require('./walletConfig/generated/verifierTrustAnchors.json');
+  const verifierTrustAnchors = parseJSON(
+    config.openid4vpVerifierTrustAnchors ?? '[]',
+  );
+  walletConfig['verifier_trust_anchors'] = Array.isArray(verifierTrustAnchors)
+    ? verifierTrustAnchors
+    : [];
 
   try {
     const trustedVerifiersResponse =
